@@ -52,7 +52,7 @@ pip install -e .
 
 ### 从 Release zip 安装
 
-从 [GitHub Releases](https://github.com/hbestm/openlist-mcp-server/releases) 下载最新版，然后：
+从 [GitHub Releases](https://github.com/hbestm/openlist-mcp-server/releases/tag/v0.2.2) 下载最新版，然后：
 
 ```bash
 unzip openlist-mcp-server-*.zip
