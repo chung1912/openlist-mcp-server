@@ -22,8 +22,8 @@ def register_auth_tools(mcp: FastMCP) -> None:
             A success message with user info if login is successful.
         """
         client = await get_client()
-        data = await client.login()
-        return f"Login successful. Token acquired."
+        await client.login()
+        return "Login successful. Token acquired."
 
 
 def register_public_tools(mcp: FastMCP) -> None:

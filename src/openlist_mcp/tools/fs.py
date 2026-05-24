@@ -168,6 +168,8 @@ def register_fs_tools(mcp: FastMCP) -> None:
 
         client = await get_client()
         name_list = [n.strip() for n in names.split(",") if n.strip()]
+        if not name_list:
+            return "No files specified to copy. Please provide at least one file name."
         data = await client.request(
             "POST",
             "fs/copy",
@@ -177,7 +179,7 @@ def register_fs_tools(mcp: FastMCP) -> None:
                 "names": name_list,
             },
         )
-        if data:
+        if data is not None and data != {}:
             return f"Copy task created: {json.dumps(data, ensure_ascii=False)}"
         return f"Copied successfully: {names} -> {dst_dir}"
 
@@ -201,6 +203,8 @@ def register_fs_tools(mcp: FastMCP) -> None:
 
         client = await get_client()
         name_list = [n.strip() for n in names.split(",") if n.strip()]
+        if not name_list:
+            return "No files specified to move. Please provide at least one file name."
         data = await client.request(
             "POST",
             "fs/move",
@@ -210,20 +214,20 @@ def register_fs_tools(mcp: FastMCP) -> None:
                 "names": name_list,
             },
         )
-        if data:
+        if data is not None and data != {}:
             return f"Move task created: {json.dumps(data, ensure_ascii=False)}"
         return f"Moved successfully: {names} -> {dst_dir}"
 
     @mcp.tool()
     async def remove(
-        dir: str,
+        directory: str,
         names: str,
         confirm: bool = False,
     ) -> str:
         """Delete files or folders.
 
         Args:
-            dir: Directory path containing the items to delete.
+            directory: Directory path containing the items to delete.
             names: Comma-separated list of file/folder names to delete (e.g. "file1.txt,old_folder").
             confirm: Must be true to actually delete items. Defaults to false.
 
@@ -234,9 +238,11 @@ def register_fs_tools(mcp: FastMCP) -> None:
             return "Deletion not performed. Re-run with confirm=true to delete these items."
         client = await get_client()
         name_list = [n.strip() for n in names.split(",") if n.strip()]
+        if not name_list:
+            return "No files specified to delete. Please provide at least one file name."
         await client.request(
             "POST",
             "fs/remove",
-            json={"dir": dir, "names": name_list},
+            json={"dir": directory, "names": name_list},
         )
-        return f"Deleted successfully: {names} from {dir}"
+        return f"Deleted successfully: {names} from {directory}"

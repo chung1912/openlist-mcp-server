@@ -68,7 +68,7 @@ def main() -> None:
         logger.info("OpenList MCP Server starting")
         logger.info("Target: %s", config.base_url)
         if config.is_authenticated:
-            logger.info("Authentication: configured (user: %s)", config.username)
+            logger.info("Authentication: configured")
         else:
             logger.warning(
                 "Authentication: not configured. "
