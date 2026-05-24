@@ -129,6 +129,22 @@ The integration test creates a temporary directory under `OPENLIST_TEST_DIR` and
 - Some admin task endpoints may differ between OpenList versions and deployments.
 - Destructive tools require an explicit `confirm=true` parameter to reduce accidental operations by AI agents.
 
+## Community & Support
+
+<p align="center">
+  <a href="docs/qr-community.jpg">
+    <img src="docs/qr-community.jpg" alt="QQ Community" width="200">
+  </a>
+  <a href="docs/qr-sponsor.png">
+    <img src="docs/qr-sponsor.png" alt="Sponsor" width="200">
+  </a>
+</p>
+
+<p align="center">
+  <strong>QQ 交流群</strong>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+  <strong>微信赞助</strong>
+</p>
+
 ## License
 
 MIT
