@@ -1,5 +1,9 @@
 # OpenList MCP Server
 
+<p align="center">
+  <img src="docs/og-image.png" alt="OpenList MCP Server" width="800">
+</p>
+
 MCP Server for [OpenList](https://github.com/OpenListTeam/OpenList). It lets MCP-compatible AI agents browse, upload, download, search, and manage files through the OpenList REST API.
 
 ## Features
