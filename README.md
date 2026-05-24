@@ -5,51 +5,47 @@
 </p>
 
 <p align="center">
-  <a href="#openlist-mcp-server">English</a> · <a href="#openlist-mcp-server-中文">中文</a>
+  <a href="README.md">English</a> · <a href="README-zh.md">中文</a>
 </p>
 
 ---
 
-# OpenList MCP Server 中文
+MCP Server for [OpenList](https://github.com/OpenListTeam/OpenList). Enables MCP-compatible AI agents to browse, upload, download, search, and manage files via the OpenList REST API.
 
-[OpenList](https://github.com/OpenListTeam/OpenList) 的 MCP 服务端。让支持 MCP 协议的 AI 智能体（Claude、SOLO 等）通过 OpenList REST API 浏览、上传、下载、搜索和管理文件。
+## Features
 
-## 功能特性
+- File browsing: list directories, get file details, search files
+- File management: create folders, rename, copy, move, delete
+- File transfer: upload base64 content, get download URLs
+- Share management: create, list, cancel, delete share links
+- Task management: list, retry, cancel, delete async tasks
+- Auto authentication: JWT login and retry after token expiration
 
-- **文件浏览** — 列出目录、查看文件详情、搜索文件
-- **文件管理** — 创建目录、重命名、复制、移动、删除
-- **文件传输** — Base64 上传文件、获取下载链接
-- **分享管理** — 创建、列出、取消、删除分享链接
-- **任务管理** — 查看、重试、取消、删除异步任务
-- **自动认证** — JWT 自动登录与 token 过期重试
-
-## 环境要求
+## Requirements
 
 - Python 3.10+
-- 一个运行中的 OpenList 实例
+- A running OpenList instance
 
-## 安装
+## Installation
 
 ```bash
 cd openlist-mcp-server
 pip install -e .
 ```
 
-## 配置
-
-运行前设置环境变量：
+## Configuration
 
 ```bash
-export OPENLIST_URL="https://你的-openlist-地址.com"
-export OPENLIST_USERNAME="你的用户名"
-export OPENLIST_PASSWORD="你的密码"
+export OPENLIST_URL="https://your-openlist-instance.example.com"
+export OPENLIST_USERNAME="your_username"
+export OPENLIST_PASSWORD="your_password"
 ```
 
-**不要将真实凭据提交到仓库**，使用 `.env.example` 作为模板。
+Do not commit real credentials. Use `.env.example` as a template only.
 
-## 使用方式
+## Usage
 
-### Claude Desktop / MCP 客户端
+### Claude Desktop / MCP Client
 
 ```json
 {
@@ -57,99 +53,85 @@ export OPENLIST_PASSWORD="你的密码"
     "openlist": {
       "command": "openlist-mcp",
       "env": {
-        "OPENLIST_URL": "https://你的-openlist-地址.com",
-        "OPENLIST_USERNAME": "你的用户名",
-        "OPENLIST_PASSWORD": "你的密码"
+        "OPENLIST_URL": "https://your-openlist-instance.example.com",
+        "OPENLIST_USERNAME": "your_username",
+        "OPENLIST_PASSWORD": "your_password"
       }
     }
   }
 }
 ```
 
-### 直接 stdio 运行
+### Direct stdio run
 
 ```bash
 openlist-mcp
 ```
 
-## 工具列表
+## Tools
 
-### 认证与公开接口
+### Authentication and public API
 
-| 工具 | 说明 |
+| Tool | Description |
 |---|---|
-| `login` | 使用配置的凭据登录。不会打印 Token。 |
-| `get_public_settings` | 无需认证获取公开设置。 |
+| `login` | Login using configured credentials. Token is not printed. |
+| `get_public_settings` | Get public OpenList settings without authentication. |
 
-### 文件系统
+### File system
 
-| 工具 | 说明 |
+| Tool | Description |
 |---|---|
-| `list_files` | 列出目录中的文件和文件夹。 |
-| `get_file_info` | 获取文件或文件夹详情。 |
-| `search_files` | 按关键词搜索文件。是否可用取决于 OpenList 后端存储。 |
-| `create_folder` | 创建目录。 |
-| `rename` | 重命名文件或文件夹。 |
-| `copy` | 复制文件/文件夹到其他目录。 |
-| `move` | 移动文件/文件夹到其他目录。 |
-| `remove` | 删除文件/文件夹。需传 `confirm=true`。 |
+| `list_files` | List files and folders in a directory. |
+| `get_file_info` | Get detailed info for a file or folder. |
+| `search_files` | Search files by keyword. Availability depends on OpenList storage/search support. |
+| `create_folder` | Create a directory. |
+| `rename` | Rename a file or folder. |
+| `copy` | Copy files/folders to another directory. |
+| `move` | Move files/folders to another directory. |
+| `remove` | Delete files/folders. Requires `confirm=true`. |
 
-### 文件传输
+### Transfer
 
-| 工具 | 说明 |
+| Tool | Description |
 |---|---|
-| `get_download_url` | 获取文件的直接/代理下载链接。 |
-| `upload_file` | 上传 Base64 编码的文件内容。 |
+| `get_download_url` | Get direct/proxy download URL for a file. |
+| `upload_file` | Upload base64-encoded file content. |
 
-### 任务管理
+### Tasks
 
-| 工具 | 说明 |
+| Tool | Description |
 |---|---|
-| `list_tasks` | 列出异步任务。接口可用性取决于 OpenList 版本。 |
-| `delete_task` | 删除任务。需传 `confirm=true`。 |
-| `retry_task` | 重试失败的任务。 |
-| `cancel_task` | 取消运行中的任务。需传 `confirm=true`。 |
+| `list_tasks` | List async tasks. Endpoint availability depends on OpenList version. |
+| `delete_task` | Delete a task. Requires `confirm=true`. |
+| `retry_task` | Retry a failed task. |
+| `cancel_task` | Cancel a running task. Requires `confirm=true`. |
 
-### 分享管理
+### Shares
 
-| 工具 | 说明 |
+| Tool | Description |
 |---|---|
-| `create_share` | 创建分享链接。 |
-| `list_shares` | 列出分享链接。 |
-| `cancel_share` | 禁用分享链接。需传 `confirm=true`。 |
-| `delete_share` | 永久删除分享链接。需传 `confirm=true`。 |
+| `create_share` | Create a share link. |
+| `list_shares` | List share links. |
+| `cancel_share` | Disable a share link. Requires `confirm=true`. |
+| `delete_share` | Permanently delete a share link. Requires `confirm=true`. |
 
-## 集成测试
+## Integration tests
 
 ```bash
-export OPENLIST_URL="https://你的-openlist-地址.com"
-export OPENLIST_USERNAME="你的用户名"
-export OPENLIST_PASSWORD="你的密码"
+export OPENLIST_URL="https://your-openlist-instance.example.com"
+export OPENLIST_USERNAME="your_username"
+export OPENLIST_PASSWORD="your_password"
 export OPENLIST_TEST_DIR="/"
 PYTHONPATH=src python3 test_integration.py
 ```
 
-测试脚本会在 `OPENLIST_TEST_DIR` 下创建临时目录，测试完成后自动删除。不会输出密码或 Token。
+The integration test creates a temporary directory under `OPENLIST_TEST_DIR` and removes it after the test. It never prints the password or token.
 
-## 注意事项
+## Notes
 
-- 搜索功能取决于 OpenList 后端存储支持，部分服务器可能返回 `search not available`。
-- 管理后台任务接口可能因 OpenList 版本和部署方式不同有所差异。
-- 所有破坏性操作都需要显式传 `confirm=true` 参数，防止 AI 智能体误操作。
-
----
-
-# OpenList MCP Server
-
-> *[English version](README.md#openlist-mcp-server) — scroll up for Chinese documentation above.*
-
-MCP Server for [OpenList](https://github.com/OpenListTeam/OpenList). Enables MCP-compatible AI agents to browse, upload, download, search, and manage files via the OpenList REST API.
-
-**Features**: file browsing & search, folder management, base64 upload & download, share links, async task management, auto JWT authentication.
-
-**Quick start**: see the Chinese section above for installation and configuration instructions.
-
-**Tools**: 19 tools covering auth, filesystem, transfer, tasks, and shares — all with Chinese descriptions in the table above.
+- Search support depends on the OpenList backend/storage. Some servers return `search not available`.
+- Some admin task endpoints may differ between OpenList versions and deployments.
+- Destructive tools require an explicit `confirm=true` parameter to reduce accidental operations by AI agents.
 
 ---
 
