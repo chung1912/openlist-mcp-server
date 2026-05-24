@@ -23,19 +23,47 @@
 
 ## 环境要求
 
-- Python 3.10+
-- 一个运行中的 OpenList 实例
+- **Python 3.10+**（检查版本：`python3 --version`）
+- **一个运行中的 OpenList 实例**（本服务是 OpenList 的客户端，不是独立服务）
 
 ## 安装
 
+### 从源码安装
+
 ```bash
+# 克隆仓库
+git clone https://github.com/hbestm/openlist-mcp-server.git
 cd openlist-mcp-server
+
+# （推荐）创建并激活虚拟环境
+python3 -m venv venv
+source venv/bin/activate  # Linux/macOS
+# venv\Scripts\activate   # Windows
+
+# 安装包及依赖
 pip install -e .
+```
+
+### 从 Release zip 安装
+
+从 [GitHub Releases](https://github.com/hbestm/openlist-mcp-server/releases) 下载最新版，然后：
+
+```bash
+unzip openlist-mcp-server-*.zip
+cd openlist-mcp-server-release
+pip install -e .
+```
+
+### 验证安装
+
+```bash
+openlist-mcp --help
+# 如果输出 "OPENLIST_URL is required"，说明安装成功。
 ```
 
 ## 配置
 
-运行前设置环境变量：
+### 方式一：环境变量（推荐）
 
 ```bash
 export OPENLIST_URL="https://你的-openlist-地址.com"
@@ -43,11 +71,38 @@ export OPENLIST_USERNAME="你的用户名"
 export OPENLIST_PASSWORD="你的密码"
 ```
 
-**不要将真实凭据提交到仓库**，使用 `.env.example` 作为模板。
+也可以使用 `.env` 文件管理配置（需要 `python-dotenv`）：
+
+```bash
+pip install python-dotenv
+```
+
+在项目根目录创建 `.env` 文件：
+
+```env
+OPENLIST_URL=https://你的-openlist-地址.com
+OPENLIST_USERNAME=你的用户名
+OPENLIST_PASSWORD=你的密码
+```
+
+**切勿将 `.env` 提交到 Git 仓库**，项目自带的 `.gitignore` 已排除该文件。
+
+### 方式二：MCP 客户端配置
+
+直接配置到 Claude Desktop 等 MCP 客户端的配置文件中（见下方使用方式）。
+
+### 安全提醒
+
+- **生产环境请使用 HTTPS**，否则密码会在网络上明文传输。
+- **保护好配置文件**，确保 `claude_desktop_config.json` 只有你自己可读（Linux/macOS 执行 `chmod 600`）。
 
 ## 使用方式
 
-### Claude Desktop / MCP 客户端
+### Claude Desktop
+
+1. 打开 Claude Desktop 设置。
+2. 进入 **MCP Servers** 板块。
+3. 添加新的服务器，填入以下配置：
 
 ```json
 {
@@ -64,10 +119,61 @@ export OPENLIST_PASSWORD="你的密码"
 }
 ```
 
-### 直接 stdio 运行
+> **配置文件路径：**
+> - macOS: `~/Library/Application Support/Claude/claude_desktop_config.json`
+> - Windows: `%APPDATA%\Claude\claude_desktop_config.json`
+> - Linux: `~/.config/Claude/claude_desktop_config.json`
+
+4. **重启 Claude Desktop** 使配置生效。
+5. 检查状态指示灯是否变绿，或直接让 Claude 列出文件验证连接。
+
+### 直接 stdio 运行（测试用）
 
 ```bash
+export OPENLIST_URL="https://你的-openlist-地址.com"
+export OPENLIST_USERNAME="你的用户名"
+export OPENLIST_PASSWORD="你的密码"
 openlist-mcp
+```
+
+然后通过 stdin/stdout 发送 MCP 协议消息。主要用于调试。
+
+### SOLO / 其他 MCP 客户端
+
+配置格式与其他 MCP 客户端通用：
+
+```json
+{
+  "mcpServers": {
+    "openlist": {
+      "command": "openlist-mcp",
+      "env": {
+        "OPENLIST_URL": "https://你的-openlist-地址.com",
+        "OPENLIST_USERNAME": "你的用户名",
+        "OPENLIST_PASSWORD": "你的密码"
+      }
+    }
+  }
+}
+```
+
+## 故障排查
+
+| 问题 | 可能原因 | 解决方案 |
+|------|---------|----------|
+| `OPENLIST_URL is required` | 未设置环境变量 | 设置 `OPENLIST_URL`、`OPENLIST_USERNAME`、`OPENLIST_PASSWORD` |
+| `password is incorrect` | 密码错误 | 检查 OpenList 的用户名和密码 |
+| `Connection refused` | OpenList 未启动 | 检查 OpenList 服务器是否运行并可访问 |
+| 安装后找不到命令 | PATH 未更新或虚拟环境未激活 | 重新激活虚拟环境或重装 |
+| MCP 客户端显示"已断开" | 需要重启 Claude Desktop | 添加配置后重启 Claude Desktop |
+| `search not available` | 后端不支持搜索 | 取决于你的 OpenList 存储提供商 |
+| 任务 API 返回非 JSON | OpenList 版本不匹配 | 部分管理接口可能未暴露 |
+
+## 卸载
+
+```bash
+pip uninstall openlist-mcp-server -y
+rm -rf venv  # 如果用了虚拟环境
 ```
 
 ## 工具列表
