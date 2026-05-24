@@ -2,6 +2,13 @@
 
 import os
 
+try:
+    from dotenv import load_dotenv
+
+    load_dotenv()
+except ImportError:
+    pass
+
 
 class OpenListConfig:
     """Manages OpenList server configuration from environment variables."""

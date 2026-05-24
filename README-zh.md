@@ -10,7 +10,15 @@
 
 ---
 
-[OpenList](https://github.com/OpenListTeam/OpenList) 的 MCP 服务端。让支持 MCP 协议的 AI 智能体（Claude、SOLO 等）通过 OpenList REST API 浏览、上传、下载、搜索和管理文件。
+[OpenList](https://github.com/OpenListTeam/OpenList) 的 MCP 服务端。[OpenList](https://github.com/OpenListTeam/OpenList) 是一个开源的文件管理系统（类似 Alist）。本服务让支持 MCP 协议的 AI 智能体（Claude、SOLO 等）通过 OpenList REST API 浏览、上传、下载、搜索和管理文件。
+
+```
+┌────────────────┐     ┌────────────────────┐     ┌──────────────┐     ┌───────────────┐
+│ Claude Desktop │────▶│ openlist-mcp-server │────▶│ OpenList API │────▶│ 存储后端 (S3, │
+│   (或 SOLO)    │ MCP │   (本项目)          │ HTTP │   (你的服务器)│     │  SMB, 本地,   │
+└────────────────┘     └────────────────────┘     └──────────────┘     │  ...)         │
+                                                                        └───────────────┘
+```
 
 ## 功能特性
 
@@ -31,7 +39,6 @@
 ### 从源码安装
 
 ```bash
-# 克隆仓库
 git clone https://github.com/hbestm/openlist-mcp-server.git
 cd openlist-mcp-server
 
@@ -40,7 +47,6 @@ python3 -m venv venv
 source venv/bin/activate  # Linux/macOS
 # venv\Scripts\activate   # Windows
 
-# 安装包及依赖
 pip install -e .
 ```
 
@@ -57,13 +63,15 @@ pip install -e .
 ### 验证安装
 
 ```bash
-openlist-mcp --help
-# 如果输出 "OPENLIST_URL is required"，说明安装成功。
+openlist-mcp
+# 期望输出：
+# "OpenList MCP Server v0.2.0 installed successfully.
+#  Set OPENLIST_URL, OPENLIST_USERNAME, and OPENLIST_PASSWORD to get started."
 ```
 
 ## 配置
 
-### 方式一：环境变量（推荐）
+### 环境变量
 
 ```bash
 export OPENLIST_URL="https://你的-openlist-地址.com"
@@ -71,38 +79,29 @@ export OPENLIST_USERNAME="你的用户名"
 export OPENLIST_PASSWORD="你的密码"
 ```
 
-也可以使用 `.env` 文件管理配置（需要 `python-dotenv`）：
+也可以使用 `.env` 文件（从 `.env.example` 复制）：
 
 ```bash
-pip install python-dotenv
+cp .env.example .env
+# 编辑 .env 填入你的凭据
+pip install python-dotenv   # .env 支持需要此包
 ```
 
-在项目根目录创建 `.env` 文件：
-
-```env
-OPENLIST_URL=https://你的-openlist-地址.com
-OPENLIST_USERNAME=你的用户名
-OPENLIST_PASSWORD=你的密码
-```
-
-**切勿将 `.env` 提交到 Git 仓库**，项目自带的 `.gitignore` 已排除该文件。
-
-### 方式二：MCP 客户端配置
-
-直接配置到 Claude Desktop 等 MCP 客户端的配置文件中（见下方使用方式）。
+服务启动时如果安装了 `python-dotenv`，会自动加载 `.env` 文件。**切勿将 `.env` 提交到 Git 仓库**，项目自带的 `.gitignore` 已排除该文件。
 
 ### 安全提醒
 
 - **生产环境请使用 HTTPS**，否则密码会在网络上明文传输。
-- **保护好配置文件**，确保 `claude_desktop_config.json` 只有你自己可读（Linux/macOS 执行 `chmod 600`）。
+- **保护好 MCP 配置文件**：
+  - Linux/macOS：`chmod 600 claude_desktop_config.json`
+  - Windows：右键文件 → 属性 → 安全 → 仅保留自己的权限。
 
 ## 使用方式
 
 ### Claude Desktop
 
-1. 打开 Claude Desktop 设置。
-2. 进入 **MCP Servers** 板块。
-3. 添加新的服务器，填入以下配置：
+1. 打开 Claude Desktop → 设置 → **MCP Servers**。
+2. 添加新服务器：
 
 ```json
 {
@@ -124,10 +123,20 @@ OPENLIST_PASSWORD=你的密码
 > - Windows: `%APPDATA%\Claude\claude_desktop_config.json`
 > - Linux: `~/.config/Claude/claude_desktop_config.json`
 
-4. **重启 Claude Desktop** 使配置生效。
-5. 检查状态指示灯是否变绿，或直接让 Claude 列出文件验证连接。
+3. **重启 Claude Desktop** 使配置生效。
+4. 试试这个 prompt：*"列出我 OpenList 根目录的文件。"*
 
-### 直接 stdio 运行（测试用）
+### 快速上手 Prompt 示例
+
+| 目标 | 可以说 |
+|------|--------|
+| 列根目录 | "列出我 OpenList 上的文件。" |
+| 搜索文件 | "在 OpenList 上搜索包含'报告'的文件。" |
+| 上传文件 | "把这个文件上传到 OpenList 的 /documents 目录。"（Claude 会问你要哪个文件） |
+| 获取下载链接 | "给我 /documents/report.pdf 的下载链接。" |
+| 创建目录 | "在 /documents 下创建一个叫 archive 的文件夹。" |
+
+### 直接 stdio 运行（调试用）
 
 ```bash
 export OPENLIST_URL="https://你的-openlist-地址.com"
@@ -135,8 +144,6 @@ export OPENLIST_USERNAME="你的用户名"
 export OPENLIST_PASSWORD="你的密码"
 openlist-mcp
 ```
-
-然后通过 stdin/stdout 发送 MCP 协议消息。主要用于调试。
 
 ### SOLO / 其他 MCP 客户端
 
@@ -169,11 +176,17 @@ openlist-mcp
 | `search not available` | 后端不支持搜索 | 取决于你的 OpenList 存储提供商 |
 | 任务 API 返回非 JSON | OpenList 版本不匹配 | 部分管理接口可能未暴露 |
 
+**开启调试日志：**
+
+```bash
+OPENLIST_URL=... OPENLIST_USERNAME=... OPENLIST_PASSWORD=... openlist-mcp 2>&1 | head -20
+```
+
 ## 卸载
 
 ```bash
 pip uninstall openlist-mcp-server -y
-rm -rf venv  # 如果用了虚拟环境
+rm -rf venv
 ```
 
 ## 工具列表
@@ -223,6 +236,8 @@ rm -rf venv  # 如果用了虚拟环境
 | `cancel_share` | 禁用分享链接。需传 `confirm=true`。 |
 | `delete_share` | 永久删除分享链接。需传 `confirm=true`。 |
 
+> **关于 `names` 参数**：`copy`、`move`、`remove` 工具使用逗号分隔文件名。如果文件名本身包含逗号，工具无法区分——操作前请先重命名该文件。
+
 ## 集成测试
 
 ```bash
@@ -258,6 +273,8 @@ PYTHONPATH=src python3 test_integration.py
   <strong>QQ 交流群</strong>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
   <strong>微信赞助</strong>
 </p>
+
+如有 Bug、功能建议或疑问，欢迎[提交 GitHub Issue](https://github.com/hbestm/openlist-mcp-server/issues)。
 
 ## License
 

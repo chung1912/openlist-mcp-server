@@ -75,6 +75,6 @@ def register_transfer_tools(mcp: FastMCP) -> None:
             file_name=file_name,
             as_task=as_task,
         )
-        if data:
+        if data is not None and data != {}:
             return f"Upload task created: {json.dumps(data, ensure_ascii=False)}"
         return f"File uploaded successfully: {path}/{file_name}"

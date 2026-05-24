@@ -1,9 +1,44 @@
+# OpenList MCP Server
+
+<p align="center">
+  <img src="docs/og-image.png" alt="OpenList MCP Server" width="800">
+</p>
+
+<p align="center">
+  <a href="README.md">English</a> · <a href="README-zh.md">中文</a>
+</p>
+
+---
+
+MCP Server for [OpenList](https://github.com/OpenListTeam/OpenList) — an open-source file management system (similar to Alist). Enables MCP-compatible AI agents to browse, upload, download, search, and manage files via the OpenList REST API.
+
+```
+┌────────────────┐     ┌────────────────────┐     ┌──────────────┐     ┌───────────────┐
+│ Claude Desktop │────▶│ openlist-mcp-server │────▶│ OpenList API │────▶│ Storage (S3,  │
+│   (or SOLO)    │ MCP │   (this project)    │ HTTP │   (your     │     │  SMB, Local,  │
+└────────────────┘     └────────────────────┘     │   server)   │     │  ...)         │
+                                                    └──────────────┘     └───────────────┘
+```
+
+## Features
+
+- File browsing: list directories, get file details, search files
+- File management: create folders, rename, copy, move, delete
+- File transfer: upload base64 content, get download URLs
+- Share management: create, list, cancel, delete share links
+- Task management: list, retry, cancel, delete async tasks
+- Auto authentication: JWT login and retry after token expiration
+
+## Requirements
+
+- Python 3.10+ (check with `python3 --version`)
+- A running OpenList instance — this is a client, not a standalone service
+
 ## Installation
 
 ### From source
 
 ```bash
-# Clone the repository
 git clone https://github.com/hbestm/openlist-mcp-server.git
 cd openlist-mcp-server
 
@@ -12,13 +47,12 @@ python3 -m venv venv
 source venv/bin/activate  # Linux/macOS
 # venv\Scripts\activate   # Windows
 
-# Install the package and its dependencies
 pip install -e .
 ```
 
 ### From release zip
 
-Download the latest release from [GitHub Releases](https://github.com/hbestm/openlist-mcp-server/releases), then:
+Download from [GitHub Releases](https://github.com/hbestm/openlist-mcp-server/releases), then:
 
 ```bash
 unzip openlist-mcp-server-*.zip
@@ -29,22 +63,15 @@ pip install -e .
 ### Verify installation
 
 ```bash
-openlist-mcp --help
-# Should show: "OPENLIST_URL is required" — that means the tool is installed correctly.
+openlist-mcp
+# Expected output:
+# "OpenList MCP Server v0.2.0 installed successfully.
+#  Set OPENLIST_URL, OPENLIST_USERNAME, and OPENLIST_PASSWORD to get started."
 ```
-
-## Prerequisites
-
-Before using this MCP server, you need:
-
-1. **A running OpenList instance** — this server is a client for OpenList, not a standalone service. You need an existing OpenList deployment (e.g., https://your-openlist-instance.example.com).
-2. **Python 3.10 or later** installed on your system.
 
 ## Configuration
 
-### Option A: Environment variables (recommended)
-
-Set these before running the server:
+### Environment variables
 
 ```bash
 export OPENLIST_URL="https://your-openlist-instance.example.com"
@@ -52,38 +79,29 @@ export OPENLIST_USERNAME="your_username"
 export OPENLIST_PASSWORD="your_password"
 ```
 
-You can also use a `.env` file for local development (requires `python-dotenv`):
+You can also use a `.env` file (copy from `.env.example`):
 
 ```bash
-pip install python-dotenv
+cp .env.example .env
+# Edit .env with your credentials
+pip install python-dotenv   # required for .env support
 ```
 
-Create a `.env` file in the project root:
-
-```env
-OPENLIST_URL=https://your-openlist-instance.example.com
-OPENLIST_USERNAME=your_username
-OPENLIST_PASSWORD=your_password
-```
-
-**Never commit `.env` to version control.** The repository's `.gitignore` already excludes it.
-
-### Option B: MCP client config
-
-Configure your MCP client (Claude Desktop, SOLO, etc.) with these credentials.
+The server automatically loads `.env` when `python-dotenv` is installed. **Never commit `.env` to Git** — the repository's `.gitignore` already excludes it.
 
 ### Security notes
 
-- **Use HTTPS** in production. Credentials are sent in plain text over HTTP.
-- **Protect your config file.** If using Claude Desktop, ensure `claude_desktop_config.json` is readable only by you (`chmod 600` on Linux/macOS).
+- **Use HTTPS in production** — credentials are sent in plain text over HTTP.
+- **Protect your MCP config file**:
+  - Linux/macOS: `chmod 600 claude_desktop_config.json`
+  - Windows: Right-click the file → Properties → Security → Remove all users except yourself.
 
 ## Usage
 
 ### Claude Desktop
 
-1. Open Claude Desktop settings.
-2. Go to the **MCP Servers** section.
-3. Add a new server with the following configuration:
+1. Open Claude Desktop → Settings → **MCP Servers**.
+2. Add a new server:
 
 ```json
 {
@@ -100,15 +118,25 @@ Configure your MCP client (Claude Desktop, SOLO, etc.) with these credentials.
 }
 ```
 
-> **Config file location:**
+> **Config file locations:**
 > - macOS: `~/Library/Application Support/Claude/claude_desktop_config.json`
 > - Windows: `%APPDATA%\Claude\claude_desktop_config.json`
 > - Linux: `~/.config/Claude/claude_desktop_config.json`
 
-4. **Restart Claude Desktop** to load the new MCP server.
-5. Verify the server is connected — look for a green status indicator or try asking Claude to list files.
+3. **Restart Claude Desktop** to load the new server.
+4. Try a prompt: *"List the files on my OpenList server."*
 
-### Direct stdio (for testing)
+### Example prompts to get started
+
+| Goal | Prompt |
+|------|--------|
+| List root directory | *"List files in the root directory of my OpenList."* |
+| Search files | *"Search for files named 'report' on OpenList."* |
+| Upload a file | *"Upload this file to /documents on OpenList."* (Claude will ask for the file) |
+| Get download link | *"Give me the download URL for /documents/report.pdf."* |
+| Create a folder | *"Create a folder called 'archive' under /documents on OpenList."* |
+
+### Direct stdio (debugging)
 
 ```bash
 export OPENLIST_URL="https://your-openlist-instance.example.com"
@@ -117,11 +145,9 @@ export OPENLIST_PASSWORD="your_password"
 openlist-mcp
 ```
 
-Then send MCP protocol messages via stdin/stdout. This is mainly for debugging.
-
 ### SOLO / Other MCP clients
 
-The same configuration format works for any MCP-compatible client:
+Same config format:
 
 ```json
 {
@@ -150,16 +176,17 @@ The same configuration format works for any MCP-compatible client:
 | `search not available` | Backend doesn't support search | This depends on your OpenList storage provider |
 | Non-JSON response on task API | OpenList version mismatch | Some admin endpoints may not be exposed in your deployment |
 
+**Enable debug logging:**
+
+```bash
+OPENLIST_URL=... OPENLIST_USERNAME=... OPENLIST_PASSWORD=... openlist-mcp 2>&1 | head -20
+```
+
 ## Uninstall
 
 ```bash
 pip uninstall openlist-mcp-server -y
-rm -rf venv  # if using a virtual environment
-```## Uninstall
-
-```bash
-pip uninstall openlist-mcp-server -y
-rm -rf venv  # if using a virtual environment
+rm -rf venv
 ```
 
 ## Tools
@@ -209,6 +236,8 @@ rm -rf venv  # if using a virtual environment
 | `cancel_share` | Disable a share link. Requires `confirm=true`. |
 | `delete_share` | Permanently delete a share link. Requires `confirm=true`. |
 
+> **Note on `names` parameter**: The `copy`, `move`, and `remove` tools use comma-separated file names. If a filename contains a comma, the tool cannot distinguish it — rename the file before operation.
+
 ## Integration tests
 
 ```bash
@@ -244,6 +273,8 @@ The integration test creates a temporary directory under `OPENLIST_TEST_DIR` and
   <strong>QQ 交流群</strong>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
   <strong>微信赞助</strong>
 </p>
+
+For bugs, feature requests, or questions, please [open a GitHub Issue](https://github.com/hbestm/openlist-mcp-server/issues).
 
 ## License
 

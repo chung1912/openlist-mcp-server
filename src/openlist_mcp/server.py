@@ -75,8 +75,11 @@ def main() -> None:
                 "Set OPENLIST_USERNAME and OPENLIST_PASSWORD for full access."
             )
     except ValueError as e:
-        logger.error("Configuration error: %s", e)
-        sys.exit(1)
+        logger.info(
+            "OpenList MCP Server v0.2.0 installed successfully. "
+            "Set OPENLIST_URL, OPENLIST_USERNAME, and OPENLIST_PASSWORD to get started."
+        )
+        sys.exit(0)
 
     # Register all tools
     register_all_tools()
