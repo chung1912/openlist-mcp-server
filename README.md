@@ -65,7 +65,7 @@ pip install -e .
 ```bash
 openlist-mcp
 # Expected output:
-# "OpenList MCP Server v0.2.0 installed successfully.
+# "OpenList MCP Server v0.2.1 installed successfully.
 #  Set OPENLIST_URL, OPENLIST_USERNAME, and OPENLIST_PASSWORD to get started."
 ```
 
