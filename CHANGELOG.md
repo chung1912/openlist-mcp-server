@@ -11,8 +11,39 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added MAINTAINERS.md for project maintenance documentation
 - Added CONTRIBUTING.md for contributor guidelines
 - Added CHANGELOG.md for version history tracking
+- Added GitHub Actions CI/CD workflows
+- Added unit tests for config and client modules
+- Added GitHub issue and PR templates
 
-## [0.2.2] - 2024-XX-XX
+## [0.2.2] - 2024
+
+### Fixed
+- Fixed version strings to match tag v0.2.2
+
+## [0.2.1] - 2024
+
+### Added
+- Added .env file support (via python-dotenv)
+- Added friendly installation message when environment variables not set
+- Added troubleshooting section to README
+- Added uninstall instructions
+- Added security notes for configuration files
+- Added venv/virtualenv setup instructions
+
+### Fixed
+- Fixed upload functionality
+
+### Changed
+- Revamped installation documentation
+- Added detailed configuration paths for Claude Desktop
+
+## [0.2.0] - 2024
+
+### Added
+- Added security fixes
+- Added bug patches
+
+## [0.1.0] - 2024
 
 ### Added
 - Initial release of OpenList MCP Server
@@ -23,6 +54,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Authentication tools: login, get_public_settings
 - Auto JWT authentication with token refresh
 - Integration test suite
+- MIT License
+- README with Chinese and English versions
+- QQ community and sponsor QR codes
 
 [Unreleased]: https://github.com/hbestm/openlist-mcp-server/compare/v0.2.2...HEAD
-[0.2.2]: https://github.com/hbestm/openlist-mcp-server/releases/tag/v0.2.2
+[0.2.2]: https://github.com/hbestm/openlist-mcp-server/compare/v0.2.1...v0.2.2
+[0.2.1]: https://github.com/hbestm/openlist-mcp-server/compare/v0.2.0...v0.2.1
+[0.2.0]: https://github.com/hbestm/openlist-mcp-server/compare/v0.1.0...v0.2.0
+[0.1.0]: https://github.com/hbestm/openlist-mcp-server/releases/tag/v0.1.0
