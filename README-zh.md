@@ -24,7 +24,7 @@
 
 - **文件浏览** — 列出目录、查看文件详情、搜索文件
 - **文件管理** — 创建目录、重命名、复制、移动、删除
-- **文件传输** — Base64 上传文件、获取下载链接
+- **文件传输** — Base64 上传文件、上传 MCP Server 可访问的本地文件、获取下载链接
 - **分享管理** — 创建、列出、取消、删除分享链接
 - **任务管理** — 查看、重试、取消、删除异步任务
 - **自动认证** — JWT 自动登录与 token 过期重试
@@ -173,7 +173,7 @@ openlist-mcp
 | `Connection refused` | OpenList 未启动 | 检查 OpenList 服务器是否运行并可访问 |
 | 安装后找不到命令 | PATH 未更新或虚拟环境未激活 | 重新激活虚拟环境或重装 |
 | MCP 客户端显示"已断开" | 需要重启 Claude Desktop | 添加配置后重启 Claude Desktop |
-| `search not available` | 后端不支持搜索 | 取决于你的 OpenList 存储提供商 |
+| `search not available` | 搜索索引未开启或后端不支持搜索 | 先在 OpenList 管理后台开启搜索/索引功能，并确认存储后端支持搜索 |
 | 任务 API 返回非 JSON | OpenList 版本不匹配 | 部分管理接口可能未暴露 |
 
 **开启调试日志：**
@@ -190,6 +190,10 @@ rm -rf venv
 ```
 
 ## 工具列表
+
+### 本地文件上传说明
+
+`upload_local_file` 会从 MCP Server 进程可读取的本地路径上传文件。它适合本地智能体或服务端部署场景。如果 MCP Server 不能访问用户本地文件系统，请改用 `upload_file` 的 Base64 上传方式。
 
 ### 认证与公开接口
 
@@ -217,6 +221,7 @@ rm -rf venv
 |---|---|
 | `get_download_url` | 获取文件的直接/代理下载链接。 |
 | `upload_file` | 上传 Base64 编码的文件内容。 |
+| `upload_local_file` | 上传 MCP Server 进程可读取的本地文件路径。 |
 
 ### 任务管理
 

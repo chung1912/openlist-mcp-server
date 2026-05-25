@@ -24,7 +24,7 @@ MCP Server for [OpenList](https://github.com/OpenListTeam/OpenList) — an open-
 
 - File browsing: list directories, get file details, search files
 - File management: create folders, rename, copy, move, delete
-- File transfer: upload base64 content, get download URLs
+- File transfer: upload base64 content, upload local files accessible to the MCP server, get download URLs
 - Share management: create, list, cancel, delete share links
 - Task management: list, retry, cancel, delete async tasks
 - Auto authentication: JWT login and retry after token expiration
@@ -173,7 +173,7 @@ Same config format:
 | `Connection refused` | OpenList instance is down | Check that your OpenList server is running and reachable |
 | Tool not found after install | PATH not updated or venv not activated | Re-activate your virtual environment or reinstall |
 | MCP client shows "disconnected" | Claude Desktop needs restart | Restart Claude Desktop after adding the server config |
-| `search not available` | Backend doesn't support search | This depends on your OpenList storage provider |
+| `search not available` | Search index is disabled or backend doesn't support search | Enable OpenList search/indexing in admin settings first; storage backend must support search |
 | Non-JSON response on task API | OpenList version mismatch | Some admin endpoints may not be exposed in your deployment |
 
 **Enable debug logging:**
@@ -190,6 +190,10 @@ rm -rf venv
 ```
 
 ## Tools
+
+### Note for local file uploads
+
+`upload_local_file` uploads a file from a path that the MCP server process can read. It is useful for local agents or server-side deployments. If the MCP server cannot access the user's local filesystem, use `upload_file` with base64 content instead.
 
 ### Authentication and public API
 
@@ -217,6 +221,7 @@ rm -rf venv
 |---|---|
 | `get_download_url` | Get direct/proxy download URL for a file. |
 | `upload_file` | Upload base64-encoded file content. |
+| `upload_local_file` | Upload a local file path readable by the MCP server process. |
 
 ### Tasks
 
