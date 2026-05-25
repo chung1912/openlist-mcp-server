@@ -15,7 +15,6 @@ Environment Variables:
 
 from __future__ import annotations
 
-import asyncio
 import logging
 import sys
 
@@ -74,7 +73,7 @@ def main() -> None:
                 "Authentication: not configured. "
                 "Set OPENLIST_USERNAME and OPENLIST_PASSWORD for full access."
             )
-    except ValueError as e:
+    except ValueError:
         logger.info(
             "OpenList MCP Server v0.2.2 installed successfully. "
             "Set OPENLIST_URL, OPENLIST_USERNAME, and OPENLIST_PASSWORD to get started."

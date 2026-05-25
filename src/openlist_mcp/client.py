@@ -102,16 +102,17 @@ class OpenListClient:
 
         data = self._parse_response(resp, "Login")
         if data.get("code") != 200:
-            raise OpenListError(
-                data.get("message", "Login failed"), code=data.get("code", 500)
-            )
+            raise OpenListError(data.get("message", "Login failed"), code=data.get("code", 500))
 
-        token = data.get("data", {}).get("token")
+        result_data = data.get("data", {})
+        if not isinstance(result_data, dict):
+            raise OpenListError("Login returned unexpected data format", code=500)
+        token = result_data.get("token")
         if not token:
             raise OpenListError("Login succeeded but no token was returned", code=500)
         self._token = token
         logger.info("Login successful")
-        return data.get("data", {})
+        return result_data
 
     async def request(
         self,
@@ -198,9 +199,7 @@ class OpenListClient:
 
         data = self._parse_response(resp, "Upload")
         if data.get("code") != 200:
-            raise OpenListError(
-                data.get("message", "Upload failed"), code=data.get("code", 500)
-            )
+            raise OpenListError(data.get("message", "Upload failed"), code=data.get("code", 500))
 
         result = data.get("data", {})
         return result if isinstance(result, dict) else {"value": result}
