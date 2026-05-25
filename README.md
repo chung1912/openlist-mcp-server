@@ -36,7 +36,7 @@ MCP Server for [OpenList](https://github.com/OpenListTeam/OpenList) — an open-
 
 ## Installation
 
-### From source
+### From GitHub source
 
 ```bash
 git clone https://github.com/hbestm/openlist-mcp-server.git
@@ -50,15 +50,17 @@ source venv/bin/activate  # Linux/macOS
 pip install -e .
 ```
 
-### From release zip
+### From source archive
 
-Download from [[GitHub Releases](https://github.com/hbestm/openlist-mcp-server/tags), then:
+If you do not use Git, download the repository source archive from GitHub's **Code → Download ZIP**, then:
 
 ```bash
-unzip openlist-mcp-server-*.zip
-cd openlist-mcp-server-release
+unzip openlist-mcp-server-main.zip
+cd openlist-mcp-server-main
 pip install -e .
 ```
+
+> Note: GitHub Releases may contain only tags unless release assets are explicitly uploaded. Use the source installation method above if no release zip asset is available.
 
 ### Verify installation
 

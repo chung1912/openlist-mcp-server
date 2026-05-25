@@ -36,7 +36,7 @@
 
 ## 安装
 
-### 从源码安装
+### 从 GitHub 源码安装
 
 ```bash
 git clone https://github.com/hbestm/openlist-mcp-server.git
@@ -50,15 +50,17 @@ source venv/bin/activate  # Linux/macOS
 pip install -e .
 ```
 
-### 从 Release zip 安装
+### 从源码压缩包安装
 
-从 [GitHub Releases](https://github.com/hbestm/openlist-mcp-server/releases/tag/v0.2.2) 下载最新版，然后：
+如果你不使用 Git，可以在 GitHub 仓库页面点击 **Code → Download ZIP** 下载源码压缩包，然后：
 
 ```bash
-unzip openlist-mcp-server-*.zip
-cd openlist-mcp-server-release
+unzip openlist-mcp-server-main.zip
+cd openlist-mcp-server-main
 pip install -e .
 ```
+
+> 注意：GitHub Releases 页面可能只有标签；除非额外上传了 release assets，否则那里不一定有可下载的 zip 发布包。没有 release zip 时，请使用上面的源码安装方式。
 
 ### 验证安装
 
