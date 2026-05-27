@@ -30,6 +30,14 @@ class OpenListConfig:
             raise ValueError(
                 f"OPENLIST_URL must start with http:// or https://, got: {self.base_url}"
             )
+        if self.base_url.startswith("http://"):
+            import warnings
+            warnings.warn(
+                "Using unencrypted HTTP transport is insecure. "
+                "Please consider using HTTPS for production environments.",
+                UserWarning,
+                stacklevel=2,
+            )
 
     @property
     def api_base(self) -> str:
