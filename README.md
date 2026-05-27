@@ -67,7 +67,7 @@ pip install -e .
 ```bash
 openlist-mcp
 # Expected output:
-# "OpenList MCP Server v0.2.2 installed successfully.
+# "OpenList MCP Server v0.2.3 installed successfully.
 #  Set OPENLIST_URL, OPENLIST_USERNAME, and OPENLIST_PASSWORD to get started."
 ```
 
@@ -79,6 +79,9 @@ openlist-mcp
 export OPENLIST_URL="https://your-openlist-instance.example.com"
 export OPENLIST_USERNAME="your_username"
 export OPENLIST_PASSWORD="your_password"
+
+# Optional: restrict upload_local_file to specific local directories
+export OPENLIST_LOCAL_UPLOAD_ROOTS="/tmp:/path/to/uploads"
 ```
 
 You can also use a `.env` file (copy from `.env.example`):
@@ -97,6 +100,7 @@ The server automatically loads `.env` when `python-dotenv` is installed. **Never
 - **Protect your MCP config file**:
   - Linux/macOS: `chmod 600 claude_desktop_config.json`
   - Windows: Right-click the file → Properties → Security → Remove all users except yourself.
+- **Restrict local file uploads when possible**. If `OPENLIST_LOCAL_UPLOAD_ROOTS` is unset, `upload_local_file` can upload any local file readable by the MCP server process.
 
 ## Usage
 
@@ -195,7 +199,7 @@ rm -rf venv
 
 ### Note for local file uploads
 
-`upload_local_file` uploads a file from a path that the MCP server process can read. It is useful for local agents or server-side deployments. If the MCP server cannot access the user's local filesystem, use `upload_file` with base64 content instead.
+`upload_local_file` uploads a file from a path that the MCP server process can read. It is useful for local agents or server-side deployments. To reduce accidental file exposure, set `OPENLIST_LOCAL_UPLOAD_ROOTS` to one or more allowed parent directories separated by your OS path separator (`:` on Linux/macOS, `;` on Windows). If the MCP server cannot access the user's local filesystem, use `upload_file` with base64 content instead.
 
 ### Authentication and public API
 

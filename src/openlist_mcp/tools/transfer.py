@@ -2,13 +2,39 @@
 
 from __future__ import annotations
 
+import asyncio
 import base64
+import binascii
 import json
+import os
+from collections.abc import AsyncIterator
 from pathlib import Path
 
 from mcp.server.fastmcp import FastMCP
 
 from ..client import get_client
+
+
+def _allowed_upload_roots() -> list[Path]:
+    roots = os.environ.get("OPENLIST_LOCAL_UPLOAD_ROOTS", "").strip()
+    if not roots:
+        return []
+    return [Path(root).expanduser().resolve() for root in roots.split(os.pathsep) if root.strip()]
+
+
+def _is_allowed_local_path(file_path: Path) -> bool:
+    roots = _allowed_upload_roots()
+    if not roots:
+        return True
+    resolved = file_path.resolve()
+    return any(resolved == root or root in resolved.parents for root in roots)
+
+
+async def _iter_file_chunks(file_path: Path, chunk_size: int = 1024 * 1024) -> AsyncIterator[bytes]:
+    with file_path.open("rb") as file_obj:
+        while chunk := file_obj.read(chunk_size):
+            yield chunk
+            await asyncio.sleep(0)
 
 
 def register_transfer_tools(mcp: FastMCP) -> None:
@@ -63,7 +89,7 @@ def register_transfer_tools(mcp: FastMCP) -> None:
         client = await get_client()
         try:
             file_bytes = base64.b64decode(file_content_base64)
-        except Exception as e:
+        except (ValueError, binascii.Error) as e:
             return f"Failed to decode base64 content: {e}"
 
         data = await client.upload(
@@ -86,8 +112,10 @@ def register_transfer_tools(mcp: FastMCP) -> None:
         """Upload a local file that the MCP server process can access.
 
         Use this when the agent and MCP server run on the same machine, or when the
-        MCP server can read the provided file path. For generic MCP clients that
-        cannot expose local files to the server, use upload_file with base64 content.
+        MCP server can read the provided file path. Set OPENLIST_LOCAL_UPLOAD_ROOTS
+        to restrict readable upload paths (os.pathsep-separated). For generic MCP
+        clients that cannot expose local files to the server, use upload_file with
+        base64 content.
 
         Args:
             local_path: Local filesystem path readable by the MCP server process.
@@ -101,6 +129,11 @@ def register_transfer_tools(mcp: FastMCP) -> None:
         file_path = Path(local_path).expanduser()
         if not file_path.is_file():
             return f"Local file not found or not a regular file: {local_path}"
+        if not _is_allowed_local_path(file_path):
+            return (
+                "Local file upload is not allowed for this path. "
+                "Set OPENLIST_LOCAL_UPLOAD_ROOTS to include an allowed parent directory."
+            )
 
         final_name = remote_name.strip() or file_path.name
         if not final_name or "/" in final_name or "\\" in final_name:
@@ -109,7 +142,7 @@ def register_transfer_tools(mcp: FastMCP) -> None:
         client = await get_client()
         data = await client.upload(
             path=remote_dir,
-            file_content=file_path.read_bytes(),
+            file_content=_iter_file_chunks(file_path),
             file_name=final_name,
             as_task=as_task,
         )

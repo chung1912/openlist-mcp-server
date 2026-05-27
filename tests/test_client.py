@@ -1,9 +1,7 @@
 """Tests for OpenList API client."""
 
-import json
 from unittest import mock
 
-import httpx
 import pytest
 from httpx import Response
 
@@ -82,10 +80,9 @@ class TestOpenListClient:
         with mock.patch("openlist_mcp.client.get_config", return_value=mock_config):
             client = OpenListClient()
 
-            mock_response = Response(200, json={
-                "code": 200,
-                "data": {"token": "test_token_123", "user": "testuser"}
-            })
+            mock_response = Response(
+                200, json={"code": 200, "data": {"token": "test_token_123", "user": "testuser"}}
+            )
 
             with mock.patch.object(client, "_get_client") as mock_get_client:
                 mock_client = mock.AsyncMock()
@@ -106,7 +103,9 @@ class TestOpenListClient:
 
         with mock.patch("openlist_mcp.client.get_config", return_value=mock_config):
             client = OpenListClient()
-            with pytest.raises(OpenListError, match="OPENLIST_USERNAME and OPENLIST_PASSWORD are required"):
+            with pytest.raises(
+                OpenListError, match="OPENLIST_USERNAME and OPENLIST_PASSWORD are required"
+            ):
                 await client.login()
 
     @pytest.mark.asyncio
@@ -115,10 +114,7 @@ class TestOpenListClient:
         with mock.patch("openlist_mcp.client.get_config", return_value=mock_config):
             client = OpenListClient()
 
-            mock_response = Response(200, json={
-                "code": 401,
-                "message": "password is incorrect"
-            })
+            mock_response = Response(200, json={"code": 401, "message": "password is incorrect"})
 
             with mock.patch.object(client, "_get_client") as mock_get_client:
                 mock_client = mock.AsyncMock()
@@ -129,7 +125,9 @@ class TestOpenListClient:
                     await client.login()
 
     @pytest.mark.asyncio
-    async def test_ensure_authenticated_already_has_token(self, mock_config: mock.MagicMock) -> None:
+    async def test_ensure_authenticated_already_has_token(
+        self, mock_config: mock.MagicMock
+    ) -> None:
         """Test ensure_authenticated when token already exists."""
         with mock.patch("openlist_mcp.client.get_config", return_value=mock_config):
             client = OpenListClient()
@@ -147,10 +145,7 @@ class TestOpenListClient:
             client = OpenListClient()
             client._token = "test_token"
 
-            mock_response = Response(200, json={
-                "code": 200,
-                "data": {"files": []}
-            })
+            mock_response = Response(200, json={"code": 200, "data": {"files": []}})
 
             with mock.patch.object(client, "_get_client") as mock_get_client:
                 mock_client = mock.AsyncMock()
@@ -166,10 +161,7 @@ class TestOpenListClient:
         with mock.patch("openlist_mcp.client.get_config", return_value=mock_config):
             client = OpenListClient()
 
-            mock_response = Response(200, json={
-                "code": 200,
-                "data": {"settings": {}}
-            })
+            mock_response = Response(200, json={"code": 200, "data": {"settings": {}}})
 
             with mock.patch.object(client, "_get_client") as mock_get_client:
                 mock_client = mock.AsyncMock()
@@ -185,6 +177,7 @@ class TestOpenListClient:
         with mock.patch("openlist_mcp.client.get_config", return_value=mock_config):
             # Reset singleton
             import openlist_mcp.client as client_module
+
             client_module._client = None
 
             client1 = await get_client()

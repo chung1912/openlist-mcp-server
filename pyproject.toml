@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "openlist-mcp-server"
-version = "0.2.2"
+version = "0.2.3"
 description = "MCP Server for OpenList - enables AI agents to manage files via OpenList API"
 readme = "README.md"
 requires-python = ">=3.10"
@@ -41,6 +41,8 @@ packages = ["src/openlist_mcp"]
 [tool.ruff]
 target-version = "py310"
 line-length = 100
+
+[tool.ruff.lint]
 select = [
     "E",   # pycodestyle errors
     "F",   # Pyflakes

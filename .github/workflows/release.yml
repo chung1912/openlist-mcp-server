@@ -28,6 +28,9 @@ jobs:
     - name: Build package
       run: python -m build
 
+    - name: Check package
+      run: twine check dist/*
+
     - name: Create Release
       uses: softprops/action-gh-release@v1
       with:
@@ -35,10 +38,3 @@ jobs:
         generate_release_notes: true
         draft: false
         prerelease: ${{ contains(github.ref, 'alpha') || contains(github.ref, 'beta') || contains(github.ref, 'rc') }}
-
-    - name: Publish to PyPI
-      env:
-        TWINE_USERNAME: __token__
-        TWINE_PASSWORD: ${{ secrets.PYPI_API_TOKEN }}
-      run: |
-        twine upload dist/*

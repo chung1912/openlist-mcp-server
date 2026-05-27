@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import asyncio
 import logging
+from collections.abc import AsyncIterable
 from typing import Any
 
 import httpx
@@ -36,7 +37,7 @@ class OpenListClient:
         if self._client is None or self._client.is_closed:
             self._client = httpx.AsyncClient(
                 base_url=self._config.api_base,
-                timeout=httpx.Timeout(30.0, connect=10.0),
+                timeout=httpx.Timeout(120.0, connect=10.0, write=120.0),
                 follow_redirects=True,
             )
         return self._client
@@ -171,7 +172,7 @@ class OpenListClient:
     async def upload(
         self,
         path: str,
-        file_content: bytes,
+        file_content: bytes | AsyncIterable[bytes],
         file_name: str,
         as_task: bool = True,
     ) -> dict[str, Any]:

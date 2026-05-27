@@ -22,7 +22,7 @@ A clear and concise description of what you expected to happen.
 **Environment (please complete the following information):**
  - OS: [e.g. Ubuntu 22.04, macOS 14, Windows 11]
  - Python version: [e.g. 3.10, 3.11, 3.12]
- - OpenList MCP Server version: [e.g. 0.2.2]
+ - OpenList MCP Server version: [e.g. 0.2.3]
  - OpenList version: [e.g. 3.0.0]
 
 **Additional context**

@@ -67,7 +67,7 @@ pip install -e .
 ```bash
 openlist-mcp
 # 期望输出：
-# "OpenList MCP Server v0.2.2 installed successfully.
+# "OpenList MCP Server v0.2.3 installed successfully.
 #  Set OPENLIST_URL, OPENLIST_USERNAME, and OPENLIST_PASSWORD to get started."
 ```
 
@@ -79,6 +79,9 @@ openlist-mcp
 export OPENLIST_URL="https://你的-openlist-地址.com"
 export OPENLIST_USERNAME="你的用户名"
 export OPENLIST_PASSWORD="你的密码"
+
+# 可选：限制 upload_local_file 只能读取指定本地目录
+export OPENLIST_LOCAL_UPLOAD_ROOTS="/tmp:/path/to/uploads"
 ```
 
 也可以使用 `.env` 文件（从 `.env.example` 复制）：
@@ -97,6 +100,7 @@ pip install python-dotenv   # .env 支持需要此包
 - **保护好 MCP 配置文件**：
   - Linux/macOS：`chmod 600 claude_desktop_config.json`
   - Windows：右键文件 → 属性 → 安全 → 仅保留自己的权限。
+- **尽量限制本地文件上传目录**。如果未设置 `OPENLIST_LOCAL_UPLOAD_ROOTS`，`upload_local_file` 可以上传 MCP Server 进程有权限读取的任意本地文件。
 
 ## 使用方式
 
@@ -195,7 +199,7 @@ rm -rf venv
 
 ### 本地文件上传说明
 
-`upload_local_file` 会从 MCP Server 进程可读取的本地路径上传文件。它适合本地智能体或服务端部署场景。如果 MCP Server 不能访问用户本地文件系统，请改用 `upload_file` 的 Base64 上传方式。
+`upload_local_file` 会从 MCP Server 进程可读取的本地路径上传文件。它适合本地智能体或服务端部署场景。为降低误传本机文件的风险，建议设置 `OPENLIST_LOCAL_UPLOAD_ROOTS`，用系统路径分隔符配置一个或多个允许读取的父目录（Linux/macOS 使用 `:`，Windows 使用 `;`）。如果 MCP Server 不能访问用户本地文件系统，请改用 `upload_file` 的 Base64 上传方式。
 
 ### 认证与公开接口
 
