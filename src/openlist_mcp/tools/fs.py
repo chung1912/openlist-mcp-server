@@ -152,14 +152,14 @@ def register_fs_tools(mcp: FastMCP) -> None:
     async def copy(
         src_dir: str,
         dst_dir: str,
-        names: str,
+        names: list[str] | str,
     ) -> str:
         """Copy files or folders to another directory.
 
         Args:
             src_dir: Source directory path containing the items to copy.
             dst_dir: Destination directory path.
-            names: Comma-separated list of file/folder names to copy (e.g. "file1.txt,file2.pdf").
+            names: List of file/folder names or comma-separated string to copy (e.g. ["file1.txt", "file2.pdf"] or "file1.txt,file2.pdf").
 
         Returns:
             Success or error message with task info if processed asynchronously.
@@ -167,7 +167,11 @@ def register_fs_tools(mcp: FastMCP) -> None:
         import json
 
         client = await get_client()
-        name_list = [n.strip() for n in names.split(",") if n.strip()]
+        if isinstance(names, str):
+            name_list = [n.strip() for n in names.split(",") if n.strip()]
+        else:
+            name_list = [n.strip() for n in names if n.strip()]
+
         if not name_list:
             return "No files specified to copy. Please provide at least one file name."
         data = await client.request(
@@ -181,20 +185,20 @@ def register_fs_tools(mcp: FastMCP) -> None:
         )
         if data is not None and data != {}:
             return f"Copy task created: {json.dumps(data, ensure_ascii=False)}"
-        return f"Copied successfully: {names} -> {dst_dir}"
+        return f"Copied successfully: {name_list} -> {dst_dir}"
 
     @mcp.tool()
     async def move(
         src_dir: str,
         dst_dir: str,
-        names: str,
+        names: list[str] | str,
     ) -> str:
         """Move files or folders to another directory.
 
         Args:
             src_dir: Source directory path containing the items to move.
             dst_dir: Destination directory path.
-            names: Comma-separated list of file/folder names to move (e.g. "file1.txt,file2.pdf").
+            names: List of file/folder names or comma-separated string to move (e.g. ["file1.txt", "file2.pdf"] or "file1.txt,file2.pdf").
 
         Returns:
             Success or error message with task info if processed asynchronously.
@@ -202,7 +206,11 @@ def register_fs_tools(mcp: FastMCP) -> None:
         import json
 
         client = await get_client()
-        name_list = [n.strip() for n in names.split(",") if n.strip()]
+        if isinstance(names, str):
+            name_list = [n.strip() for n in names.split(",") if n.strip()]
+        else:
+            name_list = [n.strip() for n in names if n.strip()]
+
         if not name_list:
             return "No files specified to move. Please provide at least one file name."
         data = await client.request(
@@ -216,19 +224,19 @@ def register_fs_tools(mcp: FastMCP) -> None:
         )
         if data is not None and data != {}:
             return f"Move task created: {json.dumps(data, ensure_ascii=False)}"
-        return f"Moved successfully: {names} -> {dst_dir}"
+        return f"Moved successfully: {name_list} -> {dst_dir}"
 
     @mcp.tool()
     async def remove(
         directory: str,
-        names: str,
+        names: list[str] | str,
         confirm: bool = False,
     ) -> str:
         """Delete files or folders.
 
         Args:
             directory: Directory path containing the items to delete.
-            names: Comma-separated list of file/folder names to delete (e.g. "file1.txt,old_folder").
+            names: List of file/folder names or comma-separated string to delete (e.g. ["file1.txt", "old_folder"] or "file1.txt,old_folder").
             confirm: Must be true to actually delete items. Defaults to false.
 
         Returns:
@@ -237,7 +245,11 @@ def register_fs_tools(mcp: FastMCP) -> None:
         if not confirm:
             return "Deletion not performed. Re-run with confirm=true to delete these items."
         client = await get_client()
-        name_list = [n.strip() for n in names.split(",") if n.strip()]
+        if isinstance(names, str):
+            name_list = [n.strip() for n in names.split(",") if n.strip()]
+        else:
+            name_list = [n.strip() for n in names if n.strip()]
+
         if not name_list:
             return "No files specified to delete. Please provide at least one file name."
         await client.request(
@@ -245,4 +257,4 @@ def register_fs_tools(mcp: FastMCP) -> None:
             "fs/remove",
             json={"dir": directory, "names": name_list},
         )
-        return f"Deleted successfully: {names} from {directory}"
+        return f"Deleted successfully: {name_list} from {directory}"

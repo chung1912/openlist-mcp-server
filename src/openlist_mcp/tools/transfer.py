@@ -25,7 +25,7 @@ def _allowed_upload_roots() -> list[Path]:
 def _is_allowed_local_path(file_path: Path) -> bool:
     roots = _allowed_upload_roots()
     if not roots:
-        return True
+        return False
     resolved = file_path.resolve()
     return any(resolved == root or root in resolved.parents for root in roots)
 
