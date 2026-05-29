@@ -28,6 +28,8 @@ MCP Server for [OpenList](https://github.com/OpenListTeam/OpenList) — an open-
 - Share management: create, list, cancel, delete share links
 - Task management: list, retry, cancel, delete async tasks
 - Auto authentication: JWT login and retry after token expiration
+- **NEW v0.2.3** 2FA / TOTP support: login with optional OTP code
+- **NEW v0.2.3** Local file upload: `upload_local_file` tool with path safety restriction
 
 ## Requirements
 
@@ -180,6 +182,8 @@ Same config format:
 | Tool not found after install | PATH not updated or venv not activated | Re-activate your virtual environment or reinstall |
 | MCP client shows "disconnected" | Claude Desktop needs restart | Restart Claude Desktop after adding the server config |
 | `search not available` | Search index is disabled or backend doesn't support search | Enable OpenList search/indexing in admin settings first; storage backend must support search |
+| `2FA code is required` | 2FA is enabled on your OpenList account | Call `login(otp_code="your_totp_code")` with a TOTP code from your authenticator app |
+| `Invalid 2FA code` | The TOTP code was incorrect or expired | Generate a new code from your authenticator app and re-run login with the correct `otp_code` |
 | Non-JSON response on task API | OpenList version mismatch | Some admin endpoints may not be exposed in your deployment |
 
 **Enable debug logging:**
@@ -205,7 +209,7 @@ rm -rf venv
 
 | Tool | Description |
 |---|---|
-| `login` | Login using configured credentials. Token is not printed. |
+| `login` | Login using configured credentials. Pass `otp_code` if 2FA is enabled on your account. Token is not printed by the server. |
 | `get_public_settings` | Get public OpenList settings without authentication. |
 
 ### File system
@@ -268,6 +272,18 @@ The integration test creates a temporary directory under `OPENLIST_TEST_DIR` and
 - Destructive tools require an explicit `confirm=true` parameter to reduce accidental operations by AI agents.
 
 ---
+
+## Changelog
+
+### v0.2.3
+
+- **2FA / TOTP support**: `login()` tool now accepts an optional `otp_code` parameter. When the OpenList account has 2FA enabled, the agent will prompt the user to provide a TOTP code.
+- **Local file upload**: New `upload_local_file` tool. Upload a local file path directly without base64 encoding. Configure `OPENLIST_LOCAL_UPLOAD_ROOTS` to restrict allowed directories.
+- **Improved large file uploads**: Async chunked streaming instead of single `read_bytes()`. Write timeout increased to 120s.
+- **Security hardening**: Base64 decode exception narrowed to `ValueError, binascii.Error`. Added `OPENLIST_LOCAL_UPLOAD_ROOTS` restriction for local file uploads.
+- **Release workflow**: Removed automatic PyPI publishing. Tag push creates a GitHub Release with build artifacts only.
+- **Version unification**: `__version__`, `pyproject.toml`, and `server.py` all consistent at v0.2.3. `__version__` now reads from package metadata at runtime.
+- **Documentation fixes**: Installation guide corrected for source archive; `search_files` notes now clarify that OpenList search/indexing must be enabled.
 
 ## Community & Support
 

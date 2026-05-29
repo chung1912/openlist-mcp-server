@@ -4,26 +4,35 @@ from __future__ import annotations
 
 from mcp.server.fastmcp import FastMCP
 
-from ..client import get_client
+from ..client import OpenList2FAError, get_client
 
 
 def register_auth_tools(mcp: FastMCP) -> None:
     """Register authentication-related MCP tools."""
 
     @mcp.tool()
-    async def login() -> str:
+    async def login(otp_code: str = "") -> str:
         """Login to OpenList server using configured credentials.
 
-        This authenticates with the OpenList server using the username and password
-        from environment variables. You must call this before any other operations,
-        or the system will auto-login on first use.
+        If the OpenList account has two-factor authentication (2FA) enabled,
+        you must provide the TOTP code from your authenticator app.
+
+        Args:
+            otp_code: TOTP code for 2FA. Leave empty if 2FA is not enabled.
 
         Returns:
             A success message with user info if login is successful.
         """
         client = await get_client()
-        await client.login()
-        return "Login successful. Token acquired."
+        try:
+            await client.login(otp_code=otp_code.strip() or None)
+            return "Login successful. Token acquired."
+        except OpenList2FAError:
+            return (
+                "2FA is enabled on this OpenList account. "
+                "Please re-run login with your TOTP code:\n\n"
+                'login(otp_code="123456")'
+            )
 
 
 def register_public_tools(mcp: FastMCP) -> None:

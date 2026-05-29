@@ -23,6 +23,13 @@ class OpenListError(Exception):
         super().__init__(f"[{code}] {message}")
 
 
+class OpenList2FAError(OpenListError):
+    """Login requires a 2FA (TOTP) code."""
+
+    def __init__(self, message: str = "2FA code is required"):
+        super().__init__(message, code=402)
+
+
 class OpenListClient:
     """Async HTTP client for OpenList REST API with automatic JWT token management."""
 
@@ -79,31 +86,55 @@ class OpenListClient:
         async with self._lock:
             if self._token:
                 return
-            await self.login()
+            try:
+                await self.login()
+            except OpenList2FAError:
+                raise OpenList2FAError(
+                    "2FA is enabled on this OpenList account. "
+                    "Call the login tool with the otp_code parameter to authenticate."
+                ) from None
 
-    async def login(self) -> dict[str, Any]:
-        """Login to OpenList and store JWT token."""
+    async def login(self, otp_code: str | None = None) -> dict[str, Any]:
+        """Login to OpenList and store JWT token.
+
+        Args:
+            otp_code: TOTP code for 2FA. Required if the user has enabled
+                      two-factor authentication on their OpenList account.
+        """
         if not self._config.is_authenticated:
             raise OpenListError(
                 "OPENLIST_USERNAME and OPENLIST_PASSWORD are required for authentication.",
                 code=401,
             )
 
+        body: dict[str, str] = {
+            "username": self._config.username,
+            "password": self._config.password,
+        }
+        if otp_code:
+            body["otp_code"] = otp_code
+
         client = await self._get_client()
         try:
-            resp = await client.post(
-                "/auth/login",
-                json={
-                    "username": self._config.username,
-                    "password": self._config.password,
-                },
-            )
+            resp = await client.post("/auth/login", json=body)
         except httpx.HTTPError as exc:
             raise OpenListError(f"Login request failed: {exc}", code=503) from exc
 
         data = self._parse_response(resp, "Login")
-        if data.get("code") != 200:
-            raise OpenListError(data.get("message", "Login failed"), code=data.get("code", 500))
+        code = data.get("code")
+        if code != 200:
+            # 2FA code required or invalid
+            if code == 402:
+                if otp_code:
+                    raise OpenListError(
+                        "Invalid 2FA code. Please re-run login with a valid TOTP code.",
+                        code=402,
+                    )
+                raise OpenList2FAError()
+            raise OpenListError(
+                data.get("message", "Login failed"),
+                code=code,
+            )
 
         result_data = data.get("data", {})
         if not isinstance(result_data, dict):

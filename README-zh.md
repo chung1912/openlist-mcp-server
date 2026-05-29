@@ -28,6 +28,8 @@
 - **分享管理** — 创建、列出、取消、删除分享链接
 - **任务管理** — 查看、重试、取消、删除异步任务
 - **自动认证** — JWT 自动登录与 token 过期重试
+- **NEW v0.2.3** 双因素认证 (2FA/TOTP)：支持带 OTP 验证码登录
+- **NEW v0.2.3** 本地文件上传：新增 `upload_local_file` 工具，支持路径限制安全配置
 
 ## 环境要求
 
@@ -180,7 +182,8 @@ openlist-mcp
 | 安装后找不到命令 | PATH 未更新或虚拟环境未激活 | 重新激活虚拟环境或重装 |
 | MCP 客户端显示"已断开" | 需要重启 Claude Desktop | 添加配置后重启 Claude Desktop |
 | `search not available` | 搜索索引未开启或后端不支持搜索 | 先在 OpenList 管理后台开启搜索/索引功能，并确认存储后端支持搜索 |
-| 任务 API 返回非 JSON | OpenList 版本不匹配 | 部分管理接口可能未暴露 |
+| `2FA code is required` | 开启了双因素认证 | 调用 `login(otp_code="你的验证码")` 传入认证器 App 的 TOTP 码 |
+| `Invalid 2FA code` | TOTP 验证码错误或过期 | 从认证器 App 生成新码后重新调用 login 传入正确的 `otp_code` |
 
 **开启调试日志：**
 
@@ -205,7 +208,7 @@ rm -rf venv
 
 | 工具 | 说明 |
 |---|---|
-| `login` | 使用配置的凭据登录。不会打印 Token。 |
+| `login` | 使用配置的凭据登录。如果账户已开启 2FA，可传入 `otp_code` 参数。Token 不会被 MCP Server 打印。 |
 | `get_public_settings` | 无需认证获取公开设置。 |
 
 ### 文件系统
@@ -268,6 +271,18 @@ PYTHONPATH=src python3 test_integration.py
 - 所有破坏性操作都需要显式传 `confirm=true` 参数，防止 AI 智能体误操作。
 
 ---
+
+## 更新日志
+
+### v0.2.3
+
+- **双因素认证 (2FA/TOTP)**：`login` 工具现在接受可选的 `otp_code` 参数。如果 OpenList 账户开启了 2FA，智能体会提示用户提供 TOTP 验证码。
+- **本地文件上传**：新增 `upload_local_file` 工具，可直接上传本地路径文件，无需 base64 编码。可设置 `OPENLIST_LOCAL_UPLOAD_ROOTS` 限制允许读取的目录。
+- **大文件上传优化**：改为异步分块流式上传，不再整文件读入内存。写入超时放宽到 120 秒。
+- **安全加固**：Base64 解码异常从 `except Exception` 收窄为 `ValueError, binascii.Error`。增加 `OPENLIST_LOCAL_UPLOAD_ROOTS` 目录限制。
+- **发布流程**：移除自动 PyPI 发布。打 tag 后仅创建 GitHub Release 并上传构建产物。
+- **版本统一**：`__version__`、`pyproject.toml`、`server.py` 统一为 v0.2.3。`__version__` 改为运行时从包元数据读取。
+- **文档修复**：安装说明改为源码方式；`search_files` 备注明确需开启 OpenList 搜索索引。
 
 ## Community & Support
 
