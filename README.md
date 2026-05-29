@@ -28,8 +28,8 @@ MCP Server for [OpenList](https://github.com/OpenListTeam/OpenList) — an open-
 - Share management: create, list, cancel, delete share links
 - Task management: list, retry, cancel, delete async tasks
 - Auto authentication: JWT login and retry after token expiration
-- **NEW v0.2.3** 2FA / TOTP support: login with optional OTP code
-- **NEW v0.2.3** Local file upload: `upload_local_file` tool with path safety restriction
+- **NEW v0.2.4** 2FA / TOTP support: login with optional OTP code
+- **NEW v0.2.4** Local file upload: `upload_local_file` tool (disabled by default, requires `OPENLIST_LOCAL_UPLOAD_ROOTS`)
 
 ## Requirements
 
@@ -69,7 +69,7 @@ pip install -e .
 ```bash
 openlist-mcp
 # Expected output:
-# "OpenList MCP Server v0.2.3 installed successfully.
+# "OpenList MCP Server v0.2.4 installed successfully.
 #  Set OPENLIST_URL, OPENLIST_USERNAME, and OPENLIST_PASSWORD to get started."
 ```
 
@@ -82,7 +82,7 @@ export OPENLIST_URL="https://your-openlist-instance.example.com"
 export OPENLIST_USERNAME="your_username"
 export OPENLIST_PASSWORD="your_password"
 
-# Optional: restrict upload_local_file to specific local directories
+# Required to enable upload_local_file (disabled by default).
 export OPENLIST_LOCAL_UPLOAD_ROOTS="/tmp:/path/to/uploads"
 ```
 
@@ -102,7 +102,7 @@ The server automatically loads `.env` when `python-dotenv` is installed. **Never
 - **Protect your MCP config file**:
   - Linux/macOS: `chmod 600 claude_desktop_config.json`
   - Windows: Right-click the file → Properties → Security → Remove all users except yourself.
-- **Restrict local file uploads when possible**. If `OPENLIST_LOCAL_UPLOAD_ROOTS` is unset, `upload_local_file` can upload any local file readable by the MCP server process.
+- **Restrict local file uploads when possible**. `upload_local_file` is disabled by default; set `OPENLIST_LOCAL_UPLOAD_ROOTS` to one or more allowed directories to enable it.
 
 ## Usage
 
@@ -203,7 +203,11 @@ rm -rf venv
 
 ### Note for local file uploads
 
-`upload_local_file` uploads a file from a path that the MCP server process can read. It is useful for local agents or server-side deployments. To reduce accidental file exposure, set `OPENLIST_LOCAL_UPLOAD_ROOTS` to one or more allowed parent directories separated by your OS path separator (`:` on Linux/macOS, `;` on Windows). If the MCP server cannot access the user's local filesystem, use `upload_file` with base64 content instead.
+`upload_local_file` uploads a file from a path that the MCP server process can read. It is useful for local agents or server-side deployments.
+
+**By default, this tool is disabled for security.** You must set the `OPENLIST_LOCAL_UPLOAD_ROOTS` environment variable to one or more allowed parent directories separated by your OS path separator (`:` on Linux/macOS, `;` on Windows). Without this variable, `upload_local_file` will reject all file paths.
+
+If the MCP server cannot access the user's local filesystem, use `upload_file` with base64 content instead.
 
 ### Authentication and public API
 
@@ -275,14 +279,14 @@ The integration test creates a temporary directory under `OPENLIST_TEST_DIR` and
 
 ## Changelog
 
-### v0.2.3
+### v0.2.4
 
 - **2FA / TOTP support**: `login()` tool now accepts an optional `otp_code` parameter. When the OpenList account has 2FA enabled, the agent will prompt the user to provide a TOTP code.
 - **Local file upload**: New `upload_local_file` tool. Upload a local file path directly without base64 encoding. Configure `OPENLIST_LOCAL_UPLOAD_ROOTS` to restrict allowed directories.
 - **Improved large file uploads**: Async chunked streaming instead of single `read_bytes()`. Write timeout increased to 120s.
 - **Security hardening**: Base64 decode exception narrowed to `ValueError, binascii.Error`. Added `OPENLIST_LOCAL_UPLOAD_ROOTS` restriction for local file uploads.
 - **Release workflow**: Removed automatic PyPI publishing. Tag push creates a GitHub Release with build artifacts only.
-- **Version unification**: `__version__`, `pyproject.toml`, and `server.py` all consistent at v0.2.3. `__version__` now reads from package metadata at runtime.
+- **Version unification**: `__version__`, `pyproject.toml`, and `server.py` all consistent at v0.2.4. `__version__` now reads from package metadata at runtime.
 - **Documentation fixes**: Installation guide corrected for source archive; `search_files` notes now clarify that OpenList search/indexing must be enabled.
 
 ## Community & Support

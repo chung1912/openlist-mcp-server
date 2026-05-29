@@ -5,6 +5,7 @@ from __future__ import annotations
 from mcp.server.fastmcp import FastMCP
 
 from ..client import get_client
+from . import validate_path
 
 
 def register_share_tools(mcp: FastMCP) -> None:
@@ -15,6 +16,7 @@ def register_share_tools(mcp: FastMCP) -> None:
         """Create a share link for a file or folder."""
         import json
 
+        validate_path(path)
         client = await get_client()
         data = await client.request(
             "POST",

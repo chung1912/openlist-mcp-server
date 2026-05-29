@@ -38,6 +38,7 @@ class OpenListClient:
         self._token: str | None = None
         self._client: httpx.AsyncClient | None = None
         self._lock = asyncio.Lock()
+        self._2fa_cached: bool = False
 
     async def _get_client(self) -> httpx.AsyncClient:
         """Get or create the HTTP client."""
@@ -83,12 +84,23 @@ class OpenListClient:
         """Ensure we have a valid JWT token. Login if needed."""
         if self._token:
             return
+        if self._2fa_cached:
+            raise OpenList2FAError(
+                "2FA is enabled on this OpenList account. "
+                "Call the login tool with the otp_code parameter to authenticate."
+            )
         async with self._lock:
             if self._token:
                 return
+            if self._2fa_cached:
+                raise OpenList2FAError(
+                    "2FA is enabled on this OpenList account. "
+                    "Call the login tool with the otp_code parameter to authenticate."
+                )
             try:
                 await self.login()
             except OpenList2FAError:
+                self._2fa_cached = True
                 raise OpenList2FAError(
                     "2FA is enabled on this OpenList account. "
                     "Call the login tool with the otp_code parameter to authenticate."
@@ -143,6 +155,7 @@ class OpenListClient:
         if not token:
             raise OpenListError("Login succeeded but no token was returned", code=500)
         self._token = token
+        self._2fa_cached = False
         logger.info("Login successful")
         return result_data
 
@@ -188,6 +201,7 @@ class OpenListClient:
                     raise OpenListError(f"Request retry failed: {exc}", code=503) from exc
                 data = self._parse_response(resp, f"{method.upper()} {path} retry")
                 if data.get("code") != 200:
+                    self._token = None
                     raise OpenListError(
                         data.get("message", "Request failed"),
                         code=data.get("code", 500),

@@ -28,8 +28,8 @@
 - **分享管理** — 创建、列出、取消、删除分享链接
 - **任务管理** — 查看、重试、取消、删除异步任务
 - **自动认证** — JWT 自动登录与 token 过期重试
-- **NEW v0.2.3** 双因素认证 (2FA/TOTP)：支持带 OTP 验证码登录
-- **NEW v0.2.3** 本地文件上传：新增 `upload_local_file` 工具，支持路径限制安全配置
+- **NEW v0.2.4** 双因素认证 (2FA/TOTP)：支持带 OTP 验证码登录
+- **NEW v0.2.4** 本地文件上传：新增 `upload_local_file` 工具（默认禁用，需配置 `OPENLIST_LOCAL_UPLOAD_ROOTS`）
 
 ## 环境要求
 
@@ -69,7 +69,7 @@ pip install -e .
 ```bash
 openlist-mcp
 # 期望输出：
-# "OpenList MCP Server v0.2.3 installed successfully.
+# "OpenList MCP Server v0.2.4 installed successfully.
 #  Set OPENLIST_URL, OPENLIST_USERNAME, and OPENLIST_PASSWORD to get started."
 ```
 
@@ -82,7 +82,7 @@ export OPENLIST_URL="https://你的-openlist-地址.com"
 export OPENLIST_USERNAME="你的用户名"
 export OPENLIST_PASSWORD="你的密码"
 
-# 可选：限制 upload_local_file 只能读取指定本地目录
+# 必需：upload_local_file 默认禁用，设置此变量后才可启用
 export OPENLIST_LOCAL_UPLOAD_ROOTS="/tmp:/path/to/uploads"
 ```
 
@@ -102,7 +102,7 @@ pip install python-dotenv   # .env 支持需要此包
 - **保护好 MCP 配置文件**：
   - Linux/macOS：`chmod 600 claude_desktop_config.json`
   - Windows：右键文件 → 属性 → 安全 → 仅保留自己的权限。
-- **尽量限制本地文件上传目录**。如果未设置 `OPENLIST_LOCAL_UPLOAD_ROOTS`，`upload_local_file` 可以上传 MCP Server 进程有权限读取的任意本地文件。
+- **尽量限制本地文件上传目录**。`upload_local_file` 默认禁用，设置 `OPENLIST_LOCAL_UPLOAD_ROOTS` 配置一个或多个允许目录后才可启用。
 
 ## 使用方式
 
@@ -202,7 +202,11 @@ rm -rf venv
 
 ### 本地文件上传说明
 
-`upload_local_file` 会从 MCP Server 进程可读取的本地路径上传文件。它适合本地智能体或服务端部署场景。为降低误传本机文件的风险，建议设置 `OPENLIST_LOCAL_UPLOAD_ROOTS`，用系统路径分隔符配置一个或多个允许读取的父目录（Linux/macOS 使用 `:`，Windows 使用 `;`）。如果 MCP Server 不能访问用户本地文件系统，请改用 `upload_file` 的 Base64 上传方式。
+`upload_local_file` 会从 MCP Server 进程可读取的本地路径上传文件。它适合本地智能体或服务端部署场景。
+
+**安全考虑：该工具默认禁用。** 你必须设置 `OPENLIST_LOCAL_UPLOAD_ROOTS` 环境变量，用系统路径分隔符配置一个或多个允许读取的父目录（Linux/macOS 使用 `:`，Windows 使用 `;`）。未设置该变量时，所有本地上传请求都会被拒绝。
+
+如果 MCP Server 不能访问用户本地文件系统，请改用 `upload_file` 的 Base64 上传方式。
 
 ### 认证与公开接口
 
@@ -274,14 +278,14 @@ PYTHONPATH=src python3 test_integration.py
 
 ## 更新日志
 
-### v0.2.3
+### v0.2.4
 
 - **双因素认证 (2FA/TOTP)**：`login` 工具现在接受可选的 `otp_code` 参数。如果 OpenList 账户开启了 2FA，智能体会提示用户提供 TOTP 验证码。
 - **本地文件上传**：新增 `upload_local_file` 工具，可直接上传本地路径文件，无需 base64 编码。可设置 `OPENLIST_LOCAL_UPLOAD_ROOTS` 限制允许读取的目录。
 - **大文件上传优化**：改为异步分块流式上传，不再整文件读入内存。写入超时放宽到 120 秒。
 - **安全加固**：Base64 解码异常从 `except Exception` 收窄为 `ValueError, binascii.Error`。增加 `OPENLIST_LOCAL_UPLOAD_ROOTS` 目录限制。
 - **发布流程**：移除自动 PyPI 发布。打 tag 后仅创建 GitHub Release 并上传构建产物。
-- **版本统一**：`__version__`、`pyproject.toml`、`server.py` 统一为 v0.2.3。`__version__` 改为运行时从包元数据读取。
+- **版本统一**：`__version__`、`pyproject.toml`、`server.py` 统一为 v0.2.4。`__version__` 改为运行时从包元数据读取。
 - **文档修复**：安装说明改为源码方式；`search_files` 备注明确需开启 OpenList 搜索索引。
 
 ## Community & Support

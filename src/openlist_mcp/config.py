@@ -1,5 +1,6 @@
 """Configuration management for OpenList MCP Server."""
 
+import logging
 import os
 
 try:
@@ -8,6 +9,8 @@ try:
     load_dotenv()
 except ImportError:
     pass
+
+logger = logging.getLogger(__name__)
 
 
 class OpenListConfig:
@@ -31,12 +34,9 @@ class OpenListConfig:
                 f"OPENLIST_URL must start with http:// or https://, got: {self.base_url}"
             )
         if self.base_url.startswith("http://"):
-            import warnings
-            warnings.warn(
-                "Using unencrypted HTTP transport is insecure. "
-                "Please consider using HTTPS for production environments.",
-                UserWarning,
-                stacklevel=2,
+            logger.warning(
+                "Using unencrypted HTTP transport. Credentials and token may be transmitted "
+                "in plain text. Use HTTPS in production."
             )
 
     @property

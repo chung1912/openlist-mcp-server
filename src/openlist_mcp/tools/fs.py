@@ -5,6 +5,7 @@ from __future__ import annotations
 from mcp.server.fastmcp import FastMCP
 
 from ..client import get_client
+from . import validate_path
 
 
 def register_fs_tools(mcp: FastMCP) -> None:
@@ -30,6 +31,7 @@ def register_fs_tools(mcp: FastMCP) -> None:
         """
         import json
 
+        validate_path(path)
         client = await get_client()
         data = await client.request(
             "POST",
@@ -59,6 +61,7 @@ def register_fs_tools(mcp: FastMCP) -> None:
         """
         import json
 
+        validate_path(path)
         client = await get_client()
         data = await client.request(
             "POST",
@@ -92,6 +95,7 @@ def register_fs_tools(mcp: FastMCP) -> None:
         """
         import json
 
+        validate_path(path)
         client = await get_client()
         data = await client.request(
             "POST",
@@ -118,6 +122,7 @@ def register_fs_tools(mcp: FastMCP) -> None:
         Returns:
             Success or error message.
         """
+        validate_path(path)
         client = await get_client()
         await client.request(
             "POST",
@@ -140,6 +145,7 @@ def register_fs_tools(mcp: FastMCP) -> None:
         Returns:
             Success or error message.
         """
+        validate_path(path)
         client = await get_client()
         await client.request(
             "POST",
@@ -166,6 +172,8 @@ def register_fs_tools(mcp: FastMCP) -> None:
         """
         import json
 
+        validate_path(src_dir)
+        validate_path(dst_dir)
         client = await get_client()
         if isinstance(names, str):
             name_list = [n.strip() for n in names.split(",") if n.strip()]
@@ -205,6 +213,8 @@ def register_fs_tools(mcp: FastMCP) -> None:
         """
         import json
 
+        validate_path(src_dir)
+        validate_path(dst_dir)
         client = await get_client()
         if isinstance(names, str):
             name_list = [n.strip() for n in names.split(",") if n.strip()]
@@ -244,6 +254,7 @@ def register_fs_tools(mcp: FastMCP) -> None:
         """
         if not confirm:
             return "Deletion not performed. Re-run with confirm=true to delete these items."
+        validate_path(directory)
         client = await get_client()
         if isinstance(names, str):
             name_list = [n.strip() for n in names.split(",") if n.strip()]
