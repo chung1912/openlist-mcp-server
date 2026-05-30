@@ -5,7 +5,13 @@ from __future__ import annotations
 from mcp.server.fastmcp import FastMCP
 
 from ..client import OpenListError, get_client
-from . import normalize_names, validate_name, validate_pagination, validate_path
+from . import (
+    enforce_path_allowed,
+    enforce_writable,
+    normalize_names,
+    validate_name,
+    validate_pagination,
+)
 
 
 def register_fs_tools(mcp: FastMCP) -> None:
@@ -31,7 +37,7 @@ def register_fs_tools(mcp: FastMCP) -> None:
         """
         import json
 
-        validate_path(path)
+        enforce_path_allowed(path)
         validate_pagination(page, per_page)
         client = await get_client()
         data = await client.request(
@@ -42,6 +48,40 @@ def register_fs_tools(mcp: FastMCP) -> None:
                 "page": page,
                 "per_page": per_page,
                 "password": password,
+            },
+        )
+        return json.dumps(data, indent=2, ensure_ascii=False)
+
+    @mcp.tool()
+    async def list_dirs(
+        path: str = "/",
+        password: str = "",
+        force_root: bool = False,
+    ) -> str:
+        """List subdirectories under a directory.
+
+        This is useful when an agent needs to choose a safe target directory
+        without reading every file in the current path.
+
+        Args:
+            path: Directory path to list. Use "/" for root. Defaults to "/".
+            password: Password if the directory is password-protected. Defaults to "".
+            force_root: Ask OpenList to force listing from root when supported.
+
+        Returns:
+            JSON string containing child directory entries.
+        """
+        import json
+
+        enforce_path_allowed(path)
+        client = await get_client()
+        data = await client.request(
+            "POST",
+            "fs/dirs",
+            json={
+                "path": path,
+                "password": password,
+                "force_root": force_root,
             },
         )
         return json.dumps(data, indent=2, ensure_ascii=False)
@@ -62,7 +102,7 @@ def register_fs_tools(mcp: FastMCP) -> None:
         """
         import json
 
-        validate_path(path)
+        enforce_path_allowed(path)
         client = await get_client()
         data = await client.request(
             "POST",
@@ -96,7 +136,7 @@ def register_fs_tools(mcp: FastMCP) -> None:
         """
         import json
 
-        validate_path(path)
+        enforce_path_allowed(path)
         validate_pagination(page, per_page)
         client = await get_client()
         data = await client.request(
@@ -124,7 +164,8 @@ def register_fs_tools(mcp: FastMCP) -> None:
         Returns:
             Success or error message.
         """
-        validate_path(path)
+        enforce_path_allowed(path)
+        enforce_writable("create_folder")
         client = await get_client()
         await client.request(
             "POST",
@@ -147,7 +188,8 @@ def register_fs_tools(mcp: FastMCP) -> None:
         Returns:
             Success or error message.
         """
-        validate_path(path)
+        enforce_path_allowed(path)
+        enforce_writable("rename")
         validate_name(name)
         client = await get_client()
         await client.request(
@@ -156,6 +198,48 @@ def register_fs_tools(mcp: FastMCP) -> None:
             json={"path": path, "name": name},
         )
         return f"Renamed successfully: {path} -> {name}"
+
+    @mcp.tool()
+    async def batch_rename(
+        src_dir: str,
+        rename_objects: list[dict[str, str]],
+    ) -> str:
+        """Rename multiple files or folders in the same directory.
+
+        Args:
+            src_dir: Directory containing the files/folders to rename.
+            rename_objects: List of objects with src_name and new_name fields.
+
+        Returns:
+            Success message or OpenList task/result info.
+        """
+        import json
+
+        enforce_path_allowed(src_dir)
+        enforce_writable("batch_rename")
+        if not rename_objects:
+            return "No rename objects specified."
+
+        normalized_objects = []
+        for item in rename_objects:
+            src_name = item.get("src_name", "").strip()
+            new_name = item.get("new_name", "").strip()
+            validate_name(src_name)
+            validate_name(new_name)
+            normalized_objects.append({"src_name": src_name, "new_name": new_name})
+
+        client = await get_client()
+        data = await client.request(
+            "POST",
+            "fs/batch_rename",
+            json={
+                "src_dir": src_dir,
+                "rename_objects": normalized_objects,
+            },
+        )
+        if data is not None and data != {}:
+            return f"Batch rename result: {json.dumps(data, ensure_ascii=False)}"
+        return f"Batch renamed successfully in {src_dir}: {normalized_objects}"
 
     @mcp.tool()
     async def copy(
@@ -175,8 +259,9 @@ def register_fs_tools(mcp: FastMCP) -> None:
         """
         import json
 
-        validate_path(src_dir)
-        validate_path(dst_dir)
+        enforce_path_allowed(src_dir)
+        enforce_path_allowed(dst_dir)
+        enforce_writable("copy")
         client = await get_client()
         name_list = normalize_names(names)
 
@@ -213,8 +298,9 @@ def register_fs_tools(mcp: FastMCP) -> None:
         """
         import json
 
-        validate_path(src_dir)
-        validate_path(dst_dir)
+        enforce_path_allowed(src_dir)
+        enforce_path_allowed(dst_dir)
+        enforce_writable("move")
         client = await get_client()
         name_list = normalize_names(names)
 
@@ -251,7 +337,8 @@ def register_fs_tools(mcp: FastMCP) -> None:
         """
         if not confirm:
             return "Deletion not performed. Re-run with confirm=true to delete these items."
-        validate_path(directory)
+        enforce_path_allowed(directory)
+        enforce_writable("remove")
         client = await get_client()
         name_list = normalize_names(names)
 
@@ -284,8 +371,9 @@ def register_fs_tools(mcp: FastMCP) -> None:
         import json
         import posixpath
 
-        validate_path(src_dir)
-        validate_path(dst_dir)
+        enforce_path_allowed(src_dir)
+        enforce_path_allowed(dst_dir)
+        enforce_writable("recursive_move")
         client = await get_client()
 
         # Try the native API first (OpenList v4.3+)

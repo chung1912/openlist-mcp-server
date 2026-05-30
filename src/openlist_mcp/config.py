@@ -21,6 +21,8 @@ class OpenListConfig:
         self.username = os.environ.get("OPENLIST_USERNAME", "")
         self.password = os.environ.get("OPENLIST_PASSWORD", "")
         self.totp_secret = os.environ.get("OPENLIST_TOTP_SECRET", "")
+        self.read_only = _env_flag("OPENLIST_READONLY")
+        self.allowed_paths = _parse_allowed_paths(os.environ.get("OPENLIST_ALLOWED_PATHS", ""))
         self._validate()
 
     def _validate(self) -> None:
@@ -54,6 +56,24 @@ class OpenListConfig:
     def has_totp_secret(self) -> bool:
         """Whether a TOTP secret is configured for automatic 2FA."""
         return bool(self.totp_secret)
+
+
+def _env_flag(name: str) -> bool:
+    """Parse common truthy environment variable values."""
+    return os.environ.get(name, "").strip().lower() in {"1", "true", "yes", "on"}
+
+
+def _parse_allowed_paths(raw_value: str) -> list[str]:
+    """Parse comma-separated OpenList path prefixes."""
+    paths = []
+    for item in raw_value.split(","):
+        path = item.strip().replace("\\", "/").rstrip("/")
+        if not path:
+            continue
+        if not path.startswith("/"):
+            path = f"/{path}"
+        paths.append(path or "/")
+    return paths
 
 
 # Global config instance

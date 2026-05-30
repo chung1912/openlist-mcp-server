@@ -43,7 +43,7 @@
 
 ### 给 AI 助手使用
 
-将 [`AI_GUIDE.md`](AI_GUIDE.md) 的内容复制粘贴给你的 AI 助手（Claude 等），AI 就能知道如何安装、配置和使用全部 27 个工具。
+将 [`AI_GUIDE.md`](AI_GUIDE.md) 的内容复制粘贴给你的 AI 助手（Claude 等），AI 就能知道如何安装、配置和使用全部 32 个工具。
 
 ### 试试这些 Prompt
 
@@ -107,6 +107,10 @@ export OPENLIST_URL="https://你的-openlist-地址.com"
 export OPENLIST_USERNAME="你的用户名"
 export OPENLIST_PASSWORD="你的密码"
 
+# 可选：MCP 侧安全控制
+export OPENLIST_READONLY="false"
+export OPENLIST_ALLOWED_PATHS="/mcp-dev-test,/public"
+
 # 必需：upload_local_file 默认禁用，设置此变量后才可启用
 export OPENLIST_LOCAL_UPLOAD_ROOTS="/tmp:/path/to/uploads"
 
@@ -129,6 +133,7 @@ pip install python-dotenv   # .env 支持需要此包
 - **生产环境请使用 HTTPS**，否则密码会在网络上明文传输。
 - **为 MCP 单独创建低权限 OpenList 账号**。不建议长期使用 `admin` 账号给 AI Agent 做日常文件操作。
 - **只授予必要目录权限**。不要把服务器 home 目录、根文件系统、shell 历史、Docker 配置、SSH 密钥或其他系统路径暴露给 OpenList。
+- **为 AI Agent 配置 MCP 侧安全边界**。设置 `OPENLIST_READONLY=true` 可禁用写入/高影响工具；设置 `OPENLIST_ALLOWED_PATHS` 为逗号分隔路径（如 `/mcp-dev-test,/public`）可把所有 OpenList 路径操作限制在指定目录内。
 - **保护好 MCP 配置文件**：
   - Linux/macOS：`chmod 600 claude_desktop_config.json`
   - Windows：右键文件 → 属性 → 安全 → 仅保留自己的权限。
@@ -260,6 +265,7 @@ rm -rf venv
 | `login` | 使用配置的凭据登录。如已设置 `OPENLIST_TOTP_SECRET`，TOTP 验证码会自动生成；否则在开启 2FA 时需要手动传入 `otp_code`。 |
 | `get_public_settings` | 无需认证获取公开设置。 |
 | `get_me` | 获取当前用户信息（用户名、角色、权限、2FA 状态）。 |
+| `get_capabilities` | 汇总服务端设置、当前用户、可用下载工具和 MCP 安全配置。 |
 | `logout` | 登出并使当前 Token 失效。 |
 
 ### 文件系统
@@ -267,10 +273,12 @@ rm -rf venv
 | 工具 | 说明 |
 |---|---|
 | `list_files` | 列出目录中的文件和文件夹。 |
+| `list_dirs` | 列出指定路径下的子目录，便于更安全地选择目标目录。 |
 | `get_file_info` | 获取文件或文件夹详情。 |
 | `search_files` | 按关键词搜索文件。是否可用取决于 OpenList 后端存储。 |
 | `create_folder` | 创建目录。 |
 | `rename` | 重命名文件或文件夹。 |
+| `batch_rename` | 使用 OpenList 批量重命名接口，一次重命名同一目录下的多个文件/文件夹。 |
 | `copy` | 复制文件/文件夹到其他目录。 |
 | `move` | 移动文件/文件夹到其他目录。 |
 | `remove` | 删除文件/文件夹。需传 `confirm=true`。 |
@@ -288,10 +296,11 @@ rm -rf venv
 
 | 工具 | 说明 |
 |---|---|
-| `list_tasks` | 列出异步任务。接口可用性取决于 OpenList 版本。 |
-| `delete_task` | 删除任务。需传 `confirm=true`。 |
-| `retry_task` | 重试失败的任务。 |
-| `cancel_task` | 取消运行中的任务。需传 `confirm=true`。 |
+| `list_tasks` | 使用 `/api/task/{task_type}/{status}` 查询分类异步任务。OpenList 部署暴露 `done`/`undone` 接口时可用。 |
+| `get_task_info` | 通过 `/api/task/{task_type}/info?tid=...` 按任务 ID 查询详情；适合任务列表接口不可用时使用。 |
+| `delete_task` | 删除分类任务。需传 `confirm=true`。 |
+| `retry_task` | 重试失败的分类任务。 |
+| `cancel_task` | 取消运行中的分类任务。需传 `confirm=true`。 |
 
 ### 分享管理
 
@@ -310,6 +319,7 @@ rm -rf venv
 |---|---|
 | `offline_download` | 从远程 URL 直接下载文件到 OpenList 服务端（支持 aria2、Transmission、qBittorrent）。 |
 | `decompress_archive` | 服务端在线解压压缩文件（zip、rar、7z、tar.gz 等）。 |
+| `list_archive_files` | 不解压压缩包，直接列出压缩包内部文件。 |
 | `list_download_tools` | 查询服务端配置了哪些离线下载工具。 |
 
 ## 集成测试

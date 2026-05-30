@@ -8,14 +8,14 @@
 
 OpenList MCP Server is a tool that lets AI agents manage files on an [OpenList](https://github.com/OpenListTeam/OpenList) instance. OpenList is a self-hosted file management platform that supports local storage, cloud drives (OneDrive, Google Drive, etc.), and more.
 
-**27 tools available** across 7 categories:
-- Browse: `list_files`, `get_file_info`, `search_files`
-- Manage: `create_folder`, `rename`, `copy`, `move`, `remove`, `recursive_move`
+**32 tools available** across 7 categories:
+- Browse: `list_files`, `list_dirs`, `get_file_info`, `search_files`
+- Manage: `create_folder`, `rename`, `batch_rename`, `copy`, `move`, `remove`, `recursive_move`
 - Transfer: `upload_file`, `upload_local_file`, `get_download_url`
-- Auth: `login`, `get_public_settings`, `get_me`, `logout`
-- Tasks: `list_tasks`, `retry_task`, `cancel_task`, `delete_task`
+- Auth: `login`, `get_public_settings`, `get_me`, `get_capabilities`, `logout`
+- Tasks: `list_tasks`, `get_task_info`, `retry_task`, `cancel_task`, `delete_task`
 - Shares: `create_share`, `list_shares`, `cancel_share`, `delete_share`
-- Advanced: `offline_download`, `decompress_archive`, `list_download_tools`
+- Advanced: `offline_download`, `decompress_archive`, `list_archive_files`, `list_download_tools`
 
 ---
 
@@ -65,6 +65,8 @@ Add to `claude_desktop_config.json`:
         "OPENLIST_URL": "https://your-openlist.example.com",
         "OPENLIST_USERNAME": "admin",
         "OPENLIST_PASSWORD": "your_password",
+        "OPENLIST_READONLY": "false",
+        "OPENLIST_ALLOWED_PATHS": "",
         "OPENLIST_TOTP_SECRET": "your_totp_secret"
       }
     }
@@ -84,7 +86,17 @@ Windows: `%APPDATA%\Claude\claude_desktop_config.json`
 export OPENLIST_LOCAL_UPLOAD_ROOTS="/tmp:/path/to/allowed/dirs"
 ```
 
-### 6. Optional: Enable aria2 for faster offline downloads
+### 6. Optional: Restrict AI access
+
+```bash
+export OPENLIST_READONLY="true"
+export OPENLIST_ALLOWED_PATHS="/mcp-dev-test,/public"
+```
+
+`OPENLIST_READONLY=true` blocks write/high-impact tools. `OPENLIST_ALLOWED_PATHS`
+restricts OpenList path operations to comma-separated path prefixes.
+
+### 7. Optional: Enable aria2 for faster offline downloads
 
 ```bash
 # On the OpenList server:
@@ -92,7 +104,7 @@ apt install aria2
 aria2c --enable-rpc --rpc-listen-all=true --rpc-allow-origin-all -D
 ```
 
-### 7. Optional: Auto 2FA with TOTP
+### 8. Optional: Auto 2FA with TOTP
 
 If the OpenList account has 2FA enabled, set the TOTP secret so the MCP server generates codes automatically:
 
@@ -216,17 +228,21 @@ logout()
 ### Task Management
 
 ```python
-# List running/completed async tasks
-list_tasks()
+# List typed async tasks when the OpenList deployment exposes list endpoints
+list_tasks(task_type="offline_download", status="undone")
+list_tasks(task_type="offline_download", status="done")
+
+# Get one task by ID. This is the most reliable way to check a task returned by offline_download.
+get_task_info(task_id="task_id_here", task_type="offline_download")
 
 # Retry a failed task
-retry_task(task_id="task_id_here")
+retry_task(task_id="task_id_here", task_type="offline_download")
 
 # Cancel a running task
-cancel_task(task_id="task_id_here")
+cancel_task(task_id="task_id_here", task_type="offline_download", confirm=True)
 
 # Delete a task record
-delete_task(task_id="task_id_here")
+delete_task(task_id="task_id_here", task_type="offline_download", confirm=True)
 ```
 
 ### Share Management
@@ -274,8 +290,8 @@ When the user says "download this dataset and extract it":
 offline_download(url="https://example.com/dataset.zip", path="/downloads")
 # Inform the user: "I've started downloading the archive. It will be saved to /downloads."
 
-# Step 2: Wait for download to complete (check via list_tasks)
-list_tasks()
+# Step 2: Wait for download to complete. Use the task ID returned by offline_download.
+get_task_info(task_id="task_id_here", task_type="offline_download")
 
 # Step 3: Decompress
 decompress_archive(

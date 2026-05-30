@@ -43,7 +43,7 @@ MCP Server for [OpenList](https://github.com/OpenListTeam/OpenList) — an open-
 
 ### For AI Assistants
 
-Copy the contents of [`AI_GUIDE.md`](AI_GUIDE.md) and paste it to your AI assistant (Claude, etc.). The AI will know how to install, configure, and use all 27 tools.
+Copy the contents of [`AI_GUIDE.md`](AI_GUIDE.md) and paste it to your AI assistant (Claude, etc.). The AI will know how to install, configure, and use all 32 tools.
 
 ### Try These Prompts
 
@@ -107,6 +107,10 @@ export OPENLIST_URL="https://your-openlist-instance.example.com"
 export OPENLIST_USERNAME="your_username"
 export OPENLIST_PASSWORD="your_password"
 
+# Optional MCP safety controls.
+export OPENLIST_READONLY="false"
+export OPENLIST_ALLOWED_PATHS="/mcp-dev-test,/public"
+
 # Required to enable upload_local_file (disabled by default).
 export OPENLIST_LOCAL_UPLOAD_ROOTS="/tmp:/path/to/uploads"
 
@@ -132,6 +136,10 @@ The server automatically loads `.env` when `python-dotenv` is installed. **Never
 - **Limit the account to the smallest useful storage scope**. Do not expose your
   server home directory, root filesystem, shell history, Docker config, SSH keys,
   or other system paths through OpenList.
+- **Use MCP-side safety controls for AI agents**. Set `OPENLIST_READONLY=true`
+  to block write/high-impact tools, and set `OPENLIST_ALLOWED_PATHS` to a
+  comma-separated list such as `/mcp-dev-test,/public` to keep all OpenList path
+  operations inside approved directories.
 - **Protect your MCP config file**:
   - Linux/macOS: `chmod 600 claude_desktop_config.json`
   - Windows: Right-click the file → Properties → Security → Remove all users except yourself.
@@ -266,6 +274,7 @@ If the MCP server cannot access the user's local filesystem, use `upload_file` w
 | `login` | Login using configured credentials. If 2FA is enabled and `OPENLIST_TOTP_SECRET` is set, the TOTP code is generated automatically. Otherwise, pass `otp_code` manually. |
 | `get_public_settings` | Get public OpenList settings without authentication. |
 | `get_me` | Get current user profile (username, role, permissions, 2FA status). |
+| `get_capabilities` | Summarize server settings, current user, available download tools, and MCP safety configuration. |
 | `logout` | Logout and invalidate the current token. |
 
 ### File system
@@ -273,10 +282,12 @@ If the MCP server cannot access the user's local filesystem, use `upload_file` w
 | Tool | Description |
 |---|---|
 | `list_files` | List files and folders in a directory. |
+| `list_dirs` | List child directories under a path for safer destination selection. |
 | `get_file_info` | Get detailed info for a file or folder. |
 | `search_files` | Search files by keyword. Availability depends on OpenList storage/search support. |
 | `create_folder` | Create a directory. |
 | `rename` | Rename a file or folder. |
+| `batch_rename` | Rename multiple files/folders in the same directory using OpenList's batch rename API. |
 | `copy` | Copy files/folders to another directory. |
 | `move` | Move files/folders to another directory. |
 | `remove` | Delete files/folders. Requires `confirm=true`. |
@@ -294,10 +305,11 @@ If the MCP server cannot access the user's local filesystem, use `upload_file` w
 
 | Tool | Description |
 |---|---|
-| `list_tasks` | List async tasks. Endpoint availability depends on OpenList version. |
-| `delete_task` | Delete a task. Requires `confirm=true`. |
-| `retry_task` | Retry a failed task. |
-| `cancel_task` | Cancel a running task. Requires `confirm=true`. |
+| `list_tasks` | List typed async tasks via `/api/task/{task_type}/{status}`. Supports `done` and `undone` when exposed by the OpenList deployment. |
+| `get_task_info` | Get one task by ID via `/api/task/{task_type}/info?tid=...`. Useful when list endpoints are unavailable. |
+| `delete_task` | Delete a typed task. Requires `confirm=true`. |
+| `retry_task` | Retry a failed typed task. |
+| `cancel_task` | Cancel a running typed task. Requires `confirm=true`. |
 
 ### Shares
 
@@ -316,6 +328,7 @@ If the MCP server cannot access the user's local filesystem, use `upload_file` w
 |---|---|
 | `offline_download` | Download a file from a remote URL directly to the OpenList server. Supports aria2, Transmission, qBittorrent. |
 | `decompress_archive` | Decompress archives (zip, rar, 7z, tar.gz, etc.) on the server. |
+| `list_archive_files` | List files inside an archive without extracting it. |
 | `list_download_tools` | List available download tools configured on the OpenList server. |
 
 ## Integration tests
@@ -346,7 +359,7 @@ The integration test creates a temporary directory under `OPENLIST_TEST_DIR` and
 - **`offline_download`**: Docstring updated to document all supported tools.
 - **`validate_path` fix**: Component-level `..` detection — no longer rejects legitimate filenames like `backup..2024.tar.gz`.
 - **Auto TOTP**: New `OPENLIST_TOTP_SECRET` environment variable for automatic TOTP code generation during 2FA login. When configured, the server generates TOTP codes automatically — no manual input needed. (PR #2 by @chung1912)
-- **Startup guide**: Updated to reflect 27 tools.
+- **Startup guide**: Updated to reflect 32 tools.
 
 ### v0.2.6
 

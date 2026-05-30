@@ -6,6 +6,8 @@
         "OPENLIST_URL": "https://your-openlist-instance.example.com",
         "OPENLIST_USERNAME": "your_username",
         "OPENLIST_PASSWORD": "your_password",
+        "OPENLIST_READONLY": "false",
+        "OPENLIST_ALLOWED_PATHS": "",
         "OPENLIST_LOCAL_UPLOAD_ROOTS": "",
         "OPENLIST_TOTP_SECRET": ""
       }

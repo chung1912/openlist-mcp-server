@@ -5,7 +5,7 @@ from __future__ import annotations
 from mcp.server.fastmcp import FastMCP
 
 from ..client import get_client
-from . import validate_pagination, validate_path
+from . import enforce_path_allowed, enforce_writable, validate_pagination
 
 
 def register_share_tools(mcp: FastMCP) -> None:
@@ -16,7 +16,8 @@ def register_share_tools(mcp: FastMCP) -> None:
         """Create a share link for a file or folder."""
         import json
 
-        validate_path(path)
+        enforce_path_allowed(path)
+        enforce_writable("create_share")
         client = await get_client()
         data = await client.request(
             "POST",
@@ -49,6 +50,7 @@ def register_share_tools(mcp: FastMCP) -> None:
         """
         if not confirm:
             return "Share cancellation not performed. Re-run with confirm=true to cancel it."
+        enforce_writable("cancel_share")
         client = await get_client()
         await client.request("POST", "share/cancel", json={"share_key": share_key})
         return f"Share cancelled successfully: {share_key}"
@@ -63,6 +65,7 @@ def register_share_tools(mcp: FastMCP) -> None:
         """
         if not confirm:
             return "Share deletion not performed. Re-run with confirm=true to delete it."
+        enforce_writable("delete_share")
         client = await get_client()
         await client.request("POST", "share/delete", json={"share_key": share_key})
         return f"Share deleted successfully: {share_key}"

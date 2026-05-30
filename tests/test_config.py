@@ -85,6 +85,21 @@ class TestOpenListConfig:
             config = OpenListConfig()
             assert config.is_authenticated is False
 
+    def test_safety_config(self) -> None:
+        """Test MCP safety environment variables."""
+        with mock.patch.dict(
+            os.environ,
+            {
+                "OPENLIST_URL": "https://example.com",
+                "OPENLIST_READONLY": "true",
+                "OPENLIST_ALLOWED_PATHS": "/safe,team/docs,/trailing/",
+            },
+            clear=True,
+        ):
+            config = OpenListConfig()
+            assert config.read_only is True
+            assert config.allowed_paths == ["/safe", "/team/docs", "/trailing"]
+
     def test_get_config_singleton(self) -> None:
         """Test that get_config returns a singleton instance."""
         with mock.patch.dict(

@@ -2,6 +2,8 @@
 
 import posixpath
 
+from ..config import get_config
+
 
 def validate_path(path: str) -> None:
     """Validate that a path does not contain directory traversal sequences.
@@ -27,6 +29,32 @@ def validate_path(path: str) -> None:
         return
     if normalized_separators != normalized:
         raise ValueError(f"Path must not contain unsafe path components: {path}")
+
+
+def enforce_path_allowed(path: str) -> None:
+    """Validate a path and enforce optional MCP path allowlist."""
+    validate_path(path)
+    config = get_config()
+    allowed_paths = config.allowed_paths
+    if not allowed_paths:
+        return
+
+    normalized = path.replace("\\", "/")
+    if normalized != "/":
+        normalized = posixpath.normpath(normalized)
+
+    for allowed in allowed_paths:
+        if allowed == "/" or normalized == allowed or normalized.startswith(f"{allowed}/"):
+            return
+    raise PermissionError(
+        f"Path is outside OPENLIST_ALLOWED_PATHS: {path}. Allowed paths: {', '.join(allowed_paths)}"
+    )
+
+
+def enforce_writable(operation: str) -> None:
+    """Block write/high-impact tools when OPENLIST_READONLY is enabled."""
+    if get_config().read_only:
+        raise PermissionError(f"{operation} is disabled because OPENLIST_READONLY is enabled")
 
 
 def validate_name(name: str) -> None:

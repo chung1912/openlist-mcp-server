@@ -13,7 +13,7 @@ from pathlib import Path
 from mcp.server.fastmcp import FastMCP
 
 from ..client import get_client
-from . import validate_name, validate_path
+from . import enforce_path_allowed, enforce_writable, validate_name
 
 
 def _allowed_upload_roots() -> list[Path]:
@@ -58,7 +58,7 @@ def register_transfer_tools(mcp: FastMCP) -> None:
         Returns:
             The download URL for the file, or file info with raw_url.
         """
-        validate_path(path)
+        enforce_path_allowed(path)
         client = await get_client()
         data = await client.request(
             "POST",
@@ -88,7 +88,8 @@ def register_transfer_tools(mcp: FastMCP) -> None:
         Returns:
             Success message or task ID for async uploads.
         """
-        validate_path(path)
+        enforce_path_allowed(path)
+        enforce_writable("upload_file")
         validate_name(file_name)
         client = await get_client()
         try:
@@ -130,7 +131,8 @@ def register_transfer_tools(mcp: FastMCP) -> None:
         Returns:
             Success message or task ID for async uploads.
         """
-        validate_path(remote_dir)
+        enforce_path_allowed(remote_dir)
+        enforce_writable("upload_local_file")
         file_path = Path(local_path).expanduser()
         if not file_path.is_file():
             return f"Local file not found or not a regular file: {local_path}"
