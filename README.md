@@ -93,9 +93,8 @@ pip install -e .
 
 ```bash
 openlist-mcp
-# Expected output:
-# "OpenList MCP Server v0.2.7 installed successfully.
-#  Set OPENLIST_URL, OPENLIST_USERNAME, and OPENLIST_PASSWORD to get started."
+# Without OPENLIST_URL, this prints the setup guide and exits.
+# With OPENLIST_URL configured, it starts the MCP stdio server.
 ```
 
 ## Configuration
@@ -234,12 +233,11 @@ Same config format:
 | `upload_local_file` rejected | `OPENLIST_LOCAL_UPLOAD_ROOTS` not set | Set the env var to one or more allowed directories (e.g. `/tmp:/path/to/uploads`) |
 | `Auto-generated TOTP code was rejected` | Wrong `OPENLIST_TOTP_SECRET` value | Verify the TOTP secret matches the one set in your authenticator app |
 | `.env` file not loading | `python-dotenv` not installed | Run `pip install python-dotenv` |
-| `recursive_move` returns `object not found` | OpenList v4.2.2 backend bug | The server falls back to `rename` automatically — files are moved correctly |
+| `recursive_move` returns `object not found` | OpenList v4.2.x may not support the native recursive move endpoint | The MCP server attempts a fallback using `rename` or `move` + `rename`; if the fallback also fails, the original error is reported |
 | Offline download task created but not progressing | The selected download tool (e.g. aria2) is not running on the OpenList server | Check the download tool's service status on the server. For aria2: run `aria2c --enable-rpc --rpc-listen-all=true --rpc-allow-origin-all -D`. For other tools, verify the service is active and the RPC port is accessible |
 | `Guest user is disabled, login please` | Token expired or invalid | Login again — the server handles this automatically on the next API call |
 | Transmission/qBittorrent downloads not working | Download tool not properly configured on server | Check: (1) Is the service installed and running? (2) Is the WebUI/RPC port accessible? (3) Are the credentials in OpenList admin settings correct? Run `list_download_tools` to verify the server can detect the tool |
-| `object not found` on recursive_move | OpenList v4.2.2 backend bug | The server falls back to `rename` automatically — files are moved correctly |
-| Non-JSON response on task API | OpenList version mismatch | Some admin endpoints may not be exposed in your deployment |
+| Non-JSON response on task API | The selected task list endpoint returns the OpenList web UI instead of JSON | If you have a task ID, use `get_task_info(task_id, task_type)`; otherwise check the OpenList version/deployment |
 | `pip install` fails | Python version too old or missing dependencies | Use Python 3.10+ and ensure `pip` is up to date: `pip install --upgrade pip` |
 | `list_download_tools` returns few tools | Download tools not installed/configured on server | Run `list_download_tools` to see what's available; install and configure aria2, Transmission, etc. on the OpenList server |
 | HTTP warning about plain text credentials | Using HTTP instead of HTTPS | Use HTTPS in production, or accept the warning for local/internal network use |
@@ -346,7 +344,7 @@ The integration test creates a temporary directory under `OPENLIST_TEST_DIR` and
 ## Notes
 
 - Search support depends on the OpenList backend/storage. Some servers return `search not available`.
-- Some admin task endpoints may differ between OpenList versions and deployments.
+- Some task list endpoints may differ between OpenList versions and deployments; `get_task_info` is the most reliable way to inspect a known task ID.
 - Destructive tools require an explicit `confirm=true` parameter to reduce accidental operations by AI agents.
 
 ---

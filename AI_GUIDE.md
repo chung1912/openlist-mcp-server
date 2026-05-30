@@ -26,7 +26,7 @@ Tell the user to follow these steps:
 ### 1. Prerequisites
 - Python 3.10+
 - An OpenList server (self-hosted, running and accessible)
-- OpenList admin credentials (username + password)
+- OpenList credentials with the permissions needed for the tools you plan to use
 
 ### 2. Install the MCP Server
 
@@ -49,7 +49,8 @@ pip install -e .
 
 ```bash
 openlist-mcp
-# Should print: "OpenList MCP Server v0.2.7 installed successfully."
+# Without OPENLIST_URL, this prints the setup guide and exits.
+# With OPENLIST_URL configured, it starts the MCP stdio server.
 ```
 
 ### 4. Configure for Claude Desktop
@@ -358,7 +359,7 @@ share = create_share(path="/shared/report.pdf")
 | "Tool not found" when calling offline_download | Selected tool not configured on OpenList server | Run `list_download_tools` to see available tools; install missing ones on the server |
 | "Auto-generated TOTP code was rejected" | Wrong OPENLIST_TOTP_SECRET value | Ask the user to verify the TOTP secret in their authenticator app |
 | "search not available" | Search indexing disabled | Inform the user, suggest enabling search in OpenList settings |
-| "object not found" on recursive_move | OpenList v4.2.2 backend bug | Fallback to rename works automatically; inform user if concerned |
+| "object not found" on recursive_move | OpenList v4.2.x may not support the native recursive move endpoint | The MCP server attempts fallback with rename or move + rename; report any fallback error to the user |
 | "upload_local_file" rejected | OPENLIST_LOCAL_UPLOAD_ROOTS not set | Ask the user to set the env var to allowed directories |
 | ".env" file not loading | python-dotenv not installed | Ask the user to run `pip install python-dotenv` |
 | Offline download task stuck | aria2 RPC not running on the server | Ask the user to start aria2 RPC daemon on the OpenList server |

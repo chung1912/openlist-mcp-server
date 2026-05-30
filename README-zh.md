@@ -93,9 +93,8 @@ pip install -e .
 
 ```bash
 openlist-mcp
-# 期望输出：
-# "OpenList MCP Server v0.2.7 installed successfully.
-#  Set OPENLIST_URL, OPENLIST_USERNAME, and OPENLIST_PASSWORD to get started."
+# 未设置 OPENLIST_URL 时，会打印配置指引并退出。
+# 设置 OPENLIST_URL 后，会启动 MCP stdio 服务。
 ```
 
 ## 配置
@@ -225,12 +224,11 @@ openlist-mcp
 | `upload_local_file` 上传被拒 | 未设置 `OPENLIST_LOCAL_UPLOAD_ROOTS` | 设置环境变量，配置允许读取的目录（如 `/tmp:/path/to/uploads`） |
 | `Auto-generated TOTP code was rejected` | `OPENLIST_TOTP_SECRET` 值错误 | 检查 TOTP 密钥是否与认证器 App 中的一致 |
 | `.env` 文件未生效 | 未安装 `python-dotenv` | 执行 `pip install python-dotenv` |
-| `recursive_move` 返回 `object not found` | OpenList v4.2.2 后端 bug | 服务端会自动降级为 `rename`，文件移动正常 |
+| `recursive_move` 返回 `object not found` | OpenList v4.2.x 可能不支持原生递归移动接口 | MCP 会尝试降级为 `rename` 或 `move` + `rename`；如果降级也失败，会返回原始错误 |
 | 离线下载任务已创建但不下载 | 所选下载工具（如 aria2）未在服务端运行 | 检查下载工具的服务状态。aria2：执行 `aria2c --enable-rpc --rpc-listen-all=true --rpc-allow-origin-all -D`。其他工具：确认服务已启动且 RPC 端口可访问 |
 | `Guest user is disabled, login please` | Token 过期或无效 | 重新登录即可——下次 API 调用会自动处理 |
 | Transmission/qBittorrent 下载不工作 | 下载工具未在服务端正确配置 | 依次排查：(1) 服务是否已安装并运行？(2) WebUI/RPC 端口是否能访问？(3) OpenList 管理后台中的凭据是否正确？运行 `list_download_tools` 确认服务端能检测到该工具 |
-| `object not found` on recursive_move | OpenList v4.2.2 后端 bug | 服务端会自动降级为 `rename`，文件移动正常 |
-| 任务 API 返回非 JSON 响应 | OpenList 版本不匹配 | 部分管理端接口可能未在当前部署中暴露 |
+| 任务 API 返回非 JSON 响应 | 所选任务列表接口返回了 OpenList 网页而不是 JSON | 如果已有任务 ID，请用 `get_task_info(task_id, task_type)` 查询；否则检查 OpenList 版本和部署方式 |
 | `pip install` 安装失败 | Python 版本过低或依赖缺失 | 使用 Python 3.10+，并更新 pip：`pip install --upgrade pip` |
 | `list_download_tools` 返回工具很少 | 服务端未安装配置下载工具 | 运行 `list_download_tools` 查看可用工具；在 OpenList 服务器上安装配置 aria2、Transmission 等 |
 | HTTP 警告：凭证明文传输 | 使用 HTTP 而非 HTTPS | 生产环境请使用 HTTPS；本地/内网环境可忽略该警告 |
@@ -337,7 +335,7 @@ PYTHONPATH=src python3 test_integration.py
 ## 注意事项
 
 - 搜索功能取决于 OpenList 后端存储支持，部分服务器可能返回 `search not available`。
-- 管理后台任务接口可能因 OpenList 版本和部署方式不同有所差异。
+- 任务列表接口可能因 OpenList 版本和部署方式不同有所差异；已知任务 ID 时，`get_task_info` 是更可靠的查询方式。
 - 所有破坏性操作都需要显式传 `confirm=true` 参数，防止 AI 智能体误操作。
 
 ---
@@ -350,7 +348,7 @@ PYTHONPATH=src python3 test_integration.py
 - **`offline_download`**：工具说明更新，列出所有支持的下载工具。
 - **`validate_path` 修复**：改为组件级精确检测 `..`，不再误杀 `backup..2024.tar.gz` 等合法文件名。
 - **自动 TOTP**：新增 `OPENLIST_TOTP_SECRET` 环境变量，登录时自动生成 TOTP 验证码，无需手动输入。（PR #2 by @chung1912）
-- **启动指南**：更新为 27 个工具。
+- **启动指南**：更新为 32 个工具。
 
 ### v0.2.6
 
