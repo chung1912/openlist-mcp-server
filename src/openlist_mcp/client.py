@@ -14,6 +14,14 @@ from .config import get_config
 logger = logging.getLogger(__name__)
 
 
+def _generate_totp(secret: str) -> str:
+    """Generate a TOTP code from the given secret using pyotp."""
+    import pyotp
+
+    totp = pyotp.TOTP(secret)
+    return totp.now()
+
+
 class OpenListError(Exception):
     """Error from OpenList API."""
 
@@ -84,7 +92,7 @@ class OpenListClient:
         """Ensure we have a valid JWT token. Login if needed."""
         if self._token:
             return
-        if self._2fa_cached:
+        if self._2fa_cached and not self._config.has_totp_secret:
             raise OpenList2FAError(
                 "2FA is enabled on this OpenList account. "
                 "Call the login tool with the otp_code parameter to authenticate."
@@ -92,15 +100,22 @@ class OpenListClient:
         async with self._lock:
             if self._token:
                 return
-            if self._2fa_cached:
+            if self._2fa_cached and not self._config.has_totp_secret:
                 raise OpenList2FAError(
                     "2FA is enabled on this OpenList account. "
                     "Call the login tool with the otp_code parameter to authenticate."
                 )
             try:
-                await self.login()
+                otp_code = _generate_totp(self._config.totp_secret) if self._config.has_totp_secret else None
+                await self.login(otp_code=otp_code)
             except OpenList2FAError:
                 self._2fa_cached = True
+                if self._config.has_totp_secret:
+                    raise OpenListError(
+                        "Auto-generated TOTP code was rejected. "
+                        "Check your OPENLIST_TOPT_SECRET value.",
+                        code=402,
+                    ) from None
                 raise OpenList2FAError(
                     "2FA is enabled on this OpenList account. "
                     "Call the login tool with the otp_code parameter to authenticate."
@@ -133,7 +148,7 @@ class OpenListClient:
             raise OpenListError(f"Login request failed: {exc}", code=503) from exc
 
         data = self._parse_response(resp, "Login")
-        code = data.get("code")
+        code: int = data.get("code", 500)
         if code != 200:
             # 2FA code required or invalid
             if code == 402:
