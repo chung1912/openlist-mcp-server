@@ -28,10 +28,15 @@ def register_advanced_tools(mcp: FastMCP) -> None:
 
         The server fetches the file in the background. Use list_tasks to monitor progress.
 
+        Available download tools on the server can be queried via the
+        `/api/public/offline_download_tools` endpoint.
+
         Args:
             url: Remote URL to download from.
             path: Destination directory on OpenList (e.g. "/downloads"). Defaults to root.
-            tool: Download tool name (e.g. "aria2"). Defaults to "aria2".
+            tool: Download tool name. Defaults to "aria2" (supports https/http/magnet).
+                  Alternatives: "SimpleHttp" (http only), or others as listed by
+                  the server's public settings.
             delete_policy: Optional delete policy for completed tasks.
 
         Returns:
