@@ -28,8 +28,8 @@
 - **分享管理** — 创建、列出、取消、删除分享链接
 - **任务管理** — 查看、重试、取消、删除异步任务
 - **自动认证** — JWT 自动登录与 token 过期重试
-- **NEW v0.2.4** 双因素认证 (2FA/TOTP)：支持带 OTP 验证码登录
-- **NEW v0.2.4** 本地文件上传：新增 `upload_local_file` 工具（默认禁用，需配置 `OPENLIST_LOCAL_UPLOAD_ROOTS`）
+- **NEW v0.2.5** 双因素认证 (2FA/TOTP)：支持带 OTP 验证码登录
+- **NEW v0.2.5** 本地文件上传：新增 `upload_local_file` 工具（默认禁用，需配置 `OPENLIST_LOCAL_UPLOAD_ROOTS`）
 
 ## 环境要求
 
@@ -69,7 +69,7 @@ pip install -e .
 ```bash
 openlist-mcp
 # 期望输出：
-# "OpenList MCP Server v0.2.4 installed successfully.
+# "OpenList MCP Server v0.2.5 installed successfully.
 #  Set OPENLIST_URL, OPENLIST_USERNAME, and OPENLIST_PASSWORD to get started."
 ```
 
@@ -278,14 +278,14 @@ PYTHONPATH=src python3 test_integration.py
 
 ## 更新日志
 
-### v0.2.4
+### v0.2.5
 
 - **双因素认证 (2FA/TOTP)**：`login` 工具现在接受可选的 `otp_code` 参数。如果 OpenList 账户开启了 2FA，智能体会提示用户提供 TOTP 验证码。
 - **本地文件上传**：新增 `upload_local_file` 工具，可直接上传本地路径文件，无需 base64 编码。可设置 `OPENLIST_LOCAL_UPLOAD_ROOTS` 限制允许读取的目录。
 - **大文件上传优化**：改为异步分块流式上传，不再整文件读入内存。写入超时放宽到 120 秒。
 - **安全加固**：Base64 解码异常从 `except Exception` 收窄为 `ValueError, binascii.Error`。增加 `OPENLIST_LOCAL_UPLOAD_ROOTS` 目录限制。
 - **发布流程**：移除自动 PyPI 发布。打 tag 后仅创建 GitHub Release 并上传构建产物。
-- **版本统一**：`__version__`、`pyproject.toml`、`server.py` 统一为 v0.2.4。`__version__` 改为运行时从包元数据读取。
+- **版本统一**：`__version__`、`pyproject.toml`、`server.py` 统一为 v0.2.5。`__version__` 改为运行时从包元数据读取。
 - **文档修复**：安装说明改为源码方式；`search_files` 备注明确需开启 OpenList 搜索索引。
 
 ## Community & Support

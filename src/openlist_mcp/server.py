@@ -75,7 +75,7 @@ def main() -> None:
             )
     except ValueError:
         logger.info(
-            "OpenList MCP Server v0.2.4 installed successfully. "
+            "OpenList MCP Server v0.2.5 installed successfully. "
             "Set OPENLIST_URL, OPENLIST_USERNAME, and OPENLIST_PASSWORD to get started."
         )
         sys.exit(0)
