@@ -127,10 +127,19 @@ The server automatically loads `.env` when `python-dotenv` is installed. **Never
 ### Security notes
 
 - **Use HTTPS in production** — credentials are sent in plain text over HTTP.
+- **Use a dedicated low-privilege OpenList account** for MCP access. Avoid using the
+  admin account for daily AI-agent operations.
+- **Limit the account to the smallest useful storage scope**. Do not expose your
+  server home directory, root filesystem, shell history, Docker config, SSH keys,
+  or other system paths through OpenList.
 - **Protect your MCP config file**:
   - Linux/macOS: `chmod 600 claude_desktop_config.json`
   - Windows: Right-click the file → Properties → Security → Remove all users except yourself.
 - **Restrict local file uploads when possible**. `upload_local_file` is disabled by default; set `OPENLIST_LOCAL_UPLOAD_ROOTS` to one or more allowed directories to enable it.
+- **Ask for explicit user confirmation before high-impact actions** such as creating
+  public shares, generating download URLs, starting offline downloads, or moving
+  large directory trees. These operations can expose data or consume significant
+  bandwidth/storage even though they do not delete files.
 
 ## Usage
 

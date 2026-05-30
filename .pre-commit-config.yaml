@@ -1,0 +1,23 @@
+repos:
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.15.15
+    hooks:
+      - id: ruff
+        args: [--fix]
+      - id: ruff-format
+
+  - repo: local
+    hooks:
+      - id: mypy-openlist-mcp
+        name: mypy openlist_mcp
+        entry: mypy src/openlist_mcp --ignore-missing-imports
+        language: system
+        pass_filenames: false
+        types: [python]
+
+      - id: pytest-fast
+        name: pytest fast suite
+        entry: pytest tests -q
+        language: system
+        pass_filenames: false
+        types: [python]

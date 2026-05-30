@@ -127,10 +127,13 @@ pip install python-dotenv   # .env 支持需要此包
 ### 安全提醒
 
 - **生产环境请使用 HTTPS**，否则密码会在网络上明文传输。
+- **为 MCP 单独创建低权限 OpenList 账号**。不建议长期使用管理员账号给 AI Agent 做日常文件操作。
+- **只授予必要目录权限**。不要把服务器 home 目录、根文件系统、shell 历史、Docker 配置、SSH 密钥或其他系统路径暴露给 OpenList。
 - **保护好 MCP 配置文件**：
   - Linux/macOS：`chmod 600 claude_desktop_config.json`
   - Windows：右键文件 → 属性 → 安全 → 仅保留自己的权限。
 - **尽量限制本地文件上传目录**。`upload_local_file` 默认禁用，设置 `OPENLIST_LOCAL_UPLOAD_ROOTS` 配置一个或多个允许目录后才可启用。
+- **高影响操作前应明确向用户确认**，例如创建分享链接、生成下载链接、启动离线下载、移动大型目录树。这些操作即使不删除文件，也可能造成数据暴露或消耗大量带宽/存储。
 
 ## 使用方式
 
