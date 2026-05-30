@@ -11,7 +11,7 @@ from typing import Any
 from mcp.server.fastmcp import FastMCP
 
 from ..client import get_client
-from . import validate_path
+from . import normalize_names, validate_path
 
 
 def register_advanced_tools(mcp: FastMCP) -> None:
@@ -79,7 +79,7 @@ def register_advanced_tools(mcp: FastMCP) -> None:
             JSON string with decompression result.
         """
         validate_path(src_dir)
-        name_list = [n.strip() for n in names.split(",") if n.strip()]
+        name_list = normalize_names(names)
         if not name_list:
             return json.dumps(
                 {"ok": False, "error": "No archive files specified."},

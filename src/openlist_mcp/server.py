@@ -63,6 +63,10 @@ def register_all_tools() -> None:
 
 def main() -> None:
     """Main entry point for the OpenList MCP Server."""
+    if hasattr(sys.stdout, "reconfigure"):
+        sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+    if hasattr(sys.stderr, "reconfigure"):
+        sys.stderr.reconfigure(encoding="utf-8", errors="replace")
     try:
         config = get_config()
     except ValueError:

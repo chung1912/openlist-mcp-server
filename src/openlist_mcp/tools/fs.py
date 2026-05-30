@@ -5,7 +5,7 @@ from __future__ import annotations
 from mcp.server.fastmcp import FastMCP
 
 from ..client import OpenListError, get_client
-from . import validate_path
+from . import normalize_names, validate_name, validate_pagination, validate_path
 
 
 def register_fs_tools(mcp: FastMCP) -> None:
@@ -32,6 +32,7 @@ def register_fs_tools(mcp: FastMCP) -> None:
         import json
 
         validate_path(path)
+        validate_pagination(page, per_page)
         client = await get_client()
         data = await client.request(
             "POST",
@@ -96,6 +97,7 @@ def register_fs_tools(mcp: FastMCP) -> None:
         import json
 
         validate_path(path)
+        validate_pagination(page, per_page)
         client = await get_client()
         data = await client.request(
             "POST",
@@ -123,6 +125,7 @@ def register_fs_tools(mcp: FastMCP) -> None:
             Success or error message.
         """
         validate_path(path)
+        validate_name(name)
         client = await get_client()
         await client.request(
             "POST",
@@ -175,10 +178,7 @@ def register_fs_tools(mcp: FastMCP) -> None:
         validate_path(src_dir)
         validate_path(dst_dir)
         client = await get_client()
-        if isinstance(names, str):
-            name_list = [n.strip() for n in names.split(",") if n.strip()]
-        else:
-            name_list = [n.strip() for n in names if n.strip()]
+        name_list = normalize_names(names)
 
         if not name_list:
             return "No files specified to copy. Please provide at least one file name."
@@ -216,10 +216,7 @@ def register_fs_tools(mcp: FastMCP) -> None:
         validate_path(src_dir)
         validate_path(dst_dir)
         client = await get_client()
-        if isinstance(names, str):
-            name_list = [n.strip() for n in names.split(",") if n.strip()]
-        else:
-            name_list = [n.strip() for n in names if n.strip()]
+        name_list = normalize_names(names)
 
         if not name_list:
             return "No files specified to move. Please provide at least one file name."
@@ -256,10 +253,7 @@ def register_fs_tools(mcp: FastMCP) -> None:
             return "Deletion not performed. Re-run with confirm=true to delete these items."
         validate_path(directory)
         client = await get_client()
-        if isinstance(names, str):
-            name_list = [n.strip() for n in names.split(",") if n.strip()]
-        else:
-            name_list = [n.strip() for n in names if n.strip()]
+        name_list = normalize_names(names)
 
         if not name_list:
             return "No files specified to delete. Please provide at least one file name."
@@ -288,7 +282,7 @@ def register_fs_tools(mcp: FastMCP) -> None:
             Success message or task info.
         """
         import json
-        import os
+        import posixpath
 
         validate_path(src_dir)
         validate_path(dst_dir)
@@ -304,17 +298,24 @@ def register_fs_tools(mcp: FastMCP) -> None:
             if data is not None and data != {}:
                 return f"Recursive move task created: {json.dumps(data, ensure_ascii=False)}"
             return f"Recursive move completed: {src_dir} -> {dst_dir}"
-        except OpenListError:
-            pass
+        except OpenListError as exc:
+            message = exc.message.lower()
+            if not any(
+                marker in message
+                for marker in ("not found", "unsupported", "method not allowed", "recursive_move")
+            ):
+                raise
 
         # Fallback: OpenList v4.2.x doesn't support fs/recursive_move.
         # Use rename (same parent) or move+rename (different parents).
         src_dir_clean = src_dir.rstrip("/")
         dst_dir_clean = dst_dir.rstrip("/")
-        src_name = os.path.basename(src_dir_clean)
-        src_parent = os.path.dirname(src_dir_clean) or "/"
-        dst_parent = os.path.dirname(dst_dir_clean) or "/"
-        dst_name = os.path.basename(dst_dir_clean)
+        src_name = posixpath.basename(src_dir_clean)
+        src_parent = posixpath.dirname(src_dir_clean) or "/"
+        dst_parent = posixpath.dirname(dst_dir_clean) or "/"
+        dst_name = posixpath.basename(dst_dir_clean)
+        validate_name(src_name)
+        validate_name(dst_name)
 
         if src_parent == dst_parent:
             # Same parent directory — just rename

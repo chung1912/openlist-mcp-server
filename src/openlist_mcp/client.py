@@ -80,6 +80,12 @@ class OpenListClient:
         try:
             data = resp.json()
         except ValueError as exc:
+            if text_preview.lower().startswith("<!doctype html") or "<html" in text_preview.lower():
+                raise OpenListError(
+                    f"{action} returned HTML instead of JSON. "
+                    "This endpoint may be unavailable in your OpenList version or deployment.",
+                    code=resp.status_code,
+                ) from exc
             raise OpenListError(
                 f"{action} returned non-JSON response: {text_preview}",
                 code=resp.status_code,

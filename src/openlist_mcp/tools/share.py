@@ -5,7 +5,7 @@ from __future__ import annotations
 from mcp.server.fastmcp import FastMCP
 
 from ..client import get_client
-from . import validate_path
+from . import validate_pagination, validate_path
 
 
 def register_share_tools(mcp: FastMCP) -> None:
@@ -30,6 +30,7 @@ def register_share_tools(mcp: FastMCP) -> None:
         """List all existing share links."""
         import json
 
+        validate_pagination(page, per_page)
         client = await get_client()
         data = await client.request(
             "GET",

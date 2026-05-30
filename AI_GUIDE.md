@@ -163,7 +163,7 @@ offline_download(url="https://example.com/file.pdf", path="/downloads")
 offline_download(url="https://...", path="/downloads", tool="aria2")
 
 # Upload file content from the conversation
-upload_file(path="/docs", file_name="note.txt", content="base64_encoded_content")
+upload_file(path="/docs", file_name="note.txt", file_content_base64="base64_encoded_content")
 
 # Upload a file from the local machine (if enabled by admin)
 upload_local_file(local_path="/home/user/report.pdf", remote_dir="/docs")
@@ -220,13 +220,13 @@ logout()
 list_tasks()
 
 # Retry a failed task
-retry_task(id="task_id_here")
+retry_task(task_id="task_id_here")
 
 # Cancel a running task
-cancel_task(id="task_id_here")
+cancel_task(task_id="task_id_here")
 
 # Delete a task record
-delete_task(id="task_id_here")
+delete_task(task_id="task_id_here")
 ```
 
 ### Share Management
@@ -239,10 +239,10 @@ create_share(path="/shared/file.pdf")
 list_shares()
 
 # Cancel a share
-cancel_share(id="share_id_here")
+cancel_share(share_key="share_key_here", confirm=True)
 
 # Delete a share
-delete_share(id="share_id_here")
+delete_share(share_key="share_key_here", confirm=True)
 ```
 
 ---

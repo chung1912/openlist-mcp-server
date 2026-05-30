@@ -13,7 +13,7 @@ from pathlib import Path
 from mcp.server.fastmcp import FastMCP
 
 from ..client import get_client
-from . import validate_path
+from . import validate_name, validate_path
 
 
 def _allowed_upload_roots() -> list[Path]:
@@ -89,6 +89,7 @@ def register_transfer_tools(mcp: FastMCP) -> None:
             Success message or task ID for async uploads.
         """
         validate_path(path)
+        validate_name(file_name)
         client = await get_client()
         try:
             file_bytes = base64.b64decode(file_content_base64)
@@ -140,8 +141,10 @@ def register_transfer_tools(mcp: FastMCP) -> None:
             )
 
         final_name = remote_name.strip() or file_path.name
-        if not final_name or "/" in final_name or "\\" in final_name:
-            return "remote_name must be a filename only, not a path"
+        try:
+            validate_name(final_name)
+        except ValueError as exc:
+            return f"remote_name must be a filename only, not a path: {exc}"
 
         client = await get_client()
         data = await client.upload(
