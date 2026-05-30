@@ -45,12 +45,17 @@ MCP Server for [OpenList](https://github.com/OpenListTeam/OpenList) — an open-
 
 Copy the contents of [`AI_GUIDE.md`](AI_GUIDE.md) and paste it to your AI assistant (Claude, etc.). The AI will know how to install, configure, and use all 32 tools.
 
-### Try These Prompts
+### Example Prompts
 
 Once configured, just say these to your AI:
 
 | What you want to do | Say to the AI |
 |--------------------|--------------|
+| **List files** | "List files in the root directory of my OpenList." |
+| **Search files** | "Search for files named 'report' on OpenList." |
+| **Upload a file** | "Upload this file to /documents on OpenList." |
+| **Get download link** | "Give me the download URL for /documents/report.pdf." |
+| **Create a folder** | "Create a folder called 'archive' under /documents on OpenList." |
 | **Download a file** | "Download this file to /downloads: https://example.com/file.zip" |
 | **BT download** | "Download this torrent: magnet:?xt=..." |
 | **Check download tools** | "What download tools are available on my server?" |
@@ -179,16 +184,6 @@ The server automatically loads `.env` when `python-dotenv` is installed. **Never
 
 3. **Restart Claude Desktop** to load the new server.
 4. Try a prompt: *"List the files on my OpenList server."*
-
-### Example prompts to get started
-
-| Goal | Prompt |
-|------|--------|
-| List root directory | *"List files in the root directory of my OpenList."* |
-| Search files | *"Search for files named 'report' on OpenList."* |
-| Upload a file | *"Upload this file to /documents on OpenList."* (Claude will ask for the file) |
-| Get download link | *"Give me the download URL for /documents/report.pdf."* |
-| Create a folder | *"Create a folder called 'archive' under /documents on OpenList."* |
 
 ### Direct stdio (debugging)
 

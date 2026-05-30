@@ -45,12 +45,17 @@
 
 将 [`AI_GUIDE.md`](AI_GUIDE.md) 的内容复制粘贴给你的 AI 助手（Claude 等），AI 就能知道如何安装、配置和使用全部 32 个工具。
 
-### 试试这些 Prompt
+### 快速上手 Prompt 示例
 
 配置好后，直接对 AI 说这些话就行：
 
 | 你想做什么 | 对 AI 说 |
 |-----------|---------|
+| **列根目录** | "列出我 OpenList 根目录的文件。" |
+| **搜索文件** | "在 OpenList 上搜索包含'报告'的文件。" |
+| **上传文件** | "把这个文件上传到 OpenList 的 /documents 目录。" |
+| **获取下载链接** | "给我 /documents/report.pdf 的下载链接。" |
+| **创建目录** | "在 /documents 下创建一个叫 archive 的文件夹。" |
 | **下载文件** | "帮我把这个文件下载到 downloads 目录：https://example.com/file.zip" |
 | **BT 下载** | "帮我把这个种子下载下来：magnet:?xt=..." |
 | **查下载工具** | "看看我这个服务器上有哪些下载工具" |
@@ -170,16 +175,6 @@ pip install python-dotenv   # .env 支持需要此包
 
 3. **重启 Claude Desktop** 使配置生效。
 4. 试试这个 prompt：*"列出我 OpenList 根目录的文件。"*
-
-### 快速上手 Prompt 示例
-
-| 目标 | 可以说 |
-|------|--------|
-| 列根目录 | "列出我 OpenList 上的文件。" |
-| 搜索文件 | "在 OpenList 上搜索包含'报告'的文件。" |
-| 上传文件 | "把这个文件上传到 OpenList 的 /documents 目录。"（Claude 会问你要哪个文件） |
-| 获取下载链接 | "给我 /documents/report.pdf 的下载链接。" |
-| 创建目录 | "在 /documents 下创建一个叫 archive 的文件夹。" |
 
 ### 直接 stdio 运行（调试用）
 
