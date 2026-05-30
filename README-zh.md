@@ -30,13 +30,22 @@
 - **自动认证** — JWT 自动登录与 token 过期重试
 - **NEW v0.2.5** 双因素认证 (2FA/TOTP)：支持带 OTP 验证码登录
 - **NEW v0.2.5** 本地文件上传：新增 `upload_local_file` 工具（默认禁用，需配置 `OPENLIST_LOCAL_UPLOAD_ROOTS`）
+- **NEW v0.2.6** 高级功能：离线下载、在线解压、递归移动
 
 ## 环境要求
 
 - **Python 3.10+**（检查版本：`python3 --version`）
 - **一个运行中的 OpenList 实例**（本服务是 OpenList 的客户端，不是独立服务）
 
-## 安装
+## 快速开始
+
+### 给 AI 助手使用
+
+将 [`AI_GUIDE.md`](AI_GUIDE.md) 的内容复制粘贴给你的 AI 助手（Claude 等），AI 就能知道如何安装、配置和使用全部 26 个工具。
+
+### 给人类用户使用
+
+按以下步骤手动安装。
 
 ### 从 GitHub 源码安装
 
@@ -69,7 +78,7 @@ pip install -e .
 ```bash
 openlist-mcp
 # 期望输出：
-# "OpenList MCP Server v0.2.5 installed successfully.
+# "OpenList MCP Server v0.2.6 installed successfully.
 #  Set OPENLIST_URL, OPENLIST_USERNAME, and OPENLIST_PASSWORD to get started."
 ```
 
@@ -277,6 +286,16 @@ PYTHONPATH=src python3 test_integration.py
 ---
 
 ## 更新日志
+
+### v0.2.6
+
+- **高级工具模块**：新增 `tools/advanced.py` 模块。
+- **`offline_download`**：从远程 URL 直接下载文件到 OpenList 服务端（需服务端已配置 aria2 等下载工具）。
+- **`decompress_archive`**：服务端在线解压压缩文件（zip、rar、7z、tar.gz 等）。
+- **`get_me`**：获取当前登录用户信息（用户名、角色、2FA 状态、权限）。
+- **`logout`**：登出并使当前认证 token 失效。
+- **`recursive_move`**：递归移动整个目录树到新位置，无需逐个列出文件名。
+- **启动指南**：未配置时的使用帮助已更新，列出全部 26 个分类工具。
 
 ### v0.2.5
 

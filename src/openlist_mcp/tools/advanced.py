@@ -21,7 +21,7 @@ def register_advanced_tools(mcp: FastMCP) -> None:
     async def offline_download(
         url: str,
         path: str = "/",
-        tool: str = "",
+        tool: str = "aria2",
         delete_policy: str = "",
     ) -> str:
         """Download a file from a remote URL directly to the OpenList server.
@@ -31,7 +31,7 @@ def register_advanced_tools(mcp: FastMCP) -> None:
         Args:
             url: Remote URL to download from.
             path: Destination directory on OpenList (e.g. "/downloads"). Defaults to root.
-            tool: Optional download tool name (e.g. "aria2"). Leave empty for auto.
+            tool: Download tool name (e.g. "aria2"). Defaults to "aria2".
             delete_policy: Optional delete policy for completed tasks.
 
         Returns:

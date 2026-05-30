@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from mcp.server.fastmcp import FastMCP
 
-from ..client import get_client
+from ..client import OpenListError, get_client
 from . import validate_path
 
 
@@ -288,15 +288,58 @@ def register_fs_tools(mcp: FastMCP) -> None:
             Success message or task info.
         """
         import json
+        import os
 
         validate_path(src_dir)
         validate_path(dst_dir)
         client = await get_client()
-        data = await client.request(
-            "POST",
-            "fs/recursive_move",
-            json={"src_dir": src_dir, "dst_dir": dst_dir},
-        )
-        if data is not None and data != {}:
-            return f"Recursive move task created: {json.dumps(data, ensure_ascii=False)}"
-        return f"Recursive move completed: {src_dir} -> {dst_dir}"
+
+        # Try the native API first (OpenList v4.3+)
+        try:
+            data = await client.request(
+                "POST",
+                "fs/recursive_move",
+                json={"src_dir": src_dir, "dst_dir": dst_dir},
+            )
+            if data is not None and data != {}:
+                return f"Recursive move task created: {json.dumps(data, ensure_ascii=False)}"
+            return f"Recursive move completed: {src_dir} -> {dst_dir}"
+        except OpenListError:
+            pass
+
+        # Fallback: OpenList v4.2.x doesn't support fs/recursive_move.
+        # Use rename (same parent) or move+rename (different parents).
+        src_dir_clean = src_dir.rstrip("/")
+        dst_dir_clean = dst_dir.rstrip("/")
+        src_name = os.path.basename(src_dir_clean)
+        src_parent = os.path.dirname(src_dir_clean) or "/"
+        dst_parent = os.path.dirname(dst_dir_clean) or "/"
+        dst_name = os.path.basename(dst_dir_clean)
+
+        if src_parent == dst_parent:
+            # Same parent directory — just rename
+            await client.request(
+                "POST",
+                "fs/rename",
+                json={"path": src_dir_clean, "name": dst_name},
+            )
+            return f"Recursive move completed (rename): {src_dir} -> {dst_dir}"
+        else:
+            # Different parents — move then rename
+            await client.request(
+                "POST",
+                "fs/move",
+                json={
+                    "src_dir": src_parent,
+                    "dst_dir": dst_parent,
+                    "names": [src_name],
+                },
+            )
+            if src_name != dst_name:
+                moved_path = f"{dst_parent.rstrip('/')}/{src_name}" if dst_parent != "/" else f"/{src_name}"
+                await client.request(
+                    "POST",
+                    "fs/rename",
+                    json={"path": moved_path, "name": dst_name},
+                )
+            return f"Recursive move completed (move+rename): {src_dir} -> {dst_dir}"

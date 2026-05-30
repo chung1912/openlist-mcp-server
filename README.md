@@ -30,13 +30,22 @@ MCP Server for [OpenList](https://github.com/OpenListTeam/OpenList) — an open-
 - Auto authentication: JWT login and retry after token expiration
 - **NEW v0.2.5** 2FA / TOTP support: login with optional OTP code
 - **NEW v0.2.5** Local file upload: `upload_local_file` tool (disabled by default, requires `OPENLIST_LOCAL_UPLOAD_ROOTS`)
+- **NEW v0.2.6** Advanced: offline download, archive decompression, recursive move
 
 ## Requirements
 
 - Python 3.10+ (check with `python3 --version`)
 - A running OpenList instance — this is a client, not a standalone service
 
-## Installation
+## Quick Start
+
+### For AI Assistants
+
+Copy the contents of [`AI_GUIDE.md`](AI_GUIDE.md) and paste it to your AI assistant (Claude, etc.). The AI will know how to install, configure, and use all 26 tools.
+
+### For Human Users
+
+Follow the instructions below to install manually.
 
 ### From GitHub source
 
@@ -69,7 +78,7 @@ pip install -e .
 ```bash
 openlist-mcp
 # Expected output:
-# "OpenList MCP Server v0.2.5 installed successfully.
+# "OpenList MCP Server v0.2.6 installed successfully.
 #  Set OPENLIST_URL, OPENLIST_USERNAME, and OPENLIST_PASSWORD to get started."
 ```
 
@@ -278,6 +287,16 @@ The integration test creates a temporary directory under `OPENLIST_TEST_DIR` and
 ---
 
 ## Changelog
+
+### v0.2.6
+
+- **Advanced tools**: New `tools/advanced.py` module added.
+- **`offline_download`**: Download files from a remote URL directly to the OpenList server (requires a download tool like aria2 configured on the server).
+- **`decompress_archive`**: Decompress archive files (zip, rar, 7z, tar.gz, etc.) on the server.
+- **`get_me`**: Get current authenticated user's profile information (username, role, 2FA status, permissions).
+- **`logout`**: Logout and invalidate the current authentication token.
+- **`recursive_move`**: Recursively move an entire directory tree to a new location without listing individual file names.
+- **Startup guide**: Printed usage help now includes all 26 tools with categories.
 
 ### v0.2.5
 
