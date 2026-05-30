@@ -21,6 +21,7 @@ import sys
 from mcp.server.fastmcp import FastMCP
 
 from .config import get_config
+from .tools.advanced import register_advanced_tools
 from .tools.auth import register_auth_tools, register_public_tools
 from .tools.fs import register_fs_tools
 from .tools.share import register_share_tools
@@ -56,6 +57,7 @@ def register_all_tools() -> None:
     register_transfer_tools(mcp)
     register_task_tools(mcp)
     register_share_tools(mcp)
+    register_advanced_tools(mcp)
     logger.info("All tools registered successfully")
 
 
@@ -74,14 +76,17 @@ def main() -> None:
             "║  An MCP server that lets AI agents (Claude, SOLO, etc.)      ║\n"
             "║  manage files on your OpenList instance.                     ║\n"
             "║                                                              ║\n"
-            "║  21 tools available:                                         ║\n"
+            "║  26 tools available:                                         ║\n"
             "║  • Browse:   list_files, get_file_info, search_files         ║\n"
-            "║  • Manage:   create_folder, rename, copy, move, remove       ║\n"
+            "║  • Manage:   create_folder, rename, copy, move, remove,      ║\n"
+            "║              recursive_move                                  ║\n"
             "║  • Transfer: upload_file, upload_local_file, get_download_url║\n"
-            "║  • Auth:     login (supports 2FA/TOTP), get_public_settings  ║\n"
+            "║  • Auth:     login (supports 2FA/TOTP), get_public_settings, ║\n"
+            "║              get_me, logout                                   ║\n"
             "║  • Tasks:    list_tasks, retry_task, cancel_task, delete_task║\n"
             "║  • Shares:   create_share, list_shares, cancel_share,        ║\n"
             "║              delete_share                                    ║\n"
+            "║  • Advanced: offline_download, decompress_archive             ║\n"
             "║                                                              ║\n"
             "║  Quick start:                                                ║\n"
             "║  Set these environment variables and restart:                ║\n"
@@ -90,7 +95,7 @@ def main() -> None:
             "║    export OPENLIST_USERNAME=your_username                     ║\n"
             "║    export OPENLIST_PASSWORD=your_password                    ║\n"
             "║                                                              ║\n"
-            "║  Then try: \"List files on my OpenList server.\"               ║\n"
+            '║  Then try: "List files on my OpenList server."               ║\n'
             "║                                                              ║\n"
             "║  For more: https://github.com/hbestm/openlist-mcp-server     ║\n"
             "║                                                              ║\n"

@@ -269,3 +269,34 @@ def register_fs_tools(mcp: FastMCP) -> None:
             json={"dir": directory, "names": name_list},
         )
         return f"Deleted successfully: {name_list} from {directory}"
+
+    @mcp.tool()
+    async def recursive_move(
+        src_dir: str,
+        dst_dir: str,
+    ) -> str:
+        """Recursively move an entire directory tree to a new location.
+
+        Unlike the move tool, this does not require listing individual file names.
+        The entire source directory and all its contents are moved together.
+
+        Args:
+            src_dir: Source directory path to move.
+            dst_dir: Destination directory path.
+
+        Returns:
+            Success message or task info.
+        """
+        import json
+
+        validate_path(src_dir)
+        validate_path(dst_dir)
+        client = await get_client()
+        data = await client.request(
+            "POST",
+            "fs/recursive_move",
+            json={"src_dir": src_dir, "dst_dir": dst_dir},
+        )
+        if data is not None and data != {}:
+            return f"Recursive move task created: {json.dumps(data, ensure_ascii=False)}"
+        return f"Recursive move completed: {src_dir} -> {dst_dir}"
