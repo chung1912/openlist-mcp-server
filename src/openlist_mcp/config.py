@@ -20,6 +20,7 @@ class OpenListConfig:
         self.base_url = os.environ.get("OPENLIST_URL", "").rstrip("/")
         self.username = os.environ.get("OPENLIST_USERNAME", "")
         self.password = os.environ.get("OPENLIST_PASSWORD", "")
+        self.totp_secret = os.environ.get("OPENLIST_TOTP_SECRET", "")
         self._validate()
 
     def _validate(self) -> None:
@@ -48,6 +49,11 @@ class OpenListConfig:
     def is_authenticated(self) -> bool:
         """Whether credentials are configured."""
         return bool(self.username and self.password)
+
+    @property
+    def has_totp_secret(self) -> bool:
+        """Whether a TOTP secret is configured for automatic 2FA."""
+        return bool(self.totp_secret)
 
 
 # Global config instance
