@@ -128,7 +128,7 @@ The server automatically loads `.env` when `python-dotenv` is installed. **Never
 
 - **Use HTTPS in production** — credentials are sent in plain text over HTTP.
 - **Use a dedicated low-privilege OpenList account** for MCP access. Avoid using the
-  admin account for daily AI-agent operations.
+  `admin` account for daily AI-agent operations.
 - **Limit the account to the smallest useful storage scope**. Do not expose your
   server home directory, root filesystem, shell history, Docker config, SSH keys,
   or other system paths through OpenList.
