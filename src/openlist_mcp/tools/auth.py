@@ -15,15 +15,15 @@ def register_auth_tools(mcp: FastMCP) -> None:
     async def login(otp_code: str = "") -> str:
         """Login to OpenList server using configured credentials.
 
-        If OPENLIST_TOPT_SECRET is configured, the TOTP code will be generated
+        If OPENLIST_TOTP_SECRET is configured, the TOTP code will be generated
         automatically and you do not need to provide otp_code.
 
         If the OpenList account has two-factor authentication (2FA) enabled
-        and no OPENLIST_TOPT_SECRET is set, you must provide the TOTP code
+        and no OPENLIST_TOTP_SECRET is set, you must provide the TOTP code
         from your authenticator app.
 
         Args:
-            otp_code: TOTP code for 2FA. Leave empty if OPENLIST_TOPT_SECRET
+            otp_code: TOTP code for 2FA. Leave empty if OPENLIST_TOTP_SECRET
                       is configured or 2FA is not enabled.
 
         Returns:
@@ -41,7 +41,7 @@ def register_auth_tools(mcp: FastMCP) -> None:
             if config.has_totp_secret:
                 return (
                     "Auto-generated TOTP code was rejected. "
-                    "Please check your OPENLIST_TOPT_SECRET value."
+                    "Please check your OPENLIST_TOTP_SECRET value."
                 )
             return (
                 "2FA is enabled on this OpenList account. "

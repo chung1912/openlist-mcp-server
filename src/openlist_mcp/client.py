@@ -113,7 +113,7 @@ class OpenListClient:
                 if self._config.has_totp_secret:
                     raise OpenListError(
                         "Auto-generated TOTP code was rejected. "
-                        "Check your OPENLIST_TOPT_SECRET value.",
+                        "Check your OPENLIST_TOTP_SECRET value.",
                         code=402,
                     ) from None
                 raise OpenList2FAError(

@@ -20,7 +20,7 @@ class OpenListConfig:
         self.base_url = os.environ.get("OPENLIST_URL", "").rstrip("/")
         self.username = os.environ.get("OPENLIST_USERNAME", "")
         self.password = os.environ.get("OPENLIST_PASSWORD", "")
-        self.totp_secret = os.environ.get("OPENLIST_TOPT_SECRET", "")
+        self.totp_secret = os.environ.get("OPENLIST_TOTP_SECRET", "")
         self._validate()
 
     def _validate(self) -> None:
