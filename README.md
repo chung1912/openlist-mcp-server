@@ -288,6 +288,7 @@ The integration test creates a temporary directory under `OPENLIST_TEST_DIR` and
 - **Release workflow**: Removed automatic PyPI publishing. Tag push creates a GitHub Release with build artifacts only.
 - **Version unification**: `__version__`, `pyproject.toml`, and `server.py` all consistent at v0.2.5. `__version__` now reads from package metadata at runtime.
 - **Documentation fixes**: Installation guide corrected for source archive; `search_files` notes now clarify that OpenList search/indexing must be enabled.
+- **Name validation fix**: `validate_name()` now correctly allows filenames containing `..` (e.g. `backup..tar.gz`, `..hidden_file`), only rejecting `.` and `..` as complete directory names. Empty names also properly rejected.
 
 ## Community & Support
 

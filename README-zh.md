@@ -287,6 +287,7 @@ PYTHONPATH=src python3 test_integration.py
 - **发布流程**：移除自动 PyPI 发布。打 tag 后仅创建 GitHub Release 并上传构建产物。
 - **版本统一**：`__version__`、`pyproject.toml`、`server.py` 统一为 v0.2.5。`__version__` 改为运行时从包元数据读取。
 - **文档修复**：安装说明改为源码方式；`search_files` 备注明确需开启 OpenList 搜索索引。
+- **名称校验修复**：`validate_name()` 现在正确处理包含连续双点的文件名（如 `backup..tar.gz`、`..hidden_file`），仅拒绝 `.` 和 `..` 完整目录名。空字符串也会被拒绝。
 
 ## Community & Support
 
