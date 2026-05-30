@@ -110,6 +110,16 @@ def register_advanced_tools(mcp: FastMCP) -> None:
         enforce_path_allowed(path)
         enforce_writable("offline_download")
 
+        # SSRF prevention: only allow http/https URLs
+        from urllib.parse import urlparse
+
+        parsed = urlparse(url)
+        if parsed.scheme not in ("http", "https"):
+            raise ValueError(
+                f"Unsupported URL scheme '{parsed.scheme}'. "
+                "Only http and https URLs are allowed for offline download."
+            )
+
         client = await get_client()
         body: dict[str, Any] = {"urls": [url], "path": path}
         if tool:
@@ -226,11 +236,8 @@ def register_advanced_tools(mcp: FastMCP) -> None:
         """
         client = await get_client()
         await client.request("GET", "auth/logout")
-        # Clear the cached token
-        import openlist_mcp.client as cm
-
-        if cm._client:
-            cm._client._token = None
+        # Clear the cached token via the public method
+        client.clear_token()
         return "Logged out successfully. Token invalidated."
 
     @mcp.tool()

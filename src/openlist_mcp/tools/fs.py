@@ -335,9 +335,9 @@ def register_fs_tools(mcp: FastMCP) -> None:
         Returns:
             Success or confirmation-required message.
         """
+        enforce_path_allowed(directory)
         if not confirm:
             return "Deletion not performed. Re-run with confirm=true to delete these items."
-        enforce_path_allowed(directory)
         enforce_writable("remove")
         client = await get_client()
         name_list = normalize_names(names)

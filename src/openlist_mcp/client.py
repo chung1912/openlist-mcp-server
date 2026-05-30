@@ -275,6 +275,10 @@ class OpenListClient:
         result = data.get("data", {})
         return result if isinstance(result, dict) else {"value": result}
 
+    def clear_token(self) -> None:
+        """Clear the cached authentication token."""
+        self._token = None
+
     async def close(self) -> None:
         """Close the HTTP client."""
         if self._client and not self._client.is_closed:
