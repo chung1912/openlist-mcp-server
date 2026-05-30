@@ -125,7 +125,6 @@ def register_fs_tools(mcp: FastMCP) -> None:
             Success or error message.
         """
         validate_path(path)
-        validate_name(name)
         client = await get_client()
         await client.request(
             "POST",
@@ -149,6 +148,7 @@ def register_fs_tools(mcp: FastMCP) -> None:
             Success or error message.
         """
         validate_path(path)
+        validate_name(name)
         client = await get_client()
         await client.request(
             "POST",
@@ -337,7 +337,9 @@ def register_fs_tools(mcp: FastMCP) -> None:
                 },
             )
             if src_name != dst_name:
-                moved_path = f"{dst_parent.rstrip('/')}/{src_name}" if dst_parent != "/" else f"/{src_name}"
+                moved_path = (
+                    f"{dst_parent.rstrip('/')}/{src_name}" if dst_parent != "/" else f"/{src_name}"
+                )
                 await client.request(
                     "POST",
                     "fs/rename",

@@ -112,7 +112,11 @@ class OpenListClient:
                     "Call the login tool with the otp_code parameter to authenticate."
                 )
             try:
-                otp_code = _generate_totp(self._config.totp_secret) if self._config.has_totp_secret else None
+                otp_code = (
+                    _generate_totp(self._config.totp_secret)
+                    if self._config.has_totp_secret
+                    else None
+                )
                 await self.login(otp_code=otp_code)
             except OpenList2FAError:
                 self._2fa_cached = True

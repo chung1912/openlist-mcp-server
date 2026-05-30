@@ -2,7 +2,6 @@
 
 from pathlib import Path
 
-
 DOC_FILES = ["README.md", "README-zh.md", "AI_GUIDE.md"]
 MOJIBAKE_MARKERS = ["鈥", "涓", "骞", "鍙", "鐨", "鑷", "閰"]
 
