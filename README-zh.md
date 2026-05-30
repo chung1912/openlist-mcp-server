@@ -327,10 +327,15 @@ export OPENLIST_URL="https://你的-openlist-地址.com"
 export OPENLIST_USERNAME="你的用户名"
 export OPENLIST_PASSWORD="你的密码"
 export OPENLIST_TEST_DIR="/"
-PYTHONPATH=src python3 test_integration.py
+PYTHONPATH=src python3 scripts/live_integration.py
 ```
 
 测试脚本会在 `OPENLIST_TEST_DIR` 下创建临时目录，测试完成后自动删除。不会输出密码或 Token。
+
+更多说明：
+
+- [Live OpenList testing](docs/live-testing.md)
+- [OpenList API compatibility notes](docs/api-compatibility.md)
 
 ## 注意事项
 

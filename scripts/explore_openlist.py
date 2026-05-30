@@ -8,7 +8,11 @@ from openlist_mcp.client import OpenListError, get_client
 
 
 async def explore() -> int:
-    missing = [k for k in ("OPENLIST_URL", "OPENLIST_USERNAME", "OPENLIST_PASSWORD") if not os.environ.get(k)]
+    missing = [
+        k
+        for k in ("OPENLIST_URL", "OPENLIST_USERNAME", "OPENLIST_PASSWORD")
+        if not os.environ.get(k)
+    ]
     if missing:
         print("Missing required environment variables: " + ", ".join(missing))
         return 2
@@ -23,8 +27,8 @@ async def explore() -> int:
         data = await client.request("POST", "fs/list", json={"path": path})
         for item in data.get("content", []):
             name = item.get("name", "N/A")
-            icon = "📁" if item.get("is_dir", False) else "📄"
-            print(f"  {icon} {name}")
+            marker = "[dir]" if item.get("is_dir", False) else "[file]"
+            print(f"  {marker} {name}")
     except OpenListError as e:
         print(f"  Error: {e.message}")
         return 1

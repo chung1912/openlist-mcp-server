@@ -87,7 +87,7 @@ pytest tests/
 export OPENLIST_URL="https://your-openlist.example.com"
 export OPENLIST_USERNAME="your_username"
 export OPENLIST_PASSWORD="your_password"
-python test_integration.py
+python scripts/live_integration.py
 ```
 
 ## 许可证

@@ -336,10 +336,15 @@ export OPENLIST_URL="https://your-openlist-instance.example.com"
 export OPENLIST_USERNAME="your_username"
 export OPENLIST_PASSWORD="your_password"
 export OPENLIST_TEST_DIR="/"
-PYTHONPATH=src python3 test_integration.py
+PYTHONPATH=src python3 scripts/live_integration.py
 ```
 
 The integration test creates a temporary directory under `OPENLIST_TEST_DIR` and removes it after the test. It never prints the password or token.
+
+More details:
+
+- [Live OpenList testing](docs/live-testing.md)
+- [OpenList API compatibility notes](docs/api-compatibility.md)
 
 ## Notes
 

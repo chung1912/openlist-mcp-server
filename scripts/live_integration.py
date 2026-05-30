@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""OpenList MCP Server integration test.
+"""OpenList MCP Server live integration smoke test.
 
 Set environment variables before running:
     export OPENLIST_URL="https://your-openlist.example.com"
@@ -28,23 +28,27 @@ class Colors:
 
 
 def print_success(msg: str) -> None:
-    print(f"{Colors.GREEN}✓{Colors.RESET} {msg}")
+    print(f"{Colors.GREEN}PASS{Colors.RESET} {msg}")
 
 
 def print_error(msg: str) -> None:
-    print(f"{Colors.RED}✗{Colors.RESET} {msg}")
+    print(f"{Colors.RED}FAIL{Colors.RESET} {msg}")
 
 
 def print_info(msg: str) -> None:
-    print(f"{Colors.BLUE}ℹ{Colors.RESET} {msg}")
+    print(f"{Colors.BLUE}INFO{Colors.RESET} {msg}")
 
 
 def print_warn(msg: str) -> None:
-    print(f"{Colors.YELLOW}⚠{Colors.RESET} {msg}")
+    print(f"{Colors.YELLOW}WARN{Colors.RESET} {msg}")
 
 
 def require_env() -> bool:
-    missing = [k for k in ("OPENLIST_URL", "OPENLIST_USERNAME", "OPENLIST_PASSWORD") if not os.environ.get(k)]
+    missing = [
+        k
+        for k in ("OPENLIST_URL", "OPENLIST_USERNAME", "OPENLIST_PASSWORD")
+        if not os.environ.get(k)
+    ]
     if missing:
         print_error("Missing required environment variables: " + ", ".join(missing))
         return False
@@ -98,8 +102,8 @@ async def main() -> int:
         print_info(f"Share response keys: {', '.join(data.keys()) or '(empty)'}")
 
     async def list_tasks():
-        data = await client.request("GET", "admin/task")
-        print_info(f"Task response keys: {', '.join(data.keys()) or '(empty)'}")
+        data = await client.request("GET", "task/offline_download/done")
+        print_info(f"Offline download task response keys: {', '.join(data.keys()) or '(empty)'}")
 
     for name, func in [
         ("Login", login),
@@ -107,7 +111,7 @@ async def main() -> int:
         ("Create folder", create_folder),
         ("Public settings", public_settings),
         ("List shares", list_shares),
-        ("List tasks", list_tasks),
+        ("List offline download tasks", list_tasks),
     ]:
         results.append((name, await run_test(name, func)))
 

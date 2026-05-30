@@ -31,8 +31,12 @@ jobs:
 
     - name: Lint with ruff
       run: |
-        ruff check src/
-        ruff format --check src/
+        ruff check src/ tests/ scripts/
+        ruff format --check src/ tests/ scripts/
+
+    - name: Compile Python files
+      run: |
+        python -m compileall -q src tests scripts
 
     - name: Type check with mypy
       run: |
