@@ -154,7 +154,7 @@ The server automatically loads `.env` when `python-dotenv` is installed. **Never
 }
 ```
 
-> A complete example with all optional settings (local file upload, auto TOTP) can be found at [`claude_desktop_config.example.json`](claude_desktop_config.example.json).
+> A complete example with all optional settings (local file upload, auto TOTP) can be found at [`mcp-config.example.json`](mcp-config.example.json).
 
 > **Config file locations:**
 > - macOS: `~/Library/Application Support/Claude/claude_desktop_config.json`

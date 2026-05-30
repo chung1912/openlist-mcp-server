@@ -154,7 +154,7 @@ pip install python-dotenv   # .env 支持需要此包
 }
 ```
 
-> 完整配置示例（含本地文件上传、自动 TOTP 等可选设置）请参考 [`claude_desktop_config.example.json`](claude_desktop_config.example.json)。
+> 完整配置示例（含本地文件上传、自动 TOTP 等可选设置）请参考 [`mcp-config.example.json`](mcp-config.example.json)。
 
 > **配置文件路径：**
 > - macOS: `~/Library/Application Support/Claude/claude_desktop_config.json`

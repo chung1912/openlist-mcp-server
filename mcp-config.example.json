@@ -3,11 +3,15 @@
     "openlist": {
       "command": "openlist-mcp",
       "env": {
+        "=== 必填项 ===": "====================",
         "OPENLIST_URL": "https://your-openlist-instance.example.com",
         "OPENLIST_USERNAME": "your_username",
         "OPENLIST_PASSWORD": "your_password",
 
+        "=== 本地文件上传（可选）===": "========",
         "OPENLIST_LOCAL_UPLOAD_ROOTS": "/tmp:/path/to/uploads",
+
+        "=== 自动 TOTP/2FA（可选）===": "=========",
         "OPENLIST_TOTP_SECRET": "your_totp_secret_key"
       }
     }
