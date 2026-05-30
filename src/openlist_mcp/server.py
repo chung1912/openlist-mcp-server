@@ -61,29 +61,54 @@ def register_all_tools() -> None:
 
 def main() -> None:
     """Main entry point for the OpenList MCP Server."""
-    # Validate configuration early
     try:
         config = get_config()
-        logger.info("OpenList MCP Server starting")
-        logger.info("Target: %s", config.base_url)
-        if config.is_authenticated:
-            logger.info("Authentication: configured")
-        else:
-            logger.warning(
-                "Authentication: not configured. "
-                "Set OPENLIST_USERNAME and OPENLIST_PASSWORD for full access."
-            )
     except ValueError:
-        logger.info(
-            "OpenList MCP Server v0.2.5 installed successfully. "
-            "Set OPENLIST_URL, OPENLIST_USERNAME, and OPENLIST_PASSWORD to get started."
+        print(
+            "\n"
+            "╔══════════════════════════════════════════════════════════════╗\n"
+            "║              OpenList MCP Server v0.2.5                    ║\n"
+            "╠══════════════════════════════════════════════════════════════╣\n"
+            "║                                                              ║\n"
+            "║  What is this?                                               ║\n"
+            "║  An MCP server that lets AI agents (Claude, SOLO, etc.)      ║\n"
+            "║  manage files on your OpenList instance.                     ║\n"
+            "║                                                              ║\n"
+            "║  21 tools available:                                         ║\n"
+            "║  • Browse:   list_files, get_file_info, search_files         ║\n"
+            "║  • Manage:   create_folder, rename, copy, move, remove       ║\n"
+            "║  • Transfer: upload_file, upload_local_file, get_download_url║\n"
+            "║  • Auth:     login (supports 2FA/TOTP), get_public_settings  ║\n"
+            "║  • Tasks:    list_tasks, retry_task, cancel_task, delete_task║\n"
+            "║  • Shares:   create_share, list_shares, cancel_share,        ║\n"
+            "║              delete_share                                    ║\n"
+            "║                                                              ║\n"
+            "║  Quick start:                                                ║\n"
+            "║  Set these environment variables and restart:                ║\n"
+            "║                                                              ║\n"
+            "║    export OPENLIST_URL=https://your-openlist.com             ║\n"
+            "║    export OPENLIST_USERNAME=your_username                     ║\n"
+            "║    export OPENLIST_PASSWORD=your_password                    ║\n"
+            "║                                                              ║\n"
+            "║  Then try: \"List files on my OpenList server.\"               ║\n"
+            "║                                                              ║\n"
+            "║  For more: https://github.com/hbestm/openlist-mcp-server     ║\n"
+            "║                                                              ║\n"
+            "╚══════════════════════════════════════════════════════════════╝\n"
         )
         sys.exit(0)
 
-    # Register all tools
-    register_all_tools()
+    logger.info("OpenList MCP Server starting")
+    logger.info("Target: %s", config.base_url)
+    if config.is_authenticated:
+        logger.info("Authentication: configured")
+    else:
+        logger.warning(
+            "Authentication: not configured. "
+            "Set OPENLIST_USERNAME and OPENLIST_PASSWORD for full access."
+        )
 
-    # Run the MCP server (stdio transport)
+    register_all_tools()
     mcp.run()
 
 
