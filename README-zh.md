@@ -31,6 +31,8 @@
 - **NEW v0.2.5** 双因素认证 (2FA/TOTP)：支持带 OTP 验证码登录
 - **NEW v0.2.5** 本地文件上传：新增 `upload_local_file` 工具（默认禁用，需配置 `OPENLIST_LOCAL_UPLOAD_ROOTS`）
 - **NEW v0.2.6** 高级功能：离线下载、在线解压、递归移动
+- **NEW v0.2.7** 自动 TOTP：`OPENLIST_TOTP_SECRET` — 登录时自动生成 2FA 验证码
+- **NEW v0.2.7** 下载工具管理：`list_download_tools` — 查询服务端可用下载工具
 
 ## 环境要求
 
@@ -41,7 +43,21 @@
 
 ### 给 AI 助手使用
 
-将 [`AI_GUIDE.md`](AI_GUIDE.md) 的内容复制粘贴给你的 AI 助手（Claude 等），AI 就能知道如何安装、配置和使用全部 26 个工具。
+将 [`AI_GUIDE.md`](AI_GUIDE.md) 的内容复制粘贴给你的 AI 助手（Claude 等），AI 就能知道如何安装、配置和使用全部 27 个工具。
+
+### 试试这些 Prompt
+
+配置好后，直接对 AI 说这些话就行：
+
+| 你想做什么 | 对 AI 说 |
+|-----------|---------|
+| **下载文件** | "帮我把这个文件下载到 downloads 目录：https://example.com/file.zip" |
+| **BT 下载** | "帮我把这个种子下载下来：magnet:?xt=..." |
+| **查下载工具** | "看看我这个服务器上有哪些下载工具" |
+| **解压文件** | "把 downloads 目录下的 data.zip 解压到 data 文件夹" |
+| **下载+解压** | "把这个压缩包下载下来然后解压到项目目录" |
+| **批量清理** | "把 downloads 目录里所有 .tmp 文件删掉" |
+| **查身份** | "我现在是以什么身份登录的？" |
 
 ### 给人类用户使用
 
@@ -93,6 +109,9 @@ export OPENLIST_PASSWORD="你的密码"
 
 # 必需：upload_local_file 默认禁用，设置此变量后才可启用
 export OPENLIST_LOCAL_UPLOAD_ROOTS="/tmp:/path/to/uploads"
+
+# 可选：自动生成 TOTP 验证码用于 2FA 登录
+export OPENLIST_TOTP_SECRET="你的_totp_密钥"
 ```
 
 也可以使用 `.env` 文件（从 `.env.example` 复制）：
@@ -134,6 +153,8 @@ pip install python-dotenv   # .env 支持需要此包
   }
 }
 ```
+
+> 完整配置示例（含本地文件上传、自动 TOTP 等可选设置）请参考 [`claude_desktop_config.example.json`](claude_desktop_config.example.json)。
 
 > **配置文件路径：**
 > - macOS: `~/Library/Application Support/Claude/claude_desktop_config.json`
@@ -193,6 +214,18 @@ openlist-mcp
 | `search not available` | 搜索索引未开启或后端不支持搜索 | 先在 OpenList 管理后台开启搜索/索引功能，并确认存储后端支持搜索 |
 | `2FA code is required` | 开启了双因素认证 | 调用 `login(otp_code="你的验证码")` 传入认证器 App 的 TOTP 码 |
 | `Invalid 2FA code` | TOTP 验证码错误或过期 | 从认证器 App 生成新码后重新调用 login 传入正确的 `otp_code` |
+| `upload_local_file` 上传被拒 | 未设置 `OPENLIST_LOCAL_UPLOAD_ROOTS` | 设置环境变量，配置允许读取的目录（如 `/tmp:/path/to/uploads`） |
+| `Auto-generated TOTP code was rejected` | `OPENLIST_TOTP_SECRET` 值错误 | 检查 TOTP 密钥是否与认证器 App 中的一致 |
+| `.env` 文件未生效 | 未安装 `python-dotenv` | 执行 `pip install python-dotenv` |
+| `recursive_move` 返回 `object not found` | OpenList v4.2.2 后端 bug | 服务端会自动降级为 `rename`，文件移动正常 |
+| 离线下载任务已创建但不下载 | 所选下载工具（如 aria2）未在服务端运行 | 检查下载工具的服务状态。aria2：执行 `aria2c --enable-rpc --rpc-listen-all=true --rpc-allow-origin-all -D`。其他工具：确认服务已启动且 RPC 端口可访问 |
+| `Guest user is disabled, login please` | Token 过期或无效 | 重新登录即可——下次 API 调用会自动处理 |
+| Transmission/qBittorrent 下载不工作 | 下载工具未在服务端正确配置 | 依次排查：(1) 服务是否已安装并运行？(2) WebUI/RPC 端口是否能访问？(3) OpenList 管理后台中的凭据是否正确？运行 `list_download_tools` 确认服务端能检测到该工具 |
+| `object not found` on recursive_move | OpenList v4.2.2 后端 bug | 服务端会自动降级为 `rename`，文件移动正常 |
+| 任务 API 返回非 JSON 响应 | OpenList 版本不匹配 | 部分管理端接口可能未在当前部署中暴露 |
+| `pip install` 安装失败 | Python 版本过低或依赖缺失 | 使用 Python 3.10+，并更新 pip：`pip install --upgrade pip` |
+| `list_download_tools` 返回工具很少 | 服务端未安装配置下载工具 | 运行 `list_download_tools` 查看可用工具；在 OpenList 服务器上安装配置 aria2、Transmission 等 |
+| HTTP 警告：凭证明文传输 | 使用 HTTP 而非 HTTPS | 生产环境请使用 HTTPS；本地/内网环境可忽略该警告 |
 
 **开启调试日志：**
 
@@ -221,8 +254,10 @@ rm -rf venv
 
 | 工具 | 说明 |
 |---|---|
-| `login` | 使用配置的凭据登录。如果账户已开启 2FA，可传入 `otp_code` 参数。Token 不会被 MCP Server 打印。 |
+| `login` | 使用配置的凭据登录。如已设置 `OPENLIST_TOTP_SECRET`，TOTP 验证码会自动生成；否则在开启 2FA 时需要手动传入 `otp_code`。 |
 | `get_public_settings` | 无需认证获取公开设置。 |
+| `get_me` | 获取当前用户信息（用户名、角色、权限、2FA 状态）。 |
+| `logout` | 登出并使当前 Token 失效。 |
 
 ### 文件系统
 
@@ -236,6 +271,7 @@ rm -rf venv
 | `copy` | 复制文件/文件夹到其他目录。 |
 | `move` | 移动文件/文件夹到其他目录。 |
 | `remove` | 删除文件/文件夹。需传 `confirm=true`。 |
+| `recursive_move` | 递归移动整个目录树到新位置（OpenList v4.2.x 自动降级为 rename）。 |
 
 ### 文件传输
 
@@ -265,6 +301,14 @@ rm -rf venv
 
 > **关于 `names` 参数**：`copy`、`move`、`remove` 工具使用逗号分隔文件名。如果文件名本身包含逗号，工具无法区分——操作前请先重命名该文件。
 
+### 高级功能
+
+| 工具 | 说明 |
+|---|---|
+| `offline_download` | 从远程 URL 直接下载文件到 OpenList 服务端（支持 aria2、Transmission、qBittorrent）。 |
+| `decompress_archive` | 服务端在线解压压缩文件（zip、rar、7z、tar.gz 等）。 |
+| `list_download_tools` | 查询服务端配置了哪些离线下载工具。 |
+
 ## 集成测试
 
 ```bash
@@ -292,6 +336,7 @@ PYTHONPATH=src python3 test_integration.py
 - **`list_download_tools`**：新增工具，查询 OpenList 服务端配置的可用下载工具（aria2、Transmission、qBittorrent 等）。
 - **`offline_download`**：工具说明更新，列出所有支持的下载工具。
 - **`validate_path` 修复**：改为组件级精确检测 `..`，不再误杀 `backup..2024.tar.gz` 等合法文件名。
+- **自动 TOTP**：新增 `OPENLIST_TOTP_SECRET` 环境变量，登录时自动生成 TOTP 验证码，无需手动输入。（PR #2 by @chung1912）
 - **启动指南**：更新为 27 个工具。
 
 ### v0.2.6

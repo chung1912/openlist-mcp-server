@@ -1,0 +1,15 @@
+{
+  "mcpServers": {
+    "openlist": {
+      "command": "openlist-mcp",
+      "env": {
+        "OPENLIST_URL": "https://your-openlist-instance.example.com",
+        "OPENLIST_USERNAME": "your_username",
+        "OPENLIST_PASSWORD": "your_password",
+
+        "OPENLIST_LOCAL_UPLOAD_ROOTS": "/tmp:/path/to/uploads",
+        "OPENLIST_TOTP_SECRET": "your_totp_secret_key"
+      }
+    }
+  }
+}

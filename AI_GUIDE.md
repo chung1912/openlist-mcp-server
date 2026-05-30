@@ -64,12 +64,15 @@ Add to `claude_desktop_config.json`:
       "env": {
         "OPENLIST_URL": "https://your-openlist.example.com",
         "OPENLIST_USERNAME": "admin",
-        "OPENLIST_PASSWORD": "your_password"
+        "OPENLIST_PASSWORD": "your_password",
+        "OPENLIST_TOTP_SECRET": "your_totp_secret"
       }
     }
   }
 }
 ```
+
+> `OPENLIST_TOTP_SECRET` is optional — only needed if the OpenList account has 2FA enabled.
 
 Linux: `~/.config/Claude/claude_desktop_config.json`
 macOS: `~/Library/Application Support/Claude/claude_desktop_config.json`
@@ -89,6 +92,16 @@ apt install aria2
 aria2c --enable-rpc --rpc-listen-all=true --rpc-allow-origin-all -D
 ```
 
+### 7. Optional: Auto 2FA with TOTP
+
+If the OpenList account has 2FA enabled, set the TOTP secret so the MCP server generates codes automatically:
+
+```bash
+export OPENLIST_TOTP_SECRET="your_totp_secret_key"
+```
+
+No manual TOTP entry needed after this — the server handles it.
+
 ---
 
 ## For the AI: How to Use the Tools
@@ -97,7 +110,14 @@ aria2c --enable-rpc --rpc-listen-all=true --rpc-allow-origin-all -D
 
 ```python
 # The MCP server auto-logs in on first API call.
-# If 2FA is enabled, ask the user for their TOTP code:
+
+# If 2FA is enabled and OPENLIST_TOTP_SECRET is configured,
+# the TOTP code is generated automatically — no manual input needed.
+# Just call login() without arguments:
+login()
+
+# If 2FA is enabled but no TOTP secret is configured,
+# ask the user for their TOTP code:
 login(otp_code="123456")
 ```
 
@@ -227,6 +247,22 @@ delete_share(id="share_id_here")
 
 ---
 
+## Quick Prompt Examples
+
+Copy and paste these prompts to your AI assistant:
+
+| What you want to do | Say to the AI |
+|--------------------|--------------|
+| **下载文件** | "帮我把这个文件下载到 downloads 目录：https://example.com/file.zip" |
+| **用指定工具下载** | "用 Transmission 下载这个 BT 链接：magnet:?xt=..." |
+| **查可用的下载工具** | "看看我这个服务器上有哪些下载工具可以用" |
+| **BT 下载** | "帮我把这个种子下载下来" |
+| **解压文件** | "把 downloads 目录下的 data.zip 解压到 data 文件夹" |
+| **下载+解压** | "把这个压缩包下载下来然后解压到项目目录" |
+| **批量操作** | "把 downloads 目录里所有 .tmp 文件删掉" |
+| **查自己是谁** | "我现在是以什么身份登录的？" |
+| **查存储空间** | "看看我这个 OpenList 服务器上挂载了哪些存储" |
+
 ## Common Workflows (AI Recommendations)
 
 ### Workflow 1: Download + Extract Archive
@@ -285,7 +321,7 @@ share = create_share(path="/shared/report.pdf")
 
 2. **`search_files` requires search indexing to be enabled** on the OpenList server. If search is disabled, the tool returns a 404.
 
-3. **`offline_download` supports only the `aria2` tool** on OpenList v4.2.2. The tool defaults to aria2.
+3. **`offline_download`** supports multiple download tools: `aria2` (default, supports https/http/magnet), `Transmission` (BitTorrent/HTTP), `qBittorrent` (BitTorrent/HTTP), and `SimpleHttp` (http only, may not work on all versions). Run `list_download_tools` to see what's available on the server.
 
 4. **`upload_local_file` is DISABLED by default.** It requires the admin to set `OPENLIST_LOCAL_UPLOAD_ROOTS` environment variable.
 
@@ -303,6 +339,13 @@ share = create_share(path="/shared/report.pdf")
 |---------|-------------|----------|
 | "Login failed: invalid username or password" | Wrong credentials | Ask the user to verify OPENLIST_USERNAME and OPENLIST_PASSWORD |
 | "Connection refused" | OpenList server not running | Ask the user to start their OpenList server |
-| "Tool not found" when calling offline_download | aria2 not installed on OpenList server | Ask the user to install aria2 |
+| "Tool not found" when calling offline_download | Selected tool not configured on OpenList server | Run `list_download_tools` to see available tools; install missing ones on the server |
+| "Auto-generated TOTP code was rejected" | Wrong OPENLIST_TOTP_SECRET value | Ask the user to verify the TOTP secret in their authenticator app |
 | "search not available" | Search indexing disabled | Inform the user, suggest enabling search in OpenList settings |
-| "object not found" on recursive_move | OpenList v4.2.2 bug | Tell the user it's a known issue; the fallback rename works |
+| "object not found" on recursive_move | OpenList v4.2.2 backend bug | Fallback to rename works automatically; inform user if concerned |
+| "upload_local_file" rejected | OPENLIST_LOCAL_UPLOAD_ROOTS not set | Ask the user to set the env var to allowed directories |
+| ".env" file not loading | python-dotenv not installed | Ask the user to run `pip install python-dotenv` |
+| Offline download task stuck | aria2 RPC not running on the server | Ask the user to start aria2 RPC daemon on the OpenList server |
+| "Guest user is disabled" | Token expired or invalid | The server will auto-re-login on next API call — no action needed |
+| Transmission/qBittorrent not working | Download tool not properly configured | Check port, credentials, and service status on the OpenList server |
+| HTTP warning about plain text | Using HTTP instead of HTTPS | Inform user to use HTTPS in production; safe on local network |

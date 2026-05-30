@@ -31,6 +31,8 @@ MCP Server for [OpenList](https://github.com/OpenListTeam/OpenList) — an open-
 - **NEW v0.2.5** 2FA / TOTP support: login with optional OTP code
 - **NEW v0.2.5** Local file upload: `upload_local_file` tool (disabled by default, requires `OPENLIST_LOCAL_UPLOAD_ROOTS`)
 - **NEW v0.2.6** Advanced: offline download, archive decompression, recursive move
+- **NEW v0.2.7** Auto TOTP: `OPENLIST_TOTP_SECRET` — auto-generate 2FA codes during login
+- **NEW v0.2.7** Download tool management: `list_download_tools` — query available download tools (aria2, Transmission, qBittorrent)
 
 ## Requirements
 
@@ -41,7 +43,21 @@ MCP Server for [OpenList](https://github.com/OpenListTeam/OpenList) — an open-
 
 ### For AI Assistants
 
-Copy the contents of [`AI_GUIDE.md`](AI_GUIDE.md) and paste it to your AI assistant (Claude, etc.). The AI will know how to install, configure, and use all 26 tools.
+Copy the contents of [`AI_GUIDE.md`](AI_GUIDE.md) and paste it to your AI assistant (Claude, etc.). The AI will know how to install, configure, and use all 27 tools.
+
+### Try These Prompts
+
+Once configured, just say these to your AI:
+
+| What you want to do | Say to the AI |
+|--------------------|--------------|
+| **Download a file** | "Download this file to /downloads: https://example.com/file.zip" |
+| **BT download** | "Download this torrent: magnet:?xt=..." |
+| **Check download tools** | "What download tools are available on my server?" |
+| **Extract an archive** | "Extract data.zip in /downloads to the data folder" |
+| **Download + extract** | "Download this archive and extract it to the project directory" |
+| **Batch clean up** | "Delete all .tmp files in /downloads" |
+| **Check identity** | "What user am I logged in as?" |
 
 ### For Human Users
 
@@ -93,6 +109,9 @@ export OPENLIST_PASSWORD="your_password"
 
 # Required to enable upload_local_file (disabled by default).
 export OPENLIST_LOCAL_UPLOAD_ROOTS="/tmp:/path/to/uploads"
+
+# Optional: auto-generate TOTP codes for 2FA login.
+export OPENLIST_TOTP_SECRET="your_totp_secret_key"
 ```
 
 You can also use a `.env` file (copy from `.env.example`):
@@ -134,6 +153,8 @@ The server automatically loads `.env` when `python-dotenv` is installed. **Never
   }
 }
 ```
+
+> A complete example with all optional settings (local file upload, auto TOTP) can be found at [`claude_desktop_config.example.json`](claude_desktop_config.example.json).
 
 > **Config file locations:**
 > - macOS: `~/Library/Application Support/Claude/claude_desktop_config.json`
@@ -193,7 +214,18 @@ Same config format:
 | `search not available` | Search index is disabled or backend doesn't support search | Enable OpenList search/indexing in admin settings first; storage backend must support search |
 | `2FA code is required` | 2FA is enabled on your OpenList account | Call `login(otp_code="your_totp_code")` with a TOTP code from your authenticator app |
 | `Invalid 2FA code` | The TOTP code was incorrect or expired | Generate a new code from your authenticator app and re-run login with the correct `otp_code` |
+| `upload_local_file` rejected | `OPENLIST_LOCAL_UPLOAD_ROOTS` not set | Set the env var to one or more allowed directories (e.g. `/tmp:/path/to/uploads`) |
+| `Auto-generated TOTP code was rejected` | Wrong `OPENLIST_TOTP_SECRET` value | Verify the TOTP secret matches the one set in your authenticator app |
+| `.env` file not loading | `python-dotenv` not installed | Run `pip install python-dotenv` |
+| `recursive_move` returns `object not found` | OpenList v4.2.2 backend bug | The server falls back to `rename` automatically — files are moved correctly |
+| Offline download task created but not progressing | The selected download tool (e.g. aria2) is not running on the OpenList server | Check the download tool's service status on the server. For aria2: run `aria2c --enable-rpc --rpc-listen-all=true --rpc-allow-origin-all -D`. For other tools, verify the service is active and the RPC port is accessible |
+| `Guest user is disabled, login please` | Token expired or invalid | Login again — the server handles this automatically on the next API call |
+| Transmission/qBittorrent downloads not working | Download tool not properly configured on server | Check: (1) Is the service installed and running? (2) Is the WebUI/RPC port accessible? (3) Are the credentials in OpenList admin settings correct? Run `list_download_tools` to verify the server can detect the tool |
+| `object not found` on recursive_move | OpenList v4.2.2 backend bug | The server falls back to `rename` automatically — files are moved correctly |
 | Non-JSON response on task API | OpenList version mismatch | Some admin endpoints may not be exposed in your deployment |
+| `pip install` fails | Python version too old or missing dependencies | Use Python 3.10+ and ensure `pip` is up to date: `pip install --upgrade pip` |
+| `list_download_tools` returns few tools | Download tools not installed/configured on server | Run `list_download_tools` to see what's available; install and configure aria2, Transmission, etc. on the OpenList server |
+| HTTP warning about plain text credentials | Using HTTP instead of HTTPS | Use HTTPS in production, or accept the warning for local/internal network use |
 
 **Enable debug logging:**
 
@@ -222,8 +254,10 @@ If the MCP server cannot access the user's local filesystem, use `upload_file` w
 
 | Tool | Description |
 |---|---|
-| `login` | Login using configured credentials. Pass `otp_code` if 2FA is enabled on your account. Token is not printed by the server. |
+| `login` | Login using configured credentials. If 2FA is enabled and `OPENLIST_TOTP_SECRET` is set, the TOTP code is generated automatically. Otherwise, pass `otp_code` manually. |
 | `get_public_settings` | Get public OpenList settings without authentication. |
+| `get_me` | Get current user profile (username, role, permissions, 2FA status). |
+| `logout` | Logout and invalidate the current token. |
 
 ### File system
 
@@ -237,6 +271,7 @@ If the MCP server cannot access the user's local filesystem, use `upload_file` w
 | `copy` | Copy files/folders to another directory. |
 | `move` | Move files/folders to another directory. |
 | `remove` | Delete files/folders. Requires `confirm=true`. |
+| `recursive_move` | Move an entire directory tree to a new location (with fallback for OpenList v4.2.x). |
 
 ### Transfer
 
@@ -266,6 +301,14 @@ If the MCP server cannot access the user's local filesystem, use `upload_file` w
 
 > **Note on `names` parameter**: The `copy`, `move`, and `remove` tools use comma-separated file names. If a filename contains a comma, the tool cannot distinguish it — rename the file before operation.
 
+### Advanced
+
+| Tool | Description |
+|---|---|
+| `offline_download` | Download a file from a remote URL directly to the OpenList server. Supports aria2, Transmission, qBittorrent. |
+| `decompress_archive` | Decompress archives (zip, rar, 7z, tar.gz, etc.) on the server. |
+| `list_download_tools` | List available download tools configured on the OpenList server. |
+
 ## Integration tests
 
 ```bash
@@ -293,6 +336,7 @@ The integration test creates a temporary directory under `OPENLIST_TEST_DIR` and
 - **`list_download_tools`**: New tool to query available offline download tools (aria2, Transmission, qBittorrent, etc.) configured on the server.
 - **`offline_download`**: Docstring updated to document all supported tools.
 - **`validate_path` fix**: Component-level `..` detection — no longer rejects legitimate filenames like `backup..2024.tar.gz`.
+- **Auto TOTP**: New `OPENLIST_TOTP_SECRET` environment variable for automatic TOTP code generation during 2FA login. When configured, the server generates TOTP codes automatically — no manual input needed. (PR #2 by @chung1912)
 - **Startup guide**: Updated to reflect 27 tools.
 
 ### v0.2.6
