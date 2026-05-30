@@ -6,10 +6,22 @@ import os
 def validate_path(path: str) -> None:
     """Validate that a path does not contain directory traversal sequences.
 
-    Rejects paths with '..' components to prevent TOCTOU/client-side traversal.
+    Rejects paths with '..' as a path component to prevent directory traversal.
+    Unlike a simple substring match, this only rejects '..' when it appears
+    as a standalone component between separators, allowing legitimate names
+    like 'backup..2024.tar.gz' or '/foo.v2/bar'.
     """
+    if not path:
+        raise ValueError("Path must not be empty")
+
+    # Check each path component — reject only exact '..', not filenames containing '..'
+    parts = path.replace("\\", "/").split("/")
+    if ".." in parts:
+        raise ValueError(f"Path must not contain directory traversal: {path}")
+
+    # Also catch ./ components via normpath
     normalized = os.path.normpath(path)
-    if path != normalized or ".." in path:
+    if path != normalized:
         raise ValueError(f"Path must not contain directory traversal: {path}")
 
 

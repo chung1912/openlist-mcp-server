@@ -8,14 +8,14 @@
 
 OpenList MCP Server is a tool that lets AI agents manage files on an [OpenList](https://github.com/OpenListTeam/OpenList) instance. OpenList is a self-hosted file management platform that supports local storage, cloud drives (OneDrive, Google Drive, etc.), and more.
 
-**26 tools available** across 7 categories:
+**27 tools available** across 7 categories:
 - Browse: `list_files`, `get_file_info`, `search_files`
 - Manage: `create_folder`, `rename`, `copy`, `move`, `remove`, `recursive_move`
 - Transfer: `upload_file`, `upload_local_file`, `get_download_url`
 - Auth: `login`, `get_public_settings`, `get_me`, `logout`
 - Tasks: `list_tasks`, `retry_task`, `cancel_task`, `delete_task`
 - Shares: `create_share`, `list_shares`, `cancel_share`, `delete_share`
-- Advanced: `offline_download`, `decompress_archive`
+- Advanced: `offline_download`, `decompress_archive`, `list_download_tools`
 
 ---
 
@@ -49,7 +49,7 @@ pip install -e .
 
 ```bash
 openlist-mcp
-# Should print: "OpenList MCP Server v0.2.6 installed successfully."
+# Should print: "OpenList MCP Server v0.2.7 installed successfully."
 ```
 
 ### 4. Configure for Claude Desktop
@@ -163,6 +163,18 @@ decompress_archive(
     overwrite=True,
     put_into_new_dir=True
 )
+```
+
+### Download Tools
+
+```python
+# List available download tools on the OpenList server
+list_download_tools()
+# Returns: ["aria2", "Transmission", "qBittorrent", ...]
+
+# Download with a specific tool
+offline_download(url="https://example.com/file.iso", path="/downloads", tool="Transmission")
+offline_download(url="https://example.com/file.zip", path="/downloads", tool="qBittorrent")
 ```
 
 ### Authentication

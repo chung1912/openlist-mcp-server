@@ -28,15 +28,15 @@ def register_advanced_tools(mcp: FastMCP) -> None:
 
         The server fetches the file in the background. Use list_tasks to monitor progress.
 
-        Available download tools on the server can be queried via the
-        `/api/public/offline_download_tools` endpoint.
+        Available download tools on the server can be queried via `list_download_tools`.
+        Common options include: "aria2" (supports http/https/magnet/torrent),
+        "qbittorrent" (BitTorrent/HTTP), "transmission" (BitTorrent/HTTP).
 
         Args:
             url: Remote URL to download from.
             path: Destination directory on OpenList (e.g. "/downloads"). Defaults to root.
-            tool: Download tool name. Defaults to "aria2" (supports https/http/magnet).
-                  Alternatives: "SimpleHttp" (http only), or others as listed by
-                  the server's public settings.
+            tool: Download tool name. Defaults to "aria2". Use `list_download_tools`
+                  to see what's available on this server.
             delete_policy: Optional delete policy for completed tasks.
 
         Returns:
@@ -127,3 +127,21 @@ def register_advanced_tools(mcp: FastMCP) -> None:
         if cm._client:
             cm._client._token = None
         return "Logged out successfully. Token invalidated."
+
+    @mcp.tool()
+    async def list_download_tools() -> str:
+        """List available offline download tools configured on this OpenList server.
+
+        The result depends on which download tools (aria2, Transmission, qBittorrent, etc.)
+        are installed and configured on the OpenList server. Only tools that are
+        properly set up will appear in the list.
+
+        Returns:
+            JSON array of available download tool names.
+        """
+        import json
+
+        client = await get_client()
+        data = await client.request("GET", "public/offline_download_tools", require_auth=False)
+        tools = data if isinstance(data, list) else data.get("value", data.get("data", []))
+        return json.dumps(tools, ensure_ascii=False)

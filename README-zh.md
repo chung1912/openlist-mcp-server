@@ -78,7 +78,7 @@ pip install -e .
 ```bash
 openlist-mcp
 # 期望输出：
-# "OpenList MCP Server v0.2.6 installed successfully.
+# "OpenList MCP Server v0.2.7 installed successfully.
 #  Set OPENLIST_URL, OPENLIST_USERNAME, and OPENLIST_PASSWORD to get started."
 ```
 
@@ -286,6 +286,13 @@ PYTHONPATH=src python3 test_integration.py
 ---
 
 ## 更新日志
+
+### v0.2.7
+
+- **`list_download_tools`**：新增工具，查询 OpenList 服务端配置的可用下载工具（aria2、Transmission、qBittorrent 等）。
+- **`offline_download`**：工具说明更新，列出所有支持的下载工具。
+- **`validate_path` 修复**：改为组件级精确检测 `..`，不再误杀 `backup..2024.tar.gz` 等合法文件名。
+- **启动指南**：更新为 27 个工具。
 
 ### v0.2.6
 

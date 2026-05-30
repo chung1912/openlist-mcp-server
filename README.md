@@ -78,7 +78,7 @@ pip install -e .
 ```bash
 openlist-mcp
 # Expected output:
-# "OpenList MCP Server v0.2.6 installed successfully.
+# "OpenList MCP Server v0.2.7 installed successfully.
 #  Set OPENLIST_URL, OPENLIST_USERNAME, and OPENLIST_PASSWORD to get started."
 ```
 
@@ -287,6 +287,13 @@ The integration test creates a temporary directory under `OPENLIST_TEST_DIR` and
 ---
 
 ## Changelog
+
+### v0.2.7
+
+- **`list_download_tools`**: New tool to query available offline download tools (aria2, Transmission, qBittorrent, etc.) configured on the server.
+- **`offline_download`**: Docstring updated to document all supported tools.
+- **`validate_path` fix**: Component-level `..` detection — no longer rejects legitimate filenames like `backup..2024.tar.gz`.
+- **Startup guide**: Updated to reflect 27 tools.
 
 ### v0.2.6
 
