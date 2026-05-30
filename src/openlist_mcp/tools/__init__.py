@@ -15,5 +15,9 @@ def validate_path(path: str) -> None:
 
 def validate_name(name: str) -> None:
     """Validate that a name is a single file/folder name, not a path."""
-    if "/" in name or "\\" in name or ".." in name:
-        raise ValueError(f"Invalid name: {name}")
+    if not name:
+        raise ValueError("Name must not be empty")
+    if name in (".", ".."):
+        raise ValueError(f"Name must not be current or parent directory: {name}")
+    if "/" in name or "\\" in name:
+        raise ValueError(f"Name must not contain path separators: {name}")
