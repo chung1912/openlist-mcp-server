@@ -29,6 +29,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Startup guide updated from 32 to 40 tools.
 
 ### Fixed
+- `search_files` parameter names corrected to match OpenList API:
+  `path` → `parent`, `keyword` → `keywords`, added `scope` parameter.
+  (PR #3 by @chung1912)
 - `create_share` no longer returns "must add at least 1 object" error (was sending wrong payload format).
 - `cancel_share` / `delete_share` no longer return 500 errors on OpenList v4.2.2.
 
