@@ -727,7 +727,7 @@ def register_fs_tools(mcp: FastMCP) -> None:
         if mode in ("push", "mirror"):
             enforce_writable(f"mirror ({mode} to dst)")
         if mode == "pull":
-            enforce_writable(f"mirror (pull from dst)")
+            enforce_writable("mirror (pull from dst)")
 
         client = await get_client()
 
@@ -742,10 +742,11 @@ def register_fs_tools(mcp: FastMCP) -> None:
                 seen.add(dir_path)
                 try:
                     data = await client.request(
-                        "POST", "fs/list",
+                        "POST",
+                        "fs/list",
                         json={"path": dir_path, "page": 1, "per_page": 200, "password": password},
                     )
-                except:
+                except Exception:
                     return
                 items = data.get("content", data.get("value", []))
                 if not isinstance(items, list):
@@ -760,9 +761,11 @@ def register_fs_tools(mcp: FastMCP) -> None:
                         await _walk(f"{dir_path.rstrip('/')}/{name}", f"{rel_prefix}{name}/")
                     else:
                         result[rel] = {
-                            "type": "file", "name": name,
+                            "type": "file",
+                            "name": name,
                             "size": item.get("size", 0),
                         }
+
             await _walk(path)
             return result
 
@@ -779,7 +782,7 @@ def register_fs_tools(mcp: FastMCP) -> None:
                 to_copy.append(rel)
 
         if mode == "mirror":
-            for rel, info in dst_files.items():
+            for rel in dst_files:
                 if rel not in src_files:
                     to_delete.append(rel)
 
@@ -818,7 +821,8 @@ def register_fs_tools(mcp: FastMCP) -> None:
                     dst_parent = f"{dst_dir.rstrip('/')}/{parent}" if parent else dst_dir
                     file_name = posixpath.basename(rel)
                     await client.request(
-                        "POST", "fs/copy",
+                        "POST",
+                        "fs/copy",
                         json={
                             "src_dir": posixpath.dirname(src_path),
                             "dst_dir": dst_parent,
@@ -834,7 +838,8 @@ def register_fs_tools(mcp: FastMCP) -> None:
                 dir_path = posixpath.dirname(f"{dst_dir.rstrip('/')}/{rel.rstrip('/')}")
                 name = posixpath.basename(rel.rstrip("/"))
                 await client.request(
-                    "POST", "fs/remove",
+                    "POST",
+                    "fs/remove",
                     json={"dir": dir_path, "names": [name]},
                 )
                 deleted += 1

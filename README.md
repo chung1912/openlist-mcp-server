@@ -217,6 +217,7 @@ Restart Claude Desktop, then try: *"List the files on my OpenList server."*
 | `find_duplicates` | Find potential duplicate files grouped by name+size or size only. |
 | `content_preview` | Preview text file content via range request (no full download). |
 | `batch_download` | Download multiple URLs at once via offline download. |
+| `mirror` | Recursive directory sync — compare src/dst, copy missing files, optionally delete extras. |
 
 ### Advanced & Torrent
 

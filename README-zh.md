@@ -217,6 +217,7 @@ openlist-mcp
 | `find_duplicates` | 按名称+大小或仅大小查找重复文件。 |
 | `content_preview` | 通过 Range 请求预览文本文件内容。 |
 | `batch_download` | 批量离线下载多个 URL。 |
+| `mirror` | 递归目录同步 — 比较源/目标目录，复制缺失文件，可选删除多余文件。 |
 
 ### 高级 & Torrent
 

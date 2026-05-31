@@ -15,7 +15,7 @@ OpenList MCP Server is a tool that lets AI agents manage files on an [OpenList](
 - Auth: `login`, `get_public_settings`, `get_me`, `get_capabilities`, `logout`
 - Tasks: `list_tasks`, `get_task_info`, `retry_task`, `cancel_task`, `delete_task`, `batch_cancel_tasks`, `batch_delete_tasks`, `batch_retry_tasks`, `clear_done_tasks`, `clear_succeeded_tasks`, `retry_failed_tasks`
 - Shares: `create_share`, `list_shares`, `get_share_info`, `update_share`, `enable_share`, `disable_share`, `cancel_share`, `delete_share`
-- Smart: `tree`, `disk_usage`, `find_duplicates`, `content_preview`, `batch_download`
+- Smart: `tree`, `disk_usage`, `find_duplicates`, `content_preview`, `batch_download`, `mirror`
 - System: `list_storages`, `get_storage_info`, `list_drivers`, `get_driver_info`, `get_settings`, `get_setting`, `get_index_progress`, `list_my_ssh_keys`, `add_ssh_key`, `delete_ssh_key`, `update_current_user`
 - Advanced: `offline_download`, `decompress_archive`, `list_archive_files`, `list_download_tools`, `get_archive_extensions`, `parse_torrent`, `generate_torrent`, `torrent_rapid_upload`
 
@@ -359,6 +359,11 @@ content_preview(path="/downloads/log.txt", max_chars=5000)
 # Batch download multiple URLs at once
 batch_download(urls=["https://example.com/a.zip", "https://example.com/b.zip"],
                path="/downloads", tool="aria2")
+
+# Sync a directory — dry run first
+mirror(src_dir="/source", dst_dir="/backup", mode="push", dry_run=True)
+# Then execute
+mirror(src_dir="/source", dst_dir="/backup", mode="mirror", dry_run=False)
 ```
 
 ### System (Read-Only Admin)

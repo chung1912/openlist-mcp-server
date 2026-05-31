@@ -15,6 +15,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `find_duplicates` — detect duplicate files by name+size or size only.
 - `content_preview` — preview text file content via range request.
 - `batch_download` — download multiple URLs at once via offline download.
+- `mirror` — recursive directory sync (push/pull/mirror modes, dry-run support).
 
 ### Added (Phase 3 — Read-only Admin)
 - `list_storages`, `get_storage_info` — view storage backends (read-only).
