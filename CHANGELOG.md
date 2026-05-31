@@ -44,6 +44,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `search_files` parameter names corrected to match OpenList API:
   `path` → `parent`, `keyword` → `keywords`, added `scope` parameter.
   (PR #3 by @chung1912)
+- Fixed 3 runtime crashes: missing `OpenListError` import, undefined `_human_size` function,
+  and `request()` json parameter type annotation.
+- Code quality: removed dead code, fixed ruff warnings, resolved mypy type errors.
+- All source files reformatted with `ruff format`.
 - `create_share` no longer returns "must add at least 1 object" error (was sending wrong payload format).
 - `cancel_share` / `delete_share` no longer return 500 errors on OpenList v4.2.2.
 
