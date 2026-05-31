@@ -185,11 +185,28 @@ Restart Claude Desktop, then try: *"List the files on my OpenList server."*
 |------|-------------|
 | `create_share` | Create share link(s) for one or more files/folders. Pass `files: list[str]`. |
 | `list_shares` | List all existing share links. |
+| `get_share_info` | Get details of a specific share link by ID. |
 | `update_share` | Modify an existing share (password, expiration, files, etc.). |
 | `enable_share` | Re-enable a disabled share link. |
 | `disable_share` | Temporarily disable a share link without deleting it. |
 | `cancel_share` | Alias for `disable_share`. |
 | `delete_share` | Permanently delete a share link. Requires `confirm=true`. |
+
+### System (Read-Only Admin)
+
+| Tool | Description |
+|------|-------------|
+| `list_storages` | List all configured storage backends (mount path, driver, status, space). |
+| `get_storage_info` | Get detailed info about a specific storage by ID. |
+| `list_drivers` | List all registered storage driver names. |
+| `get_driver_info` | Get details about a specific storage driver. |
+| `get_settings` | List all global server settings. |
+| `get_setting` | Get a single setting by key (e.g. `site_title`). |
+| `get_index_progress` | Get search index building progress. |
+| `list_my_ssh_keys` | List SSH public keys for the current user. |
+| `add_ssh_key` | Add a new SSH public key. |
+| `delete_ssh_key` | Delete an SSH public key by ID. |
+| `update_current_user` | Update current user's password or base path. |
 
 ### Smart Tools
 
@@ -209,6 +226,7 @@ Restart Claude Desktop, then try: *"List the files on my OpenList server."*
 | `decompress_archive` | Decompress archives (zip, rar, 7z, tar.gz, etc.) on the server. |
 | `list_archive_files` | List files inside an archive without extracting. |
 | `list_download_tools` | List available download tools configured on the OpenList server. |
+| `get_archive_extensions` | List archive file extensions supported by the server. |
 | `parse_torrent` | Parse a `.torrent` file (base64) and return file list and metadata. |
 | `generate_torrent` | Generate a `.torrent` file for an existing file on the server. |
 | `torrent_rapid_upload` | Attempt server-side rapid import from torrent data (requires CAS-capable storage). |

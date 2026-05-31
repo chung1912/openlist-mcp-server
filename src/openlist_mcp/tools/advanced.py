@@ -438,6 +438,20 @@ def register_advanced_tools(mcp: FastMCP) -> None:
         return json.dumps(result, indent=2, ensure_ascii=False)
 
     @mcp.tool()
+    async def get_archive_extensions() -> str:
+        """Get the list of archive file extensions supported by the server.
+
+        Helps determine which archive formats can be decompressed (zip, rar,
+        7z, tar.gz, etc.).
+
+        Returns:
+            JSON list of supported extensions.
+        """
+        client = await get_client()
+        data = await client.request("GET", "public/archive_extensions", require_auth=False)
+        return json.dumps(data, indent=2, ensure_ascii=False)
+
+    @mcp.tool()
     async def decompress_archive(
         src_dir: str,
         names: list[str] | str,

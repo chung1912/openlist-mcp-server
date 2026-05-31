@@ -15,6 +15,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `find_duplicates` — detect duplicate files by name+size or size only.
 - `content_preview` — preview text file content via range request.
 - `batch_download` — download multiple URLs at once via offline download.
+
+### Added (Phase 3 — Read-only Admin)
+- `list_storages`, `get_storage_info` — view storage backends (read-only).
+- `list_drivers`, `get_driver_info` — view storage driver types.
+- `get_settings`, `get_setting` — view global server settings (read-only).
+- `get_index_progress` — view search index building progress.
+
+### Added (Phase 4 — High-Frequency)
+- `get_archive_extensions` — list supported archive formats.
+- `get_share_info` — get details of a single share link.
+- `list_my_ssh_keys`, `add_ssh_key`, `delete_ssh_key` — SSH public key management.
+- `update_current_user` — update password or base path.
 - `remove_empty_dirs` tool — recursively remove empty directories after cleanup operations.
 - `update_share` tool — modify existing share links (password, expiration, files, etc.).
 - `enable_share` / `disable_share` tools — temporarily toggle share links without deleting them.

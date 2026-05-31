@@ -23,6 +23,7 @@ from mcp.server.fastmcp import FastMCP
 from . import __version__
 from .config import get_config
 from .tools.advanced import register_advanced_tools
+from .tools.admin import register_admin_tools
 from .tools.auth import register_auth_tools, register_public_tools
 from .tools.fs import register_fs_tools
 from .tools.share import register_share_tools
@@ -54,6 +55,7 @@ def register_all_tools() -> None:
     """Register all tool groups with the MCP server."""
     register_public_tools(mcp)
     register_auth_tools(mcp)
+    register_admin_tools(mcp)
     register_fs_tools(mcp)
     register_transfer_tools(mcp)
     register_task_tools(mcp)
@@ -81,7 +83,7 @@ def main() -> None:
             "║  An MCP server that lets AI agents (Claude, SOLO, etc.)      ║\n"
             "║  manage files on your OpenList instance.                     ║\n"
             "║                                                              ║\n"
-            "║  51 tools available:                                         ║\n"
+            "║  64 tools available:                                         ║\n"
             "║  • Browse:   list_files, list_dirs, get_file_info,           ║\n"
             "║              search_files                                    ║\n"
             "║  • Manage:   create_folder, rename, batch_rename,              ║\n"
@@ -100,6 +102,10 @@ def main() -> None:
             "║              delete_share                                    ║\n"
             "║  • Smart:    tree, disk_usage, find_duplicates,              ║\n"
             "║              content_preview, batch_download                 ║\n"
+            "║  • System:   list_storages, get_storage_info, list_drivers,  ║\n"
+            "║              get_driver_info, get_settings, get_setting,      ║\n"
+            "║              get_index_progress, list_my_ssh_keys,           ║\n"
+            "║              add_ssh_key, delete_ssh_key, update_current_user║\n"
             "║  • Advanced: offline_download, decompress_archive,            ║\n"
             "║              list_archive_files, list_download_tools,         ║\n"
             "║              parse_torrent, generate_torrent,                 ║\n"

@@ -8,15 +8,16 @@
 
 OpenList MCP Server is a tool that lets AI agents manage files on an [OpenList](https://github.com/OpenListTeam/OpenList) instance. OpenList is a self-hosted file management platform that supports local storage, cloud drives (OneDrive, Google Drive, etc.), and more.
 
-**51 tools available** across 8 categories:
+**64 tools available** across 9 categories:
 - Browse: `list_files`, `list_dirs`, `get_file_info`, `search_files`
 - Manage: `create_folder`, `rename`, `batch_rename`, `regex_rename`, `copy`, `move`, `remove`, `remove_empty_dirs`, `recursive_move`
 - Transfer: `upload_file`, `upload_local_file`, `get_download_url`
 - Auth: `login`, `get_public_settings`, `get_me`, `get_capabilities`, `logout`
 - Tasks: `list_tasks`, `get_task_info`, `retry_task`, `cancel_task`, `delete_task`, `batch_cancel_tasks`, `batch_delete_tasks`, `batch_retry_tasks`, `clear_done_tasks`, `clear_succeeded_tasks`, `retry_failed_tasks`
-- Shares: `create_share`, `list_shares`, `update_share`, `enable_share`, `disable_share`, `cancel_share`, `delete_share`
+- Shares: `create_share`, `list_shares`, `get_share_info`, `update_share`, `enable_share`, `disable_share`, `cancel_share`, `delete_share`
 - Smart: `tree`, `disk_usage`, `find_duplicates`, `content_preview`, `batch_download`
-- Advanced: `offline_download`, `decompress_archive`, `list_archive_files`, `list_download_tools`, `parse_torrent`, `generate_torrent`, `torrent_rapid_upload`
+- System: `list_storages`, `get_storage_info`, `list_drivers`, `get_driver_info`, `get_settings`, `get_setting`, `get_index_progress`, `list_my_ssh_keys`, `add_ssh_key`, `delete_ssh_key`, `update_current_user`
+- Advanced: `offline_download`, `decompress_archive`, `list_archive_files`, `list_download_tools`, `get_archive_extensions`, `parse_torrent`, `generate_torrent`, `torrent_rapid_upload`
 
 ---
 
@@ -271,6 +272,9 @@ create_share(files=["/docs/report.pdf", "/docs/summary.csv"], pwd="optional_pass
 # List all existing share links
 list_shares()
 
+# Get details about a specific share
+get_share_info(share_id="abc123")
+
 # Update an existing share (password, expiration, files)
 update_share(share_id="abc123", pwd="new_password",
              files=["/docs/report.pdf", "/docs/summary.csv"])
@@ -357,6 +361,40 @@ batch_download(urls=["https://example.com/a.zip", "https://example.com/b.zip"],
                path="/downloads", tool="aria2")
 ```
 
+### System (Read-Only Admin)
+
+```python
+# List all storage backends
+list_storages()
+
+# Get details about a specific storage
+get_storage_info(storage_id=2)
+
+# List all available storage drivers
+list_drivers()
+
+# Get driver configuration fields
+get_driver_info(driver="Local")
+
+# View all server settings
+get_settings()
+
+# View a single setting
+get_setting(key="site_title")
+
+# Check search index progress
+get_index_progress()
+
+# Manage SSH keys
+list_my_ssh_keys()
+add_ssh_key(title="my-laptop", public_key="ssh-rsa AAA...")
+delete_ssh_key(key_id=1)
+
+# Update current user (password or base path)
+update_current_user(old_password="current", password="newpassword")
+update_current_user(base_path="/restricted-path")
+```
+
 ---
 
 ## Quick Prompt Examples
@@ -381,6 +419,9 @@ Copy and paste these prompts to your AI assistant:
 | **停用/启用分享** | "暂时停用这个分享，等会再打开" |
 | **查自己是谁** | "我现在是以什么身份登录的？" |
 | **查存储空间** | "看看我这个 OpenList 服务器上挂载了哪些存储" |
+| **查存储详情** | "看看我第一个存储还剩多少空间" |
+| **查服务器设置** | "帮我看一下这个服务器的配置" |
+| **改密码** | "帮我把我的 OpenList 密码改了" |
 
 ## Common Workflows (AI Recommendations)
 

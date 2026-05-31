@@ -185,11 +185,28 @@ openlist-mcp
 |------|------|
 | `create_share` | 创建分享链接，传 `files: list[str]`（支持多文件）。 |
 | `list_shares` | 列出所有分享链接。 |
+| `get_share_info` | 按 ID 查看单个分享详情。 |
 | `update_share` | 修改已有分享（密码、过期时间、文件列表等）。 |
 | `enable_share` | 重新启用已禁用的分享链接。 |
 | `disable_share` | 临时禁用分享链接（不删除）。 |
 | `cancel_share` | `disable_share` 的别名。 |
 | `delete_share` | 永久删除分享链接。需 `confirm=true`。 |
+
+### 系统管理（只读）
+
+| 工具 | 说明 |
+|------|------|
+| `list_storages` | 列出所有已配置的存储后端（挂载路径、驱动、状态、空间）。 |
+| `get_storage_info` | 按 ID 查看单个存储详情。 |
+| `list_drivers` | 列出所有已注册的存储驱动名称。 |
+| `get_driver_info` | 查看特定存储驱动的详细信息。 |
+| `get_settings` | 列出所有全局设置。 |
+| `get_setting` | 按 key 查询单个设置（如 `site_title`）。 |
+| `get_index_progress` | 查看搜索索引构建进度。 |
+| `list_my_ssh_keys` | 列出当前用户的 SSH 公钥。 |
+| `add_ssh_key` | 添加新的 SSH 公钥。 |
+| `delete_ssh_key` | 按 ID 删除 SSH 公钥。 |
+| `update_current_user` | 修改当前用户密码或基础路径。 |
 
 ### 智能工具
 

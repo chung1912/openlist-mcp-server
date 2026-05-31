@@ -61,6 +61,20 @@ def register_share_tools(mcp: FastMCP) -> None:
         return json.dumps(data, indent=2, ensure_ascii=False)
 
     @mcp.tool()
+    async def get_share_info(share_id: str) -> str:
+        """Get detailed information about a specific share link.
+
+        Args:
+            share_id: The unique ID of the share to query.
+
+        Returns:
+            JSON string with share details.
+        """
+        client = await get_client()
+        data = await client.request("GET", "share/get", params={"id": share_id})
+        return json.dumps(data, indent=2, ensure_ascii=False)
+
+    @mcp.tool()
     async def list_shares(page: int = 1, per_page: int = 50) -> str:
         """List all existing share links.
 

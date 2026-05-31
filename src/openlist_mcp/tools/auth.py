@@ -70,3 +70,91 @@ def register_public_tools(mcp: FastMCP) -> None:
         client = await get_client()
         data = await client.request("GET", "public/settings", require_auth=False)
         return json.dumps(data, indent=2, ensure_ascii=False)
+
+    @mcp.tool()
+    async def list_my_ssh_keys() -> str:
+        """List SSH public keys for the current user.
+
+        Useful when the OpenList server uses SFTP/SSH storage backends.
+
+        Returns:
+            JSON string with SSH key list.
+        """
+        client = await get_client()
+        data = await client.request("GET", "me/sshkey/list")
+        return json.dumps(data, indent=2, ensure_ascii=False)
+
+    @mcp.tool()
+    async def add_ssh_key(title: str, public_key: str) -> str:
+        """Add a new SSH public key for the current user.
+
+        Args:
+            title: A name/label for the key (e.g. "my-laptop").
+            public_key: The SSH public key content (ssh-rsa AAA...).
+
+        Returns:
+            Success or error message.
+        """
+        if not title or not public_key:
+            return "Both title and public_key are required."
+        client = await get_client()
+        await client.request(
+            "POST", "me/sshkey/add",
+            json={"title": title, "public_key": public_key},
+        )
+        return f"SSH public key '{title}' added successfully."
+
+    @mcp.tool()
+    async def delete_ssh_key(key_id: int) -> str:
+        """Delete an SSH public key by its ID.
+
+        Args:
+            key_id: The numeric ID of the SSH key to delete.
+
+        Returns:
+            Success or error message.
+        """
+        client = await get_client()
+        await client.request(
+            "POST", "me/sshkey/delete",
+            json={"id": key_id},
+        )
+        return f"SSH key {key_id} deleted successfully."
+
+    @mcp.tool()
+    async def update_current_user(
+        password: str = "",
+        old_password: str = "",
+        base_path: str = "",
+    ) -> str:
+        """Update the current user's profile (password, base path).
+
+        At least one field must be provided. Changing password requires
+        both old_password and password.
+
+        Args:
+            password: New password (if changing).
+            old_password: Current password (required when changing password).
+            base_path: New base path for the user's storage scope.
+
+        Returns:
+            Success or error message.
+        """
+        if not password and not base_path:
+            return "Nothing to update. Provide at least one field."
+        body = {}
+        if password:
+            if not old_password:
+                return "old_password is required when changing password."
+            body["password"] = password
+            body["old_password"] = old_password
+        if base_path:
+            body["base_path"] = base_path
+        client = await get_client()
+        await client.request("POST", "me/update", json=body)
+        msg = []
+        if password:
+            msg.append("password changed")
+        if base_path:
+            msg.append(f'base_path set to "{base_path}"')
+        return f"Profile updated: {', '.join(msg)}."
