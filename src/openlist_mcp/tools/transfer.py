@@ -67,7 +67,11 @@ def register_transfer_tools(mcp: FastMCP) -> None:
         )
         raw_url = data.get("raw_url", "")
         if raw_url:
-            return f"Download URL: {raw_url}"
+            return json.dumps(
+                {"download_url": raw_url, "path": path},
+                indent=2,
+                ensure_ascii=False,
+            )
         return json.dumps(data, indent=2, ensure_ascii=False)
 
     @mcp.tool()

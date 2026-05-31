@@ -143,7 +143,7 @@ def register_advanced_tools(mcp: FastMCP) -> None:
     @mcp.tool()
     async def decompress_archive(
         src_dir: str,
-        names: str,
+        names: list[str] | str,
         dst_dir: str = "",
         archive_pass: str = "",
         overwrite: bool = False,
@@ -155,7 +155,8 @@ def register_advanced_tools(mcp: FastMCP) -> None:
 
         Args:
             src_dir: Directory containing the archive file(s) (e.g. "/downloads").
-            names: Comma-separated archive filenames to decompress (e.g. "data.zip").
+            names: List of archive filenames or comma-separated string to decompress
+                   (e.g. ["data.zip", "backup.7z"] or "data.zip,backup.7z").
             dst_dir: Optional extraction target directory. Defaults to same as src_dir.
             archive_pass: Optional password for encrypted archives.
             overwrite: Whether to overwrite existing files. Defaults to false.
@@ -213,8 +214,6 @@ def register_advanced_tools(mcp: FastMCP) -> None:
         validate_name(name)
         validate_path(inner_path)
         archive_path = posixpath.join(src_dir.rstrip("/"), name)
-        if src_dir == "/":
-            archive_path = f"/{name}"
         client = await get_client()
         body: dict[str, Any] = {
             "path": archive_path,
