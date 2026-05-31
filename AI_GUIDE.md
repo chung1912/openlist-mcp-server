@@ -8,14 +8,14 @@
 
 OpenList MCP Server is a tool that lets AI agents manage files on an [OpenList](https://github.com/OpenListTeam/OpenList) instance. OpenList is a self-hosted file management platform that supports local storage, cloud drives (OneDrive, Google Drive, etc.), and more.
 
-**32 tools available** across 7 categories:
+**40 tools available** across 7 categories:
 - Browse: `list_files`, `list_dirs`, `get_file_info`, `search_files`
-- Manage: `create_folder`, `rename`, `batch_rename`, `copy`, `move`, `remove`, `recursive_move`
+- Manage: `create_folder`, `rename`, `batch_rename`, `regex_rename`, `copy`, `move`, `remove`, `remove_empty_dirs`, `recursive_move`
 - Transfer: `upload_file`, `upload_local_file`, `get_download_url`
 - Auth: `login`, `get_public_settings`, `get_me`, `get_capabilities`, `logout`
 - Tasks: `list_tasks`, `get_task_info`, `retry_task`, `cancel_task`, `delete_task`
-- Shares: `create_share`, `list_shares`, `cancel_share`, `delete_share`
-- Advanced: `offline_download`, `decompress_archive`, `list_archive_files`, `list_download_tools`
+- Shares: `create_share`, `list_shares`, `update_share`, `enable_share`, `disable_share`, `cancel_share`, `delete_share`
+- Advanced: `offline_download`, `decompress_archive`, `list_archive_files`, `list_download_tools`, `parse_torrent`, `generate_torrent`, `torrent_rapid_upload`
 
 ---
 
@@ -163,6 +163,20 @@ remove(directory="/tmp", names=["old-file.txt"], confirm=True)
 
 # Recursively move an entire directory tree
 recursive_move(src_dir="/projects/old", dst_dir="/projects/new")
+
+# Batch rename files in a directory
+batch_rename(src_dir="/downloads", rename_objects=[
+    {"src_name": "file1.txt", "new_name": "doc1.txt"},
+    {"src_name": "file2.txt", "new_name": "doc2.txt"}
+])
+
+# Regex rename — rename files using Go-style regex patterns
+# Use $1, $2 for capture groups (NOT \1 like Python/JS)
+regex_rename(src_dir="/downloads", src_name_regex=r"(.*)\.html", new_name_regex=r"$1.htm")
+regex_rename(src_dir="/photos", src_name_regex=r"^IMG_(\d+)", new_name_regex=r"photo_$1")
+
+# Remove empty directories recursively (cleanup after bulk operations)
+remove_empty_dirs(src_dir="/downloads", confirm=True)
 ```
 
 > **Safety note**: `remove` requires `confirm=True`. The AI must explain what will be deleted and get user approval before passing `confirm=True`.
@@ -249,18 +263,48 @@ delete_task(task_id="task_id_here", task_type="offline_download", confirm=True)
 ### Share Management
 
 ```python
-# Create a share link for a file or folder
-create_share(path="/shared/file.pdf")
+# Create a share link for one or more files or folders
+# NOTE: files is a list, not a single path string
+create_share(files=["/docs/report.pdf", "/docs/summary.csv"], pwd="optional_password")
 
 # List all existing share links
 list_shares()
 
-# Cancel a share
-cancel_share(share_key="share_key_here", confirm=True)
+# Update an existing share (password, expiration, files)
+update_share(share_id="abc123", pwd="new_password",
+             files=["/docs/report.pdf", "/docs/summary.csv"])
 
-# Delete a share
-delete_share(share_key="share_key_here", confirm=True)
+# Temporarily disable a share (can be re-enabled later)
+disable_share(share_id="abc123")
+
+# Re-enable a disabled share
+enable_share(share_id="abc123")
+
+# Cancel (disable) a share (alias for disable_share)
+cancel_share(share_id="abc123", confirm=True)
+
+# Permanently delete a share link
+delete_share(share_id="abc123", confirm=True)
 ```
+
+### Torrent Operations
+
+```python
+# Generate a .torrent file for an existing file on the server
+generate_torrent(path="/downloads/myfile.iso")
+# Returns: { "file_name": "myfile.iso.torrent", "info_hash": "...", "torrent_data": "<base64>" }
+
+# Parse a torrent file to see its contents (pass base64-encoded torrent data)
+parse_torrent(torrent_data="ZDc6Y29tbWVud...")
+# Returns: { "name": "...", "total_size": ..., "files": [...] }
+
+# Attempt rapid upload from a torrent (requires CAS-capable storage)
+torrent_rapid_upload(torrent_data="ZDc6Y29tbWVud...", path="/downloads")
+```
+
+> **Note**: `torrent_rapid_upload` requires the storage backend to support CAS (Content Addressable
+> Storage). Local storage typically does not support CAS. The tool will return a clear message
+> if CAS is unavailable.
 
 ---
 
@@ -274,9 +318,16 @@ Copy and paste these prompts to your AI assistant:
 | **用指定工具下载** | "用 Transmission 下载这个 BT 链接：magnet:?xt=..." |
 | **查可用的下载工具** | "看看我这个服务器上有哪些下载工具可以用" |
 | **BT 下载** | "帮我把这个种子下载下来" |
+| **解析种子** | "这个种子文件里都有什么文件？" |
+| **生成种子** | "为 /downloads/myfile.iso 生成一个种子文件" |
 | **解压文件** | "把 downloads 目录下的 data.zip 解压到 data 文件夹" |
 | **下载+解压** | "把这个压缩包下载下来然后解压到项目目录" |
-| **批量操作** | "把 downloads 目录里所有 .tmp 文件删掉" |
+| **批量重命名** | "把 downloads 目录里所有 .html 改成 .htm" |
+| **正则重命名** | "用正则去掉 /projects 下文件名中的数字" |
+| **批量清理** | "把 downloads 目录里所有 .tmp 文件删掉，再清理空文件夹" |
+| **创建分享** | "把这个文件分享给别人" |
+| **修改分享密码** | "把我的分享链接密码改一下" |
+| **停用/启用分享** | "暂时停用这个分享，等会再打开" |
 | **查自己是谁** | "我现在是以什么身份登录的？" |
 | **查存储空间** | "看看我这个 OpenList 服务器上挂载了哪些存储" |
 
@@ -324,10 +375,43 @@ recursive_move(src_dir="/downloads/messy-folder", dst_dir="/organized/messy-fold
 When the user says "share this file with someone":
 
 ```python
-# Step 1: Create a share link
-share = create_share(path="/shared/report.pdf")
-# Step 2: Inform the user of the share link
+# Step 1: Create a share link (note: files is a list)
+share = create_share(files=["/shared/report.pdf"], pwd="optional_pass")
+# Step 2: Inform the user of the share link and password
 # "Here's your share link: https://your-openlist.com/s/abc123"
+```
+
+### Workflow 4: Share Lifecycle (Update/Disable/Re-enable)
+
+When the user says "change the password on my share" or "temporarily disable it":
+
+```python
+# Update password
+update_share(share_id="abc123", pwd="new_password",
+             files=["/shared/report.pdf"])
+
+# Disable (temporarily)
+disable_share(share_id="abc123")
+
+# Re-enable later
+enable_share(share_id="abc123")
+
+# Permanently delete
+delete_share(share_id="abc123", confirm=True)
+```
+
+### Workflow 5: Torrent Operations
+
+When the user says "what's in this torrent?" or "generate a torrent for this file":
+
+```python
+# Parse a torrent file (from base64 content)
+info = parse_torrent(torrent_data="<base64_encoded_torrent>")
+# "This torrent contains: video.mp4 (2.3 GB), cover.jpg (150 KB)"
+
+# Generate a torrent
+result = generate_torrent(path="/downloads/myfile.iso")
+# "Generated torrent: myfile.iso.torrent (info_hash: abc123...)"
 ```
 
 ---
@@ -365,4 +449,5 @@ share = create_share(path="/shared/report.pdf")
 | Offline download task stuck | aria2 RPC not running on the server | Ask the user to start aria2 RPC daemon on the OpenList server |
 | "Guest user is disabled" | Token expired or invalid | The server will auto-re-login on next API call — no action needed |
 | Transmission/qBittorrent not working | Download tool not properly configured | Check port, credentials, and service status on the OpenList server |
+| "URL points to a private/internal IP address" | SSRF protection blocked the URL | The `offline_download` tool blocks downloads from private IP ranges (127.x, 10.x, 192.168.x, etc.) for security. Use a public URL instead. |
 | HTTP warning about plain text | Using HTTP instead of HTTPS | Inform user to use HTTPS in production; safe on local network |
