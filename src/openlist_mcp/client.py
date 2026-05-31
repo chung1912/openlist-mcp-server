@@ -19,7 +19,7 @@ def _generate_totp(secret: str) -> str:
     import pyotp
 
     totp = pyotp.TOTP(secret)
-    return totp.now()
+    return str(totp.now())
 
 
 class OpenListError(Exception):

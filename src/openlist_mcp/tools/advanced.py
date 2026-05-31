@@ -9,6 +9,7 @@ import json
 import os
 import posixpath
 from typing import Any
+from urllib.parse import urlparse
 
 from mcp.server.fastmcp import FastMCP
 
@@ -111,8 +112,6 @@ def register_advanced_tools(mcp: FastMCP) -> None:
         enforce_writable("offline_download")
 
         # SSRF prevention: only allow http/https URLs
-        from urllib.parse import urlparse
-
         parsed = urlparse(url)
         if parsed.scheme not in ("http", "https"):
             raise ValueError(
