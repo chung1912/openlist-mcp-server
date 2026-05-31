@@ -553,7 +553,8 @@ def register_fs_tools(mcp: FastMCP) -> None:
 
             try:
                 data = await client.request(
-                    "POST", "fs/list",
+                    "POST",
+                    "fs/list",
                     json={"path": dir_path, "page": 1, "per_page": 200, "password": password},
                 )
             except OpenListError:
@@ -565,7 +566,9 @@ def register_fs_tools(mcp: FastMCP) -> None:
                 items = []
 
             # Separate dirs and files, sort alphabetically
-            dirs = sorted([i for i in items if i.get("type") in (1, "dir", "folder")], key=lambda x: x["name"])
+            dirs = sorted(
+                [i for i in items if i.get("type") in (1, "dir", "folder")], key=lambda x: x["name"]
+            )
             files = sorted([i for i in items if i not in dirs], key=lambda x: x["name"])
             entries = dirs + files
 
@@ -629,7 +632,8 @@ def register_fs_tools(mcp: FastMCP) -> None:
 
             try:
                 data = await client.request(
-                    "POST", "fs/list",
+                    "POST",
+                    "fs/list",
                     json={"path": dir_path, "page": 1, "per_page": 200, "password": password},
                 )
             except OpenListError:
@@ -656,10 +660,7 @@ def register_fs_tools(mcp: FastMCP) -> None:
                     total_files += 1
                     total_size += size
                     # Get extension
-                    if "." in name:
-                        ext = name.rsplit(".", 1)[1].lower()
-                    else:
-                        ext = "(no ext)"
+                    ext = name.rsplit(".", 1)[1].lower() if "." in name else "(no ext)"
                     type_sizes[ext] = type_sizes.get(ext, 0) + size
                     type_counts[ext] = type_counts.get(ext, 0) + 1
 

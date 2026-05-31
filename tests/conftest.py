@@ -145,5 +145,6 @@ def share_tools(monkeypatch):
     monkeypatch.setattr("openlist_mcp.config._config", None)
     monkeypatch.setattr("openlist_mcp.tools.share.get_client", fake_get_client)
     from openlist_mcp.tools.share import register_share_tools
+
     register_share_tools(recorder)
     return recorder.tools, client

@@ -67,9 +67,7 @@ async def test_disable_share_sends_id(share_tools) -> None:
 
     result = await tools["disable_share"](share_id="abc123")
 
-    assert client.requests == [
-        ("POST", "share/disable", {"json": {"id": "abc123"}})
-    ]
+    assert client.requests == [("POST", "share/disable", {"json": {"id": "abc123"}})]
 
 
 @pytest.mark.asyncio
@@ -78,9 +76,7 @@ async def test_enable_share_sends_id(share_tools) -> None:
 
     result = await tools["enable_share"](share_id="abc123")
 
-    assert client.requests == [
-        ("POST", "share/enable", {"json": {"id": "abc123"}})
-    ]
+    assert client.requests == [("POST", "share/enable", {"json": {"id": "abc123"}})]
 
 
 @pytest.mark.asyncio
@@ -99,9 +95,7 @@ async def test_delete_share_with_confirm_uses_query_param(share_tools) -> None:
 
     result = await tools["delete_share"](share_id="abc123", confirm=True)
 
-    assert client.requests == [
-        ("POST", "share/delete", {"params": {"id": "abc123"}})
-    ]
+    assert client.requests == [("POST", "share/delete", {"params": {"id": "abc123"}})]
 
 
 @pytest.mark.asyncio

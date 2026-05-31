@@ -11,7 +11,6 @@ import json
 from mcp.server.fastmcp import FastMCP
 
 from ..client import get_client
-from . import validate_pagination
 
 
 def register_admin_tools(mcp: FastMCP) -> None:
@@ -43,9 +42,7 @@ def register_admin_tools(mcp: FastMCP) -> None:
             JSON string with storage details.
         """
         client = await get_client()
-        data = await client.request(
-            "GET", "admin/storage/get", params={"id": storage_id}
-        )
+        data = await client.request("GET", "admin/storage/get", params={"id": storage_id})
         return json.dumps(data, indent=2, ensure_ascii=False)
 
     @mcp.tool()
@@ -76,9 +73,7 @@ def register_admin_tools(mcp: FastMCP) -> None:
             JSON string with driver info.
         """
         client = await get_client()
-        data = await client.request(
-            "GET", "admin/driver/info", params={"driver": driver}
-        )
+        data = await client.request("GET", "admin/driver/info", params={"driver": driver})
         return json.dumps(data, indent=2, ensure_ascii=False)
 
     @mcp.tool()
@@ -107,9 +102,7 @@ def register_admin_tools(mcp: FastMCP) -> None:
             JSON string with the setting value.
         """
         client = await get_client()
-        data = await client.request(
-            "GET", "admin/setting/get", params={"key": key}
-        )
+        data = await client.request("GET", "admin/setting/get", params={"key": key})
         return json.dumps(data, indent=2, ensure_ascii=False)
 
     @mcp.tool()

@@ -18,9 +18,7 @@ async def test_get_storage_info_passes_id_param(admin_tools) -> None:
 
     result = await tools["get_storage_info"](storage_id=2)
 
-    assert client.requests == [
-        ("GET", "admin/storage/get", {"params": {"id": 2}})
-    ]
+    assert client.requests == [("GET", "admin/storage/get", {"params": {"id": 2}})]
 
 
 @pytest.mark.asyncio
@@ -38,6 +36,4 @@ async def test_get_setting_passes_key_param(admin_tools) -> None:
 
     result = await tools["get_setting"](key="site_title")
 
-    assert client.requests == [
-        ("GET", "admin/setting/get", {"params": {"key": "site_title"}})
-    ]
+    assert client.requests == [("GET", "admin/setting/get", {"params": {"key": "site_title"}})]

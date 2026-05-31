@@ -16,21 +16,40 @@ from urllib.parse import urlparse
 
 from mcp.server.fastmcp import FastMCP
 
-from ..client import get_client
+from ..client import OpenListError, get_client
 from ..config import get_config
-from . import enforce_path_allowed, enforce_writable, normalize_names, validate_name, validate_path
+from . import (
+    enforce_path_allowed,
+    enforce_writable,
+    normalize_names,
+    validate_name,
+    validate_path,
+)
+
+
+def _human_size(size_bytes: int) -> str:
+    """Format a byte count as a human-readable string."""
+    if size_bytes == 0:
+        return "0 B"
+    units = ["B", "KB", "MB", "GB", "TB", "PB"]
+    i = 0
+    size = float(size_bytes)
+    while size >= 1024 and i < len(units) - 1:
+        size /= 1024
+        i += 1
+    return f"{size:.1f} {units[i]}"
 
 
 # Internal IP ranges that should be blocked for SSRF prevention.
 _PRIVATE_NETWORKS = [
-    ipaddress.ip_network("127.0.0.0/8"),       # loopback
-    ipaddress.ip_network("10.0.0.0/8"),         # RFC 1918
-    ipaddress.ip_network("172.16.0.0/12"),      # RFC 1918
-    ipaddress.ip_network("192.168.0.0/16"),     # RFC 1918
-    ipaddress.ip_network("169.254.0.0/16"),     # link-local
-    ipaddress.ip_network("::1/128"),            # IPv6 loopback
-    ipaddress.ip_network("fc00::/7"),           # IPv6 unique-local
-    ipaddress.ip_network("fe80::/10"),          # IPv6 link-local
+    ipaddress.ip_network("127.0.0.0/8"),  # loopback
+    ipaddress.ip_network("10.0.0.0/8"),  # RFC 1918
+    ipaddress.ip_network("172.16.0.0/12"),  # RFC 1918
+    ipaddress.ip_network("192.168.0.0/16"),  # RFC 1918
+    ipaddress.ip_network("169.254.0.0/16"),  # link-local
+    ipaddress.ip_network("::1/128"),  # IPv6 loopback
+    ipaddress.ip_network("fc00::/7"),  # IPv6 unique-local
+    ipaddress.ip_network("fe80::/10"),  # IPv6 link-local
 ]
 
 
@@ -56,7 +75,7 @@ def _reject_internal_url(url: str) -> None:
 
     # Direct IP check first (no DNS lookup needed)
     try:
-        addr = ipaddress.ip_address(host)
+        ipaddress.ip_address(host)
         if _is_private_ip(host):
             raise ValueError(
                 f"URL points to a private/internal IP address ({host}), "
@@ -78,7 +97,7 @@ def _reject_internal_url(url: str) -> None:
         ) from exc
 
     for info in addrinfo:
-        ip_str = info[4][0]
+        ip_str = str(info[4][0])
         if _is_private_ip(ip_str):
             raise ValueError(
                 f"URL resolves to a private/internal IP address ({ip_str}), "
@@ -235,9 +254,7 @@ def register_advanced_tools(mcp: FastMCP) -> None:
         enforce_writable("batch_download")
 
         if not urls:
-            return json.dumps(
-                {"ok": False, "error": "No URLs provided."}, ensure_ascii=False
-            )
+            return json.dumps({"ok": False, "error": "No URLs provided."}, ensure_ascii=False)
 
         # SSRF check for each URL
         for url in urls:
@@ -258,9 +275,7 @@ def register_advanced_tools(mcp: FastMCP) -> None:
                     body["tool"] = tool
                 if delete_policy:
                     body["delete_policy"] = delete_policy
-                data = await client.request(
-                    "POST", "fs/add_offline_download", json=body
-                )
+                data = await client.request("POST", "fs/add_offline_download", json=body)
                 results.append({"url": url, "status": "created", "result": data})
             except Exception as e:
                 results.append({"url": url, "status": "failed", "error": str(e)})
@@ -299,7 +314,8 @@ def register_advanced_tools(mcp: FastMCP) -> None:
 
             try:
                 data = await client.request(
-                    "POST", "fs/list",
+                    "POST",
+                    "fs/list",
                     json={"path": dir_path, "page": 1, "per_page": 200, "password": password},
                 )
             except OpenListError:
@@ -320,11 +336,7 @@ def register_advanced_tools(mcp: FastMCP) -> None:
                     await _walk(sub_path, depth + 1)
                 else:
                     # Build group key
-                    if by == "size_only":
-                        _human_size
-                        key = f"size:{size}"
-                    else:
-                        key = f"{name}:{size}"
+                    key = f"size:{size}" if by == "size_only" else f"{name}:{size}"
 
                     entry = {"path": f"{dir_path.rstrip('/')}/{name}", "size": size}
                     if key not in groups:
@@ -381,7 +393,8 @@ def register_advanced_tools(mcp: FastMCP) -> None:
 
         # Get the file info to find raw_url
         data = await client.request(
-            "POST", "fs/get",
+            "POST",
+            "fs/get",
             json={"path": path, "password": password},
         )
         raw_url = data.get("raw_url", "") if isinstance(data, dict) else ""
@@ -394,6 +407,7 @@ def register_advanced_tools(mcp: FastMCP) -> None:
 
         # Fetch with range to limit bytes
         import httpx
+
         try:
             async with httpx.AsyncClient(timeout=15) as hc:
                 resp = await hc.get(raw_url, headers={"Range": f"bytes=0-{max_chars * 2}"})
@@ -422,10 +436,22 @@ def register_advanced_tools(mcp: FastMCP) -> None:
 
         # Wrap in a code block for readability
         ext = path.rsplit(".", 1)[-1].lower() if "." in path else ""
-        lang_map = {"py": "python", "js": "javascript", "ts": "typescript",
-                     "html": "html", "css": "css", "json": "json", "xml": "xml",
-                     "yaml": "yaml", "yml": "yaml", "md": "markdown",
-                     "sh": "bash", "bash": "bash", "csv": "csv", "txt": "text"}
+        lang_map = {
+            "py": "python",
+            "js": "javascript",
+            "ts": "typescript",
+            "html": "html",
+            "css": "css",
+            "json": "json",
+            "xml": "xml",
+            "yaml": "yaml",
+            "yml": "yaml",
+            "md": "markdown",
+            "sh": "bash",
+            "bash": "bash",
+            "csv": "csv",
+            "txt": "text",
+        }
         lang = lang_map.get(ext, "")
 
         result = {

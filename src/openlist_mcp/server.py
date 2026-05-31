@@ -20,10 +20,9 @@ import sys
 
 from mcp.server.fastmcp import FastMCP
 
-from . import __version__
 from .config import get_config
-from .tools.advanced import register_advanced_tools
 from .tools.admin import register_admin_tools
+from .tools.advanced import register_advanced_tools
 from .tools.auth import register_auth_tools, register_public_tools
 from .tools.fs import register_fs_tools
 from .tools.share import register_share_tools

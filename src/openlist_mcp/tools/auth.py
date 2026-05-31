@@ -99,7 +99,8 @@ def register_public_tools(mcp: FastMCP) -> None:
             return "Both title and public_key are required."
         client = await get_client()
         await client.request(
-            "POST", "me/sshkey/add",
+            "POST",
+            "me/sshkey/add",
             json={"title": title, "public_key": public_key},
         )
         return f"SSH public key '{title}' added successfully."
@@ -116,7 +117,8 @@ def register_public_tools(mcp: FastMCP) -> None:
         """
         client = await get_client()
         await client.request(
-            "POST", "me/sshkey/delete",
+            "POST",
+            "me/sshkey/delete",
             json={"id": key_id},
         )
         return f"SSH key {key_id} deleted successfully."

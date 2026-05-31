@@ -189,7 +189,7 @@ class OpenListClient:
         method: str,
         path: str,
         *,
-        json: dict[str, Any] | None = None,
+        json: Any = None,
         params: dict[str, Any] | None = None,
         require_auth: bool = True,
     ) -> dict[str, Any]:

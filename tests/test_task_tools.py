@@ -136,9 +136,7 @@ async def test_clear_done_tasks(task_tools) -> None:
     result = await tools["clear_done_tasks"](task_type="offline_download")
 
     assert "cleared" in result.lower()
-    assert client.requests == [
-        ("POST", "task/offline_download/clear_done", {})
-    ]
+    assert client.requests == [("POST", "task/offline_download/clear_done", {})]
 
 
 @pytest.mark.asyncio
@@ -148,9 +146,7 @@ async def test_clear_succeeded_tasks(task_tools) -> None:
     result = await tools["clear_succeeded_tasks"](task_type="offline_download")
 
     assert "cleared" in result.lower()
-    assert client.requests == [
-        ("POST", "task/offline_download/clear_succeeded", {})
-    ]
+    assert client.requests == [("POST", "task/offline_download/clear_succeeded", {})]
 
 
 @pytest.mark.asyncio
@@ -160,9 +156,7 @@ async def test_retry_failed_tasks(task_tools) -> None:
     result = await tools["retry_failed_tasks"](task_type="offline_download")
 
     assert "retry" in result.lower()
-    assert client.requests == [
-        ("POST", "task/offline_download/retry_failed", {})
-    ]
+    assert client.requests == [("POST", "task/offline_download/retry_failed", {})]
 
 
 @pytest.mark.asyncio
