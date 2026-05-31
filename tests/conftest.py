@@ -112,3 +112,21 @@ def advanced_tools(monkeypatch):
     monkeypatch.setattr("openlist_mcp.tools.advanced.get_client", fake_get_client)
     register_advanced_tools(recorder)
     return recorder.tools, client
+
+
+@pytest.fixture
+def share_tools(monkeypatch):
+    recorder = ToolRecorder()
+    client = FakeClient()
+
+    async def fake_get_client():
+        return client
+
+    monkeypatch.setenv("OPENLIST_URL", "https://openlist.example")
+    monkeypatch.delenv("OPENLIST_READONLY", raising=False)
+    monkeypatch.delenv("OPENLIST_ALLOWED_PATHS", raising=False)
+    monkeypatch.setattr("openlist_mcp.config._config", None)
+    monkeypatch.setattr("openlist_mcp.tools.share.get_client", fake_get_client)
+    from openlist_mcp.tools.share import register_share_tools
+    register_share_tools(recorder)
+    return recorder.tools, client
