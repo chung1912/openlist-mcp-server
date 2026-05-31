@@ -167,11 +167,17 @@ openlist-mcp
 
 | 工具 | 说明 |
 |------|------|
-| `list_tasks` | 按类型（`offline_download`、`upload`、`copy`）和状态（`done`、`undone`）列出异步任务。 |
+| `list_tasks` | 按类型和状态列出异步任务。 |
 | `get_task_info` | 按 ID 查询单个任务。 |
 | `retry_task` | 重试失败的任务。 |
 | `cancel_task` | 取消正在运行的任务。需 `confirm=true`。 |
 | `delete_task` | 删除任务记录。需 `confirm=true`。 |
+| `batch_cancel_tasks` | 按 ID 批量取消任务。需 `confirm=true`。 |
+| `batch_delete_tasks` | 按 ID 批量删除任务记录。需 `confirm=true`。 |
+| `batch_retry_tasks` | 按 ID 批量重试失败任务。 |
+| `clear_done_tasks` | 清除所有已完成/失败/取消的任务。 |
+| `clear_succeeded_tasks` | 仅清除成功完成的任务。 |
+| `retry_failed_tasks` | 一键重试所有失败任务。 |
 
 ### 分享管理
 
@@ -184,6 +190,16 @@ openlist-mcp
 | `disable_share` | 临时禁用分享链接（不删除）。 |
 | `cancel_share` | `disable_share` 的别名。 |
 | `delete_share` | 永久删除分享链接。需 `confirm=true`。 |
+
+### 智能工具
+
+| 工具 | 说明 |
+|------|------|
+| `tree` | 递归生成目录树（带 📁/📄 图标）。 |
+| `disk_usage` | 按目录和文件类型统计磁盘用量。 |
+| `find_duplicates` | 按名称+大小或仅大小查找重复文件。 |
+| `content_preview` | 通过 Range 请求预览文本文件内容。 |
+| `batch_download` | 批量离线下载多个 URL。 |
 
 ### 高级 & Torrent
 

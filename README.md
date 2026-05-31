@@ -172,6 +172,12 @@ Restart Claude Desktop, then try: *"List the files on my OpenList server."*
 | `retry_task` | Retry a failed task. |
 | `cancel_task` | Cancel a running task. Requires `confirm=true`. |
 | `delete_task` | Delete a task record. Requires `confirm=true`. |
+| `batch_cancel_tasks` | Cancel multiple tasks at once by ID. Requires `confirm=true`. |
+| `batch_delete_tasks` | Delete multiple task records by ID. Requires `confirm=true`. |
+| `batch_retry_tasks` | Retry multiple failed tasks by ID. |
+| `clear_done_tasks` | Clear all completed/failed/cancelled tasks of a type. |
+| `clear_succeeded_tasks` | Clear only successfully completed tasks. |
+| `retry_failed_tasks` | Retry every failed task of a type in one shot. |
 
 ### Share Management
 
@@ -184,6 +190,16 @@ Restart Claude Desktop, then try: *"List the files on my OpenList server."*
 | `disable_share` | Temporarily disable a share link without deleting it. |
 | `cancel_share` | Alias for `disable_share`. |
 | `delete_share` | Permanently delete a share link. Requires `confirm=true`. |
+
+### Smart Tools
+
+| Tool | Description |
+|------|-------------|
+| `tree` | Build a recursive directory tree with 📁/📄 icons (configurable depth). |
+| `disk_usage` | Show disk usage summary by directory and file type. |
+| `find_duplicates` | Find potential duplicate files grouped by name+size or size only. |
+| `content_preview` | Preview text file content via range request (no full download). |
+| `batch_download` | Download multiple URLs at once via offline download. |
 
 ### Advanced & Torrent
 

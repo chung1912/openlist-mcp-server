@@ -8,7 +8,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
-- `regex_rename` tool — batch rename files using Go-style regex substitution (`$1`, `$2`).
+- `batch_cancel_tasks`, `batch_delete_tasks`, `batch_retry_tasks` — batch task operations.
+- `clear_done_tasks`, `clear_succeeded_tasks`, `retry_failed_tasks` — one-shot task cleanup.
+- `tree` — recursive directory tree with icons.
+- `disk_usage` — disk usage summary by directory and file type.
+- `find_duplicates` — detect duplicate files by name+size or size only.
+- `content_preview` — preview text file content via range request.
+- `batch_download` — download multiple URLs at once via offline download.
 - `remove_empty_dirs` tool — recursively remove empty directories after cleanup operations.
 - `update_share` tool — modify existing share links (password, expiration, files, etc.).
 - `enable_share` / `disable_share` tools — temporarily toggle share links without deleting them.

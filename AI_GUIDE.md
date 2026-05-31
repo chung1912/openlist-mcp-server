@@ -8,13 +8,14 @@
 
 OpenList MCP Server is a tool that lets AI agents manage files on an [OpenList](https://github.com/OpenListTeam/OpenList) instance. OpenList is a self-hosted file management platform that supports local storage, cloud drives (OneDrive, Google Drive, etc.), and more.
 
-**40 tools available** across 7 categories:
+**51 tools available** across 8 categories:
 - Browse: `list_files`, `list_dirs`, `get_file_info`, `search_files`
 - Manage: `create_folder`, `rename`, `batch_rename`, `regex_rename`, `copy`, `move`, `remove`, `remove_empty_dirs`, `recursive_move`
 - Transfer: `upload_file`, `upload_local_file`, `get_download_url`
 - Auth: `login`, `get_public_settings`, `get_me`, `get_capabilities`, `logout`
-- Tasks: `list_tasks`, `get_task_info`, `retry_task`, `cancel_task`, `delete_task`
+- Tasks: `list_tasks`, `get_task_info`, `retry_task`, `cancel_task`, `delete_task`, `batch_cancel_tasks`, `batch_delete_tasks`, `batch_retry_tasks`, `clear_done_tasks`, `clear_succeeded_tasks`, `retry_failed_tasks`
 - Shares: `create_share`, `list_shares`, `update_share`, `enable_share`, `disable_share`, `cancel_share`, `delete_share`
+- Smart: `tree`, `disk_usage`, `find_duplicates`, `content_preview`, `batch_download`
 - Advanced: `offline_download`, `decompress_archive`, `list_archive_files`, `list_download_tools`, `parse_torrent`, `generate_torrent`, `torrent_rapid_upload`
 
 ---
@@ -305,6 +306,56 @@ torrent_rapid_upload(torrent_data="ZDc6Y29tbWVud...", path="/downloads")
 > **Note**: `torrent_rapid_upload` requires the storage backend to support CAS (Content Addressable
 > Storage). Local storage typically does not support CAS. The tool will return a clear message
 > if CAS is unavailable.
+
+### Batch Task Operations
+
+```python
+# Cancel multiple tasks at once (requires confirm)
+batch_cancel_tasks(task_ids=["id1", "id2"], task_type="offline_download", confirm=True)
+
+# Delete multiple task records
+batch_delete_tasks(task_ids=["id1", "id2"], task_type="offline_download", confirm=True)
+
+# Retry multiple failed tasks
+batch_retry_tasks(task_ids=["id1", "id2"], task_type="offline_download")
+
+# Clear all completed/failed/cancelled tasks at once
+clear_done_tasks(task_type="offline_download")
+
+# Clear only successfully completed tasks (keeps failed for inspection)
+clear_succeeded_tasks(task_type="offline_download")
+
+# Retry every failed task of a type
+retry_failed_tasks(task_type="offline_download")
+```
+
+### Smart Tools
+
+```python
+# Build a recursive directory tree
+tree(path="/", max_depth=3)
+# Returns:
+# 📁 / (root)
+# ├── 📁 downloads/
+# │   ├── 📄 file.zip (1.2 MB)
+# │   └── 📁 data/
+# └── 📄 readme.txt
+
+# Show disk usage summary by directory and file type
+disk_usage(path="/")
+# Returns JSON with top directories, counts, file type breakdown
+
+# Find potential duplicate files (by name+size or size only)
+find_duplicates(path="/", by="name_size")
+# Returns JSON grouped by criteria, shows duplicate groups
+
+# Preview text file content without full download
+content_preview(path="/downloads/log.txt", max_chars=5000)
+
+# Batch download multiple URLs at once
+batch_download(urls=["https://example.com/a.zip", "https://example.com/b.zip"],
+               path="/downloads", tool="aria2")
+```
 
 ---
 

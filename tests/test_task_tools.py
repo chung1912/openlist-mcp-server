@@ -68,3 +68,122 @@ async def test_cancel_task_uses_typed_endpoint(task_tools) -> None:
             {"params": {"tid": "task-123"}},
         )
     ]
+
+
+@pytest.mark.asyncio
+async def test_batch_cancel_tasks_sends_array(task_tools) -> None:
+    tools, client = task_tools
+
+    result = await tools["batch_cancel_tasks"](
+        task_ids=["t1", "t2"],
+        task_type="offline_download",
+        confirm=True,
+    )
+
+    assert "submitted" in result.lower()
+    assert client.requests == [
+        (
+            "POST",
+            "task/offline_download/cancel_some",
+            {"json": ["t1", "t2"]},
+        )
+    ]
+
+
+@pytest.mark.asyncio
+async def test_batch_delete_tasks_sends_array(task_tools) -> None:
+    tools, client = task_tools
+
+    result = await tools["batch_delete_tasks"](
+        task_ids=["t1"],
+        task_type="offline_download",
+        confirm=True,
+    )
+
+    assert "submitted" in result.lower()
+    assert client.requests == [
+        (
+            "POST",
+            "task/offline_download/delete_some",
+            {"json": ["t1"]},
+        )
+    ]
+
+
+@pytest.mark.asyncio
+async def test_batch_retry_tasks_sends_array(task_tools) -> None:
+    tools, client = task_tools
+
+    result = await tools["batch_retry_tasks"](
+        task_ids=["t1", "t2", "t3"],
+        task_type="offline_download",
+    )
+
+    assert "submitted" in result.lower()
+    assert client.requests == [
+        (
+            "POST",
+            "task/offline_download/retry_some",
+            {"json": ["t1", "t2", "t3"]},
+        )
+    ]
+
+
+@pytest.mark.asyncio
+async def test_clear_done_tasks(task_tools) -> None:
+    tools, client = task_tools
+
+    result = await tools["clear_done_tasks"](task_type="offline_download")
+
+    assert "cleared" in result.lower()
+    assert client.requests == [
+        ("POST", "task/offline_download/clear_done", {})
+    ]
+
+
+@pytest.mark.asyncio
+async def test_clear_succeeded_tasks(task_tools) -> None:
+    tools, client = task_tools
+
+    result = await tools["clear_succeeded_tasks"](task_type="offline_download")
+
+    assert "cleared" in result.lower()
+    assert client.requests == [
+        ("POST", "task/offline_download/clear_succeeded", {})
+    ]
+
+
+@pytest.mark.asyncio
+async def test_retry_failed_tasks(task_tools) -> None:
+    tools, client = task_tools
+
+    result = await tools["retry_failed_tasks"](task_type="offline_download")
+
+    assert "retry" in result.lower()
+    assert client.requests == [
+        ("POST", "task/offline_download/retry_failed", {})
+    ]
+
+
+@pytest.mark.asyncio
+async def test_batch_tasks_require_confirm(task_tools) -> None:
+    tools, client = task_tools
+
+    result = await tools["batch_cancel_tasks"](task_ids=["t1"], confirm=False)
+    assert "not performed" in result.lower()
+    assert client.requests == []
+
+
+@pytest.mark.asyncio
+async def test_batch_tasks_require_nonempty_ids(task_tools) -> None:
+    tools, client = task_tools
+
+    result = await tools["batch_cancel_tasks"](task_ids=[], confirm=True)
+    assert "no task" in result.lower()
+    assert client.requests == []
+
+    result = await tools["batch_delete_tasks"](task_ids=[], confirm=True)
+    assert "no task" in result.lower()
+
+    result = await tools["batch_retry_tasks"](task_ids=[], task_type="offline_download")
+    assert "no task" in result.lower()

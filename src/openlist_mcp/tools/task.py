@@ -167,3 +167,159 @@ def register_task_tools(mcp: FastMCP) -> None:
             params=_task_params(task_id),
         )
         return f"Task cancelled: {task_id}"
+
+    @mcp.tool()
+    async def batch_cancel_tasks(
+        task_ids: list[str],
+        task_type: str = "offline_download",
+        confirm: bool = False,
+    ) -> str:
+        """Cancel multiple running tasks by ID.
+
+        Args:
+            task_ids: List of task IDs to cancel.
+            task_type: Task category, e.g. offline_download, upload, copy.
+            confirm: Must be true to actually cancel. Defaults to false.
+
+        Returns:
+            Success or confirmation-required message.
+        """
+        if not confirm:
+            return "Batch cancellation not performed. Re-run with confirm=true to cancel."
+        if not task_ids:
+            return "No task IDs provided."
+        task_type = _validate_task_type(task_type)
+        enforce_writable("batch_cancel_tasks")
+        client = await get_client()
+        await client.request(
+            "POST",
+            f"task/{task_type}/cancel_some",
+            json=task_ids,
+        )
+        return f"Batch cancel submitted for {len(task_ids)} task(s): {task_ids}"
+
+    @mcp.tool()
+    async def batch_delete_tasks(
+        task_ids: list[str],
+        task_type: str = "offline_download",
+        confirm: bool = False,
+    ) -> str:
+        """Delete multiple completed or failed task records.
+
+        Args:
+            task_ids: List of task IDs to delete.
+            task_type: Task category, e.g. offline_download, upload, copy.
+            confirm: Must be true to actually delete. Defaults to false.
+
+        Returns:
+            Success or confirmation-required message.
+        """
+        if not confirm:
+            return "Batch deletion not performed. Re-run with confirm=true to delete."
+        if not task_ids:
+            return "No task IDs provided."
+        task_type = _validate_task_type(task_type)
+        enforce_writable("batch_delete_tasks")
+        client = await get_client()
+        await client.request(
+            "POST",
+            f"task/{task_type}/delete_some",
+            json=task_ids,
+        )
+        return f"Batch delete submitted for {len(task_ids)} task(s): {task_ids}"
+
+    @mcp.tool()
+    async def batch_retry_tasks(
+        task_ids: list[str],
+        task_type: str = "offline_download",
+    ) -> str:
+        """Retry multiple failed tasks by ID.
+
+        Args:
+            task_ids: List of task IDs to retry.
+            task_type: Task category, e.g. offline_download, upload, copy.
+
+        Returns:
+            Success message.
+        """
+        if not task_ids:
+            return "No task IDs provided."
+        task_type = _validate_task_type(task_type)
+        enforce_writable("batch_retry_tasks")
+        client = await get_client()
+        await client.request(
+            "POST",
+            f"task/{task_type}/retry_some",
+            json=task_ids,
+        )
+        return f"Batch retry submitted for {len(task_ids)} task(s): {task_ids}"
+
+    @mcp.tool()
+    async def clear_done_tasks(
+        task_type: str = "offline_download",
+    ) -> str:
+        """Clear all completed, failed, and cancelled tasks of the given type.
+
+        Removes all tasks that are in a terminal state (succeeded, failed, cancelled).
+        Useful for cleaning up task history.
+
+        Args:
+            task_type: Task category, e.g. offline_download, upload, copy.
+
+        Returns:
+            Success message.
+        """
+        task_type = _validate_task_type(task_type)
+        enforce_writable("clear_done_tasks")
+        client = await get_client()
+        await client.request(
+            "POST",
+            f"task/{task_type}/clear_done",
+        )
+        return f"Cleared all done/failed/cancelled tasks of type: {task_type}"
+
+    @mcp.tool()
+    async def clear_succeeded_tasks(
+        task_type: str = "offline_download",
+    ) -> str:
+        """Clear only successfully completed tasks.
+
+        Unlike clear_done_tasks, this keeps failed and cancelled tasks for inspection.
+
+        Args:
+            task_type: Task category, e.g. offline_download, upload, copy.
+
+        Returns:
+            Success message.
+        """
+        task_type = _validate_task_type(task_type)
+        enforce_writable("clear_succeeded_tasks")
+        client = await get_client()
+        await client.request(
+            "POST",
+            f"task/{task_type}/clear_succeeded",
+        )
+        return f"Cleared all succeeded tasks of type: {task_type}"
+
+    @mcp.tool()
+    async def retry_failed_tasks(
+        task_type: str = "offline_download",
+    ) -> str:
+        """Retry all failed tasks of the given type.
+
+        One-shot retry for every task in failed state.
+
+        Args:
+            task_type: Task category, e.g. offline_download, upload, copy.
+
+        Returns:
+            Success message.
+        """
+        task_type = _validate_task_type(task_type)
+        enforce_writable("retry_failed_tasks")
+        client = await get_client()
+        await client.request(
+            "POST",
+            f"task/{task_type}/retry_failed",
+        )
+        return f"Retry submitted for all failed tasks of type: {task_type}"

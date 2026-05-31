@@ -211,6 +211,233 @@ def register_advanced_tools(mcp: FastMCP) -> None:
         return json.dumps(data, indent=2, ensure_ascii=False)
 
     @mcp.tool()
+    async def batch_download(
+        urls: list[str],
+        path: str = "/",
+        tool: str = "aria2",
+        delete_policy: str = "",
+    ) -> str:
+        """Download multiple files from remote URLs at once.
+
+        Each URL is added as a separate offline download task. Use
+        `list_tasks` or `get_task_info` to monitor progress.
+
+        Args:
+            urls: List of remote URLs to download.
+            path: Destination directory on OpenList (e.g. "/downloads").
+            tool: Download tool name. Defaults to "aria2".
+            delete_policy: Optional delete policy for completed tasks.
+
+        Returns:
+            JSON string with results for each URL.
+        """
+        enforce_path_allowed(path)
+        enforce_writable("batch_download")
+
+        if not urls:
+            return json.dumps(
+                {"ok": False, "error": "No URLs provided."}, ensure_ascii=False
+            )
+
+        # SSRF check for each URL
+        for url in urls:
+            parsed = urlparse(url)
+            if parsed.scheme not in ("http", "https"):
+                raise ValueError(
+                    f"Unsupported URL scheme '{parsed.scheme}' in '{url}'. "
+                    "Only http and https URLs are allowed."
+                )
+            _reject_internal_url(url)
+
+        client = await get_client()
+        results = []
+        for url in urls:
+            try:
+                body: dict[str, Any] = {"urls": [url], "path": path}
+                if tool:
+                    body["tool"] = tool
+                if delete_policy:
+                    body["delete_policy"] = delete_policy
+                data = await client.request(
+                    "POST", "fs/add_offline_download", json=body
+                )
+                results.append({"url": url, "status": "created", "result": data})
+            except Exception as e:
+                results.append({"url": url, "status": "failed", "error": str(e)})
+
+        return json.dumps(results, indent=2, ensure_ascii=False)
+
+    @mcp.tool()
+    async def find_duplicates(
+        path: str = "/",
+        by: str = "name_size",
+        password: str = "",
+    ) -> str:
+        """Find potentially duplicate files in a directory tree.
+
+        Groups files by name+size (default) or by size only, and returns
+        groups with more than one member as potential duplicates.
+
+        Args:
+            path: Directory to search. Defaults to "/".
+            by: Grouping criteria: "name_size" (default) or "size_only".
+            password: Password if the path is password-protected.
+
+        Returns:
+            JSON string with grouped potential duplicates.
+        """
+        client = await get_client()
+        groups: dict[str, list[dict]] = {}
+        seen = set()
+
+        async def _walk(dir_path: str, depth: int = 0) -> None:
+            if depth > 8:
+                return
+            if dir_path in seen:
+                return
+            seen.add(dir_path)
+
+            try:
+                data = await client.request(
+                    "POST", "fs/list",
+                    json={"path": dir_path, "page": 1, "per_page": 200, "password": password},
+                )
+            except OpenListError:
+                return
+
+            items = data.get("content", data.get("value", []))
+            if not isinstance(items, list):
+                items = []
+
+            for item in items:
+                name = item["name"]
+                size = item.get("size", 0) or 0
+                typ = item.get("type", "")
+                is_dir = typ in (1, "dir", "folder")
+
+                if is_dir:
+                    sub_path = f"{dir_path.rstrip('/')}/{name}"
+                    await _walk(sub_path, depth + 1)
+                else:
+                    # Build group key
+                    if by == "size_only":
+                        _human_size
+                        key = f"size:{size}"
+                    else:
+                        key = f"{name}:{size}"
+
+                    entry = {"path": f"{dir_path.rstrip('/')}/{name}", "size": size}
+                    if key not in groups:
+                        groups[key] = []
+                    groups[key].append(entry)
+
+        await _walk(path)
+
+        # Filter groups with more than one entry
+        duplicates = {k: v for k, v in groups.items() if len(v) > 1}
+
+        result = {
+            "path": path,
+            "group_by": by,
+            "total_duplicate_groups": len(duplicates),
+            "total_duplicate_files": sum(len(v) for v in duplicates.values()),
+            "duplicates": [
+                {
+                    "key": k,
+                    "files": v,
+                    "count": len(v),
+                    "size": v[0]["size"],
+                    "size_human": _human_size(v[0]["size"]),
+                }
+                for k, v in sorted(duplicates.items(), key=lambda x: -len(x[1]))
+            ],
+        }
+        return json.dumps(result, indent=2, ensure_ascii=False)
+
+    @mcp.tool()
+    async def content_preview(
+        path: str,
+        max_chars: int = 5000,
+        password: str = "",
+    ) -> str:
+        """Preview the first portion of a text file's content.
+
+        Useful for quickly inspecting log files, CSV data, source code,
+        configuration files, or other text-based files without downloading
+        the entire file. Fetches the raw content via download URL.
+
+        For binary files or very large files, the preview may be truncated.
+
+        Args:
+            path: Full path to the file to preview.
+            max_chars: Maximum number of characters to return. Defaults to 5000.
+            password: Password if the path is password-protected.
+
+        Returns:
+            The file content preview as plain text, or an error message.
+        """
+        enforce_path_allowed(path)
+        client = await get_client()
+
+        # Get the file info to find raw_url
+        data = await client.request(
+            "POST", "fs/get",
+            json={"path": path, "password": password},
+        )
+        raw_url = data.get("raw_url", "") if isinstance(data, dict) else ""
+
+        if not raw_url:
+            return json.dumps(
+                {"ok": False, "error": "No download URL available for this file."},
+                ensure_ascii=False,
+            )
+
+        # Fetch with range to limit bytes
+        import httpx
+        try:
+            async with httpx.AsyncClient(timeout=15) as hc:
+                resp = await hc.get(raw_url, headers={"Range": f"bytes=0-{max_chars * 2}"})
+                content_bytes = resp.content
+        except Exception as e:
+            return json.dumps(
+                {"ok": False, "error": f"Failed to fetch content: {e}"},
+                ensure_ascii=False,
+            )
+
+        # Try to decode as text
+        try:
+            text = content_bytes.decode("utf-8")
+        except UnicodeDecodeError:
+            try:
+                text = content_bytes.decode("latin-1")
+            except Exception:
+                return json.dumps(
+                    {"ok": False, "error": "File is binary — cannot preview as text."},
+                    ensure_ascii=False,
+                )
+
+        # Truncate
+        if len(text) > max_chars:
+            text = text[:max_chars] + "\n... (truncated)"
+
+        # Wrap in a code block for readability
+        ext = path.rsplit(".", 1)[-1].lower() if "." in path else ""
+        lang_map = {"py": "python", "js": "javascript", "ts": "typescript",
+                     "html": "html", "css": "css", "json": "json", "xml": "xml",
+                     "yaml": "yaml", "yml": "yaml", "md": "markdown",
+                     "sh": "bash", "bash": "bash", "csv": "csv", "txt": "text"}
+        lang = lang_map.get(ext, "")
+
+        result = {
+            "path": path,
+            "total_bytes": len(content_bytes),
+            "preview_chars": len(text),
+            "preview": text,
+            "language": lang,
+        }
+        return json.dumps(result, indent=2, ensure_ascii=False)
+
+    @mcp.tool()
     async def decompress_archive(
         src_dir: str,
         names: list[str] | str,
