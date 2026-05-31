@@ -144,7 +144,7 @@ list_files(path="/")
 get_file_info(path="/downloads/report.pdf")
 
 # Search for files by keyword
-search_files(path="/", keyword="report")
+search_files(parent="/", keywords="report")
 
 # Create a folder
 create_folder(path="/projects/new-project")

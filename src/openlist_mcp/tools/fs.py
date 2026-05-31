@@ -113,8 +113,9 @@ def register_fs_tools(mcp: FastMCP) -> None:
 
     @mcp.tool()
     async def search_files(
-        path: str = "/",
-        keyword: str = "",
+        parent: str = "/",
+        keywords: str = "",
+        scope: int = 0,
         page: int = 1,
         per_page: int = 50,
         password: str = "",
@@ -122,8 +123,9 @@ def register_fs_tools(mcp: FastMCP) -> None:
         """Search for files and folders by keyword.
 
         Args:
-            path: Directory path to search in. Use "/" for root. Defaults to "/".
-            keyword: Search keyword to match against file/folder names.
+            parent: Directory path to search in. Use "/" for root. Defaults to "/".
+            keywords: Search keywords to match against file/folder names. Defaults to "".
+            scope: Search scope. 0 = search in current directory only, 1 = search recursively. Defaults to 0.
             page: Page number for pagination. Defaults to 1.
             per_page: Number of items per page. Defaults to 50.
             password: Password if the directory is password-protected. Defaults to "".
@@ -131,15 +133,16 @@ def register_fs_tools(mcp: FastMCP) -> None:
         Returns:
             JSON string containing matching files and folders.
         """
-        enforce_path_allowed(path)
+        enforce_path_allowed(parent)
         validate_pagination(page, per_page)
         client = await get_client()
         data = await client.request(
             "POST",
             "fs/search",
             json={
-                "path": path,
-                "keyword": keyword,
+                "parent": parent,
+                "keywords": keywords,
+                "scope": scope,
                 "page": page,
                 "per_page": per_page,
                 "password": password,
