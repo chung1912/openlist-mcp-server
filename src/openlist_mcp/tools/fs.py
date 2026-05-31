@@ -138,7 +138,7 @@ def register_fs_tools(mcp: FastMCP) -> None:
         Args:
             parent: Directory path to search in. Use "/" for root. Defaults to "/".
             keywords: Search keywords to match against file/folder names. Defaults to "".
-            scope: Search scope. 0 = search in current directory only, 1 = search recursively. Defaults to 0.
+            scope: Search scope. 0 = all types, 1 = directories only, 2 = files only. Defaults to 0.
             page: Page number for pagination. Defaults to 1.
             per_page: Number of items per page. Defaults to 50.
             password: Password if the directory is password-protected. Defaults to "".
