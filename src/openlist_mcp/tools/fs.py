@@ -691,3 +691,157 @@ def register_fs_tools(mcp: FastMCP) -> None:
             ],
         }
         return json.dumps(result, indent=2, ensure_ascii=False)
+
+    @mcp.tool()
+    async def mirror(
+        src_dir: str,
+        dst_dir: str,
+        mode: str = "push",
+        dry_run: bool = True,
+        password: str = "",
+    ) -> str:
+        """Synchronize files from a source directory to a destination directory.
+
+        Walks both directories recursively, compares the file trees, and copies
+        files that exist in source but are missing from destination. The source
+        directory itself is never modified.
+
+        Args:
+            src_dir: Source directory path. Contents are read-only.
+            dst_dir: Destination directory path. New files and folders are
+                     created here to match the source.
+            mode: "push" — only copy missing files from src to dst (default).
+                  "pull" — only copy files from dst to src.
+                  "mirror" — push + delete files in dst that don't exist in src.
+            dry_run: When true (default), only list what would be done without
+                     actually copying. Set to false to execute.
+            password: Password if the path is password-protected.
+
+        Returns:
+            Report of files copied, skipped, and deleted.
+        """
+        enforce_path_allowed(src_dir)
+        enforce_path_allowed(dst_dir)
+        if mode not in ("push", "pull", "mirror"):
+            return f"Invalid mode '{mode}'. Must be 'push', 'pull', or 'mirror'."
+        if mode in ("push", "mirror"):
+            enforce_writable(f"mirror ({mode} to dst)")
+        if mode == "pull":
+            enforce_writable(f"mirror (pull from dst)")
+
+        client = await get_client()
+
+        async def _list_tree(path: str) -> dict[str, dict]:
+            """Recursively list files, returning {relative_path: info}."""
+            result: dict[str, dict] = {}
+            seen = set()
+
+            async def _walk(dir_path: str, rel_prefix: str = "") -> None:
+                if dir_path in seen:
+                    return
+                seen.add(dir_path)
+                try:
+                    data = await client.request(
+                        "POST", "fs/list",
+                        json={"path": dir_path, "page": 1, "per_page": 200, "password": password},
+                    )
+                except:
+                    return
+                items = data.get("content", data.get("value", []))
+                if not isinstance(items, list):
+                    items = []
+                for item in items:
+                    name = item["name"]
+                    typ = item.get("type", "")
+                    is_dir = typ in (1, "dir", "folder")
+                    rel = f"{rel_prefix}{name}" + ("/" if is_dir else "")
+                    if is_dir:
+                        result[rel] = {"type": "dir", "name": name}
+                        await _walk(f"{dir_path.rstrip('/')}/{name}", f"{rel_prefix}{name}/")
+                    else:
+                        result[rel] = {
+                            "type": "file", "name": name,
+                            "size": item.get("size", 0),
+                        }
+            await _walk(path)
+            return result
+
+        src_files = await _list_tree(src_dir)
+        dst_files = await _list_tree(dst_dir)
+
+        to_copy = []
+        to_delete = []
+
+        for rel, info in src_files.items():
+            if info["type"] == "file" and rel not in dst_files:
+                to_copy.append(rel)
+            if info["type"] == "dir" and rel not in dst_files:
+                to_copy.append(rel)
+
+        if mode == "mirror":
+            for rel, info in dst_files.items():
+                if rel not in src_files:
+                    to_delete.append(rel)
+
+        report = {
+            "src_dir": src_dir,
+            "dst_dir": dst_dir,
+            "mode": mode,
+            "dry_run": dry_run,
+            "src_files_total": len(src_files),
+            "dst_files_total": len(dst_files),
+            "files_to_copy": len(to_copy),
+            "files_to_delete": len(to_delete),
+            "copy_list": to_copy[:20],
+            "delete_list": to_delete[:20],
+            "note": "truncated at 20 items" if len(to_copy) > 20 or len(to_delete) > 20 else "",
+        }
+
+        if dry_run:
+            return json.dumps(report, indent=2, ensure_ascii=False)
+
+        # Execute
+        copied = 0
+        deleted = 0
+        errors = []
+
+        for rel in to_copy:
+            try:
+                src_path = f"{src_dir.rstrip('/')}/{rel}"
+                if rel.endswith("/"):
+                    # Create directory
+                    dst_path = f"{dst_dir.rstrip('/')}/{rel.rstrip('/')}"
+                    await client.request("POST", "fs/mkdir", json={"path": dst_path})
+                else:
+                    # Copy file
+                    parent = posixpath.dirname(rel.rstrip("/"))
+                    dst_parent = f"{dst_dir.rstrip('/')}/{parent}" if parent else dst_dir
+                    file_name = posixpath.basename(rel)
+                    await client.request(
+                        "POST", "fs/copy",
+                        json={
+                            "src_dir": posixpath.dirname(src_path),
+                            "dst_dir": dst_parent,
+                            "names": [file_name],
+                        },
+                    )
+                copied += 1
+            except Exception as e:
+                errors.append(f"copy {rel}: {e}")
+
+        for rel in to_delete:
+            try:
+                dir_path = posixpath.dirname(f"{dst_dir.rstrip('/')}/{rel.rstrip('/')}")
+                name = posixpath.basename(rel.rstrip("/"))
+                await client.request(
+                    "POST", "fs/remove",
+                    json={"dir": dir_path, "names": [name]},
+                )
+                deleted += 1
+            except Exception as e:
+                errors.append(f"delete {rel}: {e}")
+
+        report["copied"] = copied
+        report["deleted"] = deleted
+        report["errors"] = errors
+        return json.dumps(report, indent=2, ensure_ascii=False)
