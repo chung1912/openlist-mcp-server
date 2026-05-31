@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import json
+
 from mcp.server.fastmcp import FastMCP
 
 from ..client import get_client
@@ -14,8 +16,6 @@ def register_share_tools(mcp: FastMCP) -> None:
     @mcp.tool()
     async def create_share(path: str, password: str = "", days: int = 0) -> str:
         """Create a share link for a file or folder."""
-        import json
-
         enforce_path_allowed(path)
         enforce_writable("create_share")
         client = await get_client()
@@ -29,8 +29,6 @@ def register_share_tools(mcp: FastMCP) -> None:
     @mcp.tool()
     async def list_shares(page: int = 1, per_page: int = 50) -> str:
         """List all existing share links."""
-        import json
-
         validate_pagination(page, per_page)
         client = await get_client()
         data = await client.request(

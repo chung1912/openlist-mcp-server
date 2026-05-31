@@ -6,7 +6,7 @@ import json
 
 from mcp.server.fastmcp import FastMCP
 
-from ..client import OpenListError, get_client
+from ..client import get_client
 from . import enforce_writable, validate_pagination
 
 TASK_TYPES = {
@@ -72,23 +72,11 @@ def register_task_tools(mcp: FastMCP) -> None:
             )
         validate_pagination(page, per_page)
         client = await get_client()
-        try:
-            data = await client.request(
-                "POST",
-                f"task/{task_type}/{status}",
-                params={"page": page, "per_page": per_page},
-            )
-        except OpenListError as exc:
-            data = {
-                "ok": False,
-                "error": exc.message,
-                "task_type": task_type,
-                "status": status,
-                "hint": (
-                    "This OpenList deployment may not expose task list endpoints. "
-                    "If you have a task ID, use get_task_info(task_id, task_type)."
-                ),
-            }
+        data = await client.request(
+            "POST",
+            f"task/{task_type}/{status}",
+            params={"page": page, "per_page": per_page},
+        )
         return json.dumps(data, indent=2, ensure_ascii=False)
 
     @mcp.tool()

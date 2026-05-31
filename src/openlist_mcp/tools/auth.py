@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import json
+
 from mcp.server.fastmcp import FastMCP
 
 from ..client import OpenList2FAError, OpenListError, _generate_totp, get_client
@@ -65,8 +67,6 @@ def register_public_tools(mcp: FastMCP) -> None:
         Returns:
             JSON string of public settings.
         """
-        import json
-
         client = await get_client()
         data = await client.request("GET", "public/settings", require_auth=False)
         return json.dumps(data, indent=2, ensure_ascii=False)

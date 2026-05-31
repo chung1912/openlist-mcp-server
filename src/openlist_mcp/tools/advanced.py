@@ -5,6 +5,7 @@ Includes offline download, archive decompression, and related utilities.
 
 from __future__ import annotations
 
+import contextlib
 import json
 import os
 import posixpath
@@ -31,25 +32,35 @@ def register_advanced_tools(mcp: FastMCP) -> None:
         """
         config = get_config()
         client = await get_client()
-        public_settings = await client.request(
-            "GET",
-            "public/settings",
-            require_auth=False,
-        )
-        user = await client.request("GET", "me")
-        download_tools_data = await client.request(
-            "GET",
-            "public/offline_download_tools",
-            require_auth=False,
-        )
-        download_tools = (
-            download_tools_data
-            if isinstance(download_tools_data, list)
-            else download_tools_data.get(
-                "value",
-                download_tools_data.get("data", []),
+
+        # Best-effort: each endpoint can fail independently
+        public_settings = {}
+        with contextlib.suppress(Exception):
+            public_settings = await client.request(
+                "GET",
+                "public/settings",
+                require_auth=False,
             )
-        )
+
+        user = None
+        with contextlib.suppress(Exception):
+            user = await client.request("GET", "me")
+
+        download_tools = []
+        with contextlib.suppress(Exception):
+            download_tools_data = await client.request(
+                "GET",
+                "public/offline_download_tools",
+                require_auth=False,
+            )
+            download_tools = (
+                download_tools_data
+                if isinstance(download_tools_data, list)
+                else download_tools_data.get(
+                    "value",
+                    download_tools_data.get("data", []),
+                )
+            )
 
         capabilities = {
             "server": {
@@ -250,8 +261,6 @@ def register_advanced_tools(mcp: FastMCP) -> None:
         Returns:
             JSON array of available download tool names.
         """
-        import json
-
         client = await get_client()
         data = await client.request("GET", "public/offline_download_tools", require_auth=False)
         tools = data if isinstance(data, list) else data.get("value", data.get("data", []))

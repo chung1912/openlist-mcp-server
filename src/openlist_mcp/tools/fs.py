@@ -2,6 +2,9 @@
 
 from __future__ import annotations
 
+import json
+import posixpath
+
 from mcp.server.fastmcp import FastMCP
 
 from ..client import OpenListError, get_client
@@ -35,8 +38,6 @@ def register_fs_tools(mcp: FastMCP) -> None:
         Returns:
             JSON string containing file list with name, size, type, modified time, etc.
         """
-        import json
-
         enforce_path_allowed(path)
         validate_pagination(page, per_page)
         client = await get_client()
@@ -71,8 +72,6 @@ def register_fs_tools(mcp: FastMCP) -> None:
         Returns:
             JSON string containing child directory entries.
         """
-        import json
-
         enforce_path_allowed(path)
         client = await get_client()
         data = await client.request(
@@ -100,8 +99,6 @@ def register_fs_tools(mcp: FastMCP) -> None:
         Returns:
             JSON string with file details including size, type, provider, raw_url, etc.
         """
-        import json
-
         enforce_path_allowed(path)
         client = await get_client()
         data = await client.request(
@@ -134,8 +131,6 @@ def register_fs_tools(mcp: FastMCP) -> None:
         Returns:
             JSON string containing matching files and folders.
         """
-        import json
-
         enforce_path_allowed(path)
         validate_pagination(page, per_page)
         client = await get_client()
@@ -213,8 +208,6 @@ def register_fs_tools(mcp: FastMCP) -> None:
         Returns:
             Success message or OpenList task/result info.
         """
-        import json
-
         enforce_path_allowed(src_dir)
         enforce_writable("batch_rename")
         if not rename_objects:
@@ -257,8 +250,6 @@ def register_fs_tools(mcp: FastMCP) -> None:
         Returns:
             Success or error message with task info if processed asynchronously.
         """
-        import json
-
         enforce_path_allowed(src_dir)
         enforce_path_allowed(dst_dir)
         enforce_writable("copy")
@@ -296,8 +287,6 @@ def register_fs_tools(mcp: FastMCP) -> None:
         Returns:
             Success or error message with task info if processed asynchronously.
         """
-        import json
-
         enforce_path_allowed(src_dir)
         enforce_path_allowed(dst_dir)
         enforce_writable("move")
@@ -368,9 +357,6 @@ def register_fs_tools(mcp: FastMCP) -> None:
         Returns:
             Success message or task info.
         """
-        import json
-        import posixpath
-
         enforce_path_allowed(src_dir)
         enforce_path_allowed(dst_dir)
         enforce_writable("recursive_move")
