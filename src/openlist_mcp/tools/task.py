@@ -85,7 +85,7 @@ def register_task_tools(mcp: FastMCP) -> None:
             async def _fetch_one(t: str) -> dict:
                 try:
                     data = await client.request(
-                        "POST",
+                        "GET",
                         f"task/{t}/{status}",
                         params={"page": page, "per_page": per_page},
                     )
@@ -103,14 +103,18 @@ def register_task_tools(mcp: FastMCP) -> None:
 
             results = await asyncio.gather(*[_fetch_one(t) for t in sorted(TASK_TYPES)])
             return json.dumps(
-                {"task_type": "all", "results": results, "total": sum(len(r["tasks"]) for r in results)},
+                {
+                    "task_type": "all",
+                    "results": results,
+                    "total": sum(len(r["tasks"]) for r in results),
+                },
                 indent=2,
                 ensure_ascii=False,
             )
 
         # Single task type
         data = await client.request(
-            "POST",
+            "GET",
             f"task/{task_type}/{status}",
             params={"page": page, "per_page": per_page},
         )

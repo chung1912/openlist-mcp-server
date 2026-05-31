@@ -48,9 +48,25 @@ class FakeClient:
         content_type: str = "application/octet-stream",
     ) -> dict:
         self.requests.append(
-            ("MULTIPART", path, {"field_name": field_name, "file_name": file_name, "content_type": content_type, "size": len(file_bytes)})
+            (
+                "MULTIPART",
+                path,
+                {
+                    "field_name": field_name,
+                    "file_name": file_name,
+                    "content_type": content_type,
+                    "size": len(file_bytes),
+                },
+            )
         )
-        return {"info": {"name": "parsed", "info_hash": "a" * 40, "files": [{"path": "file.txt", "size": 100}]}, "torrent_data": "ZHVtbXk="}
+        return {
+            "info": {
+                "name": "parsed",
+                "info_hash": "a" * 40,
+                "files": [{"path": "file.txt", "size": 100}],
+            },
+            "torrent_data": "ZHVtbXk=",
+        }
 
     async def upload(self, **kwargs):
         self.uploads.append(kwargs)
