@@ -235,6 +235,54 @@ def register_fs_tools(mcp: FastMCP) -> None:
         return f"Batch renamed successfully in {src_dir}: {normalized_objects}"
 
     @mcp.tool()
+    async def regex_rename(
+        src_dir: str,
+        src_name_regex: str,
+        new_name_regex: str,
+    ) -> str:
+        """Rename files in a directory using regular expression substitution.
+
+        All files in src_dir whose names match src_name_regex will be renamed
+        by replacing the matched portion with new_name_regex.
+
+        The replacement uses Go regex syntax — use $1, $2 for capture groups
+        (NOT \\1 or \\g<1> like in Python/JS).
+
+        Examples:
+          - src_name_regex="(.*)\\.html"  new_name_regex="$1.htm"
+            Changes .html extension to .htm for all HTML files.
+          - src_name_regex="^report_"     new_name_regex="draft_"
+            Prefixes "draft_" to files starting with "report_".
+          - src_name_regex="(\\d{4})-(\\d{2})-(\\d{2})_(.*)"
+            new_name_regex="$3/$1/$2_$4"
+            Rearranges date-prefixed filenames.
+
+        Args:
+            src_dir: Directory containing the files to rename.
+            src_name_regex: Regex pattern to match source filenames.
+            new_name_regex: Replacement pattern. Use $1, $2 to reference
+                           capture groups (Go regex syntax).
+
+        Returns:
+            Success or error message with operation result.
+        """
+        enforce_writable("regex_rename")
+        enforce_path_allowed(src_dir)
+        client = await get_client()
+        data = await client.request(
+            "POST",
+            "fs/regex_rename",
+            json={
+                "src_dir": src_dir,
+                "src_name_regex": src_name_regex,
+                "new_name_regex": new_name_regex,
+            },
+        )
+        if data is not None and data != {}:
+            return f"Regex rename result: {json.dumps(data, ensure_ascii=False)}"
+        return f"Regex rename completed in {src_dir}: {src_name_regex} -> {new_name_regex}"
+
+    @mcp.tool()
     async def copy(
         src_dir: str,
         dst_dir: str,
@@ -250,9 +298,9 @@ def register_fs_tools(mcp: FastMCP) -> None:
         Returns:
             Success or error message with task info if processed asynchronously.
         """
+        enforce_writable("copy")
         enforce_path_allowed(src_dir)
         enforce_path_allowed(dst_dir)
-        enforce_writable("copy")
         client = await get_client()
         name_list = normalize_names(names)
 
@@ -287,9 +335,9 @@ def register_fs_tools(mcp: FastMCP) -> None:
         Returns:
             Success or error message with task info if processed asynchronously.
         """
+        enforce_writable("move")
         enforce_path_allowed(src_dir)
         enforce_path_allowed(dst_dir)
-        enforce_writable("move")
         client = await get_client()
         name_list = normalize_names(names)
 
@@ -339,6 +387,40 @@ def register_fs_tools(mcp: FastMCP) -> None:
             json={"dir": directory, "names": name_list},
         )
         return f"Deleted successfully: {name_list} from {directory}"
+
+    @mcp.tool()
+    async def remove_empty_dirs(
+        src_dir: str,
+        confirm: bool = False,
+    ) -> str:
+        """Recursively remove empty directories under the given path.
+
+        Deletes directories that contain no files (only empty subdirectories
+        are also removed). Useful for cleanup after moving or deleting files.
+
+        Args:
+            src_dir: Directory path to scan for empty subdirectories.
+            confirm: Must be true to actually delete. Defaults to false.
+
+        Returns:
+            Success message or confirmation-required message.
+        """
+        if not confirm:
+            return (
+                "Empty directory removal not performed. "
+                "Re-run with confirm=true to remove empty directories."
+            )
+        enforce_writable("remove_empty_dirs")
+        enforce_path_allowed(src_dir)
+        client = await get_client()
+        data = await client.request(
+            "POST",
+            "fs/remove_empty_directory",
+            json={"src_dir": src_dir},
+        )
+        if data is not None and data != {}:
+            return f"Empty directory removal result: {json.dumps(data, ensure_ascii=False)}"
+        return f"Empty directories removed successfully under: {src_dir}"
 
     @mcp.tool()
     async def recursive_move(

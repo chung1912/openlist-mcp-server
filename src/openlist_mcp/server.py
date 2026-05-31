@@ -20,6 +20,7 @@ import sys
 
 from mcp.server.fastmcp import FastMCP
 
+from . import __version__
 from .config import get_config
 from .tools.advanced import register_advanced_tools
 from .tools.auth import register_auth_tools, register_public_tools
@@ -73,28 +74,31 @@ def main() -> None:
         print(
             "\n"
             "╔══════════════════════════════════════════════════════════════╗\n"
-            "║              OpenList MCP Server v0.2.7                    ║\n"
+            "║              OpenList MCP Server v{__version__:<24}║\n"
             "╠══════════════════════════════════════════════════════════════╣\n"
             "║                                                              ║\n"
             "║  What is this?                                               ║\n"
             "║  An MCP server that lets AI agents (Claude, SOLO, etc.)      ║\n"
             "║  manage files on your OpenList instance.                     ║\n"
             "║                                                              ║\n"
-            "║  32 tools available:                                         ║\n"
+            "║  40 tools available:                                         ║\n"
             "║  • Browse:   list_files, list_dirs, get_file_info,           ║\n"
             "║              search_files                                    ║\n"
-            "║  • Manage:   create_folder, rename, batch_rename, copy,      ║\n"
-            "║              move, remove,                                   ║\n"
-            "║              recursive_move                                  ║\n"
+            "║  • Manage:   create_folder, rename, batch_rename,              ║\n"
+            "║              regex_rename, copy, move, remove,                  ║\n"
+            "║              remove_empty_dirs, recursive_move               ║\n"
             "║  • Transfer: upload_file, upload_local_file, get_download_url║\n"
             "║  • Auth:     login (supports 2FA/TOTP), get_public_settings, ║\n"
             "║              get_me, logout                                   ║\n"
             "║  • Tasks:    list_tasks, get_task_info, retry_task,         ║\n"
             "║              cancel_task, delete_task                        ║\n"
-            "║  • Shares:   create_share, list_shares, cancel_share,        ║\n"
+            "║  • Shares:   create_share, list_shares, update_share,         ║\n"
+            "║              enable_share, disable_share, cancel_share,      ║\n"
             "║              delete_share                                    ║\n"
             "║  • Advanced: offline_download, decompress_archive,            ║\n"
-            "║              list_archive_files, list_download_tools          ║\n"
+            "║              list_archive_files, list_download_tools,         ║\n"
+            "║              parse_torrent, generate_torrent,                 ║\n"
+            "║              torrent_rapid_upload                             ║\n"
             "║                                                              ║\n"
             "║  Quick start:                                                ║\n"
             "║  Set these environment variables and restart:                ║\n"

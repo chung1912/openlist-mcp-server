@@ -15,6 +15,10 @@ from mcp.server.fastmcp import FastMCP
 from ..client import get_client
 from . import enforce_path_allowed, enforce_writable, validate_name
 
+# Maximum base64 content length for upload_file (~75MB raw, ~100MB base64).
+# For larger files, use upload_local_file which streams from disk.
+MAX_BASE64_UPLOAD_BYTES = 104_857_600  # 100 MB base64 string length
+
 
 def _allowed_upload_roots() -> list[Path]:
     roots = os.environ.get("OPENLIST_LOCAL_UPLOAD_ROOTS", "").strip()
@@ -95,6 +99,15 @@ def register_transfer_tools(mcp: FastMCP) -> None:
         enforce_path_allowed(path)
         enforce_writable("upload_file")
         validate_name(file_name)
+
+        if len(file_content_base64) > MAX_BASE64_UPLOAD_BYTES:
+            raw_mb = len(file_content_base64) * 3 // 4 // 1024 // 1024
+            return (
+                f"File too large ({raw_mb} MB estimated raw). "
+                f"Maximum base64 upload is {MAX_BASE64_UPLOAD_BYTES // 1024 // 1024} MB. "
+                "For larger files, use upload_local_file which streams from disk."
+            )
+
         client = await get_client()
         try:
             file_bytes = base64.b64decode(file_content_base64)

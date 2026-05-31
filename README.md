@@ -23,16 +23,21 @@ MCP Server for [OpenList](https://github.com/OpenListTeam/OpenList) — an open-
 ## Features
 
 - File browsing: list directories, get file details, search files
-- File management: create folders, rename, copy, move, delete
+- File management: create folders, rename, batch rename, regex rename, copy, move, delete, recursive move, remove empty directories
 - File transfer: upload base64 content, upload local files accessible to the MCP server, get download URLs
-- Share management: create, list, cancel, delete share links
+- Share management: create, list, update, enable, disable, cancel, delete share links
 - Task management: list, retry, cancel, delete async tasks
+- Torrent operations: parse, generate, rapid upload
 - Auto authentication: JWT login and retry after token expiration
 - **NEW v0.2.5** 2FA / TOTP support: login with optional OTP code
 - **NEW v0.2.5** Local file upload: `upload_local_file` tool (disabled by default, requires `OPENLIST_LOCAL_UPLOAD_ROOTS`)
 - **NEW v0.2.6** Advanced: offline download, archive decompression, recursive move
 - **NEW v0.2.7** Auto TOTP: `OPENLIST_TOTP_SECRET` — auto-generate 2FA codes during login
 - **NEW v0.2.7** Download tool management: `list_download_tools` — query available download tools (aria2, Transmission, qBittorrent)
+- **NEW v0.2.8** Regex rename: `regex_rename` — batch rename files with Go regex
+- **NEW v0.2.8** Share lifecycle: `update_share`, `enable_share`, `disable_share` — full share management
+- **NEW v0.2.8** Torrent tools: `parse_torrent`, `generate_torrent`, `torrent_rapid_upload`
+- **NEW v0.2.8** SSRF protection: `offline_download` now blocks private/internal IP addresses
 
 ## Requirements
 
@@ -43,7 +48,7 @@ MCP Server for [OpenList](https://github.com/OpenListTeam/OpenList) — an open-
 
 ### For AI Assistants
 
-Copy the contents of [`AI_GUIDE.md`](AI_GUIDE.md) and paste it to your AI assistant (Claude, etc.). The AI will know how to install, configure, and use all 32 tools.
+Copy the contents of [`AI_GUIDE.md`](AI_GUIDE.md) and paste it to your AI assistant (Claude, etc.). The AI will know how to install, configure, and use all 40 tools.
 
 ### Example Prompts
 
@@ -61,7 +66,13 @@ Once configured, just say these to your AI:
 | **Check download tools** | "What download tools are available on my server?" |
 | **Extract an archive** | "Extract data.zip in /downloads to the data folder" |
 | **Download + extract** | "Download this archive and extract it to the project directory" |
-| **Batch clean up** | "Delete all .tmp files in /downloads" |
+| **Batch rename** | "Rename all .html files to .htm in /downloads" |
+| **Regex rename** | "Remove all numbers from filenames in /projects using regex" |
+| **Clean up** | "Delete all .tmp files in /downloads, then remove empty folders" |
+| **Update share** | "Change the password on my share link" |
+| **Disable share** | "Temporarily disable the share link for report.pdf" |
+| **Parse torrent** | "What files are in this torrent?" |
+| **Generate torrent** | "Create a torrent file for /downloads/myfile.iso" |
 | **Check identity** | "What user am I logged in as?" |
 
 ### For Human Users
@@ -350,6 +361,22 @@ More details:
 ---
 
 ## Changelog
+
+### v0.2.8
+
+- **`regex_rename`**: New tool — batch rename files using Go-style regex (`$1`, `$2` for groups).
+- **`remove_empty_dirs`**: New tool — recursively remove empty directories.
+- **`update_share`**: New tool — modify existing share links (password, expiry, files).
+- **`enable_share` / `disable_share`**: New tools — temporarily toggle share links.
+- **`parse_torrent`**: New tool — parse `.torrent` file content and list files.
+- **`generate_torrent`**: New tool — generate `.torrent` for existing files.
+- **`torrent_rapid_upload`**: New tool — rapid import from torrent data (requires CAS).
+- **`create_share` fix**: Changed payload format to `files: list[str]` — matches OpenList v4.2.2 API.
+- **`cancel_share` / `delete_share` fix**: Updated to match OpenList v4.2.2 endpoint changes.
+- **SSRF protection**: `offline_download` now resolves hostnames and blocks private/internal IPs.
+- **Upload size limit**: `upload_file` enforces 100 MB base64 limit.
+- **Security hardening**: `copy`/`move` check `enforce_writable` before path validation.
+- **Startup guide**: Updated to reflect 40 tools.
 
 ### v0.2.7
 

@@ -6,9 +6,11 @@ Includes offline download, archive decompression, and related utilities.
 from __future__ import annotations
 
 import contextlib
+import ipaddress
 import json
 import os
 import posixpath
+import socket
 from typing import Any
 from urllib.parse import urlparse
 
@@ -17,6 +19,71 @@ from mcp.server.fastmcp import FastMCP
 from ..client import get_client
 from ..config import get_config
 from . import enforce_path_allowed, enforce_writable, normalize_names, validate_name, validate_path
+
+
+# Internal IP ranges that should be blocked for SSRF prevention.
+_PRIVATE_NETWORKS = [
+    ipaddress.ip_network("127.0.0.0/8"),       # loopback
+    ipaddress.ip_network("10.0.0.0/8"),         # RFC 1918
+    ipaddress.ip_network("172.16.0.0/12"),      # RFC 1918
+    ipaddress.ip_network("192.168.0.0/16"),     # RFC 1918
+    ipaddress.ip_network("169.254.0.0/16"),     # link-local
+    ipaddress.ip_network("::1/128"),            # IPv6 loopback
+    ipaddress.ip_network("fc00::/7"),           # IPv6 unique-local
+    ipaddress.ip_network("fe80::/10"),          # IPv6 link-local
+]
+
+
+def _is_private_ip(ip_str: str) -> bool:
+    """Check if an IP address string belongs to a private/internal network."""
+    try:
+        addr = ipaddress.ip_address(ip_str)
+    except ValueError:
+        return False
+    return any(addr in network for network in _PRIVATE_NETWORKS)
+
+
+def _reject_internal_url(url: str) -> None:
+    """Reject URLs that resolve to internal/private IP addresses (SSRF prevention).
+
+    Resolves the hostname to IP address(es) and raises ValueError if any
+    resolved IP is in a private or loopback range.
+    """
+    parsed = urlparse(url)
+    host = parsed.hostname
+    if not host:
+        raise ValueError(f"URL has no hostname: {url}")
+
+    # Direct IP check first (no DNS lookup needed)
+    try:
+        addr = ipaddress.ip_address(host)
+        if _is_private_ip(host):
+            raise ValueError(
+                f"URL points to a private/internal IP address ({host}), "
+                "which is not allowed for security reasons."
+            )
+        # Public IP is fine, no need for DNS resolution
+        return
+    except ValueError:
+        # Not a bare IP — resolve the hostname
+        pass
+
+    # DNS resolution for hostnames
+    try:
+        addrinfo = socket.getaddrinfo(host, None)
+    except OSError as exc:
+        raise ValueError(
+            f"Cannot resolve hostname '{host}' for SSRF check: {exc}. "
+            f"If this is a valid external host, try again or use a direct IP URL."
+        ) from exc
+
+    for info in addrinfo:
+        ip_str = info[4][0]
+        if _is_private_ip(ip_str):
+            raise ValueError(
+                f"URL resolves to a private/internal IP address ({ip_str}), "
+                "which is not allowed for security reasons."
+            )
 
 
 def register_advanced_tools(mcp: FastMCP) -> None:
@@ -129,6 +196,9 @@ def register_advanced_tools(mcp: FastMCP) -> None:
                 f"Unsupported URL scheme '{parsed.scheme}'. "
                 "Only http and https URLs are allowed for offline download."
             )
+
+        # SSRF prevention: reject URLs pointing to internal/private networks
+        _reject_internal_url(url)
 
         client = await get_client()
         body: dict[str, Any] = {"urls": [url], "path": path}
@@ -264,3 +334,83 @@ def register_advanced_tools(mcp: FastMCP) -> None:
         data = await client.request("GET", "public/offline_download_tools", require_auth=False)
         tools = data if isinstance(data, list) else data.get("value", data.get("data", []))
         return json.dumps(tools, ensure_ascii=False)
+
+    @mcp.tool()
+    async def parse_torrent(
+        torrent_data: str,
+    ) -> str:
+        """Parse a torrent file and return its contents (file list, metadata).
+
+        Provide the torrent file content as a base64-encoded string.
+        Returns information about the torrent including file names, sizes,
+        piece count, and whether the storage backend supports rapid upload.
+
+        Args:
+            torrent_data: Base64-encoded content of the .torrent file.
+
+        Returns:
+            JSON string with parsed torrent info including file list.
+        """
+        client = await get_client()
+        data = await client.request(
+            "POST",
+            "fs/torrent/parse",
+            json={"torrent_data": torrent_data},
+        )
+        return json.dumps(data, indent=2, ensure_ascii=False)
+
+    @mcp.tool()
+    async def generate_torrent(
+        path: str,
+    ) -> str:
+        """Generate a .torrent file for an existing file on the OpenList server.
+
+        Creates a BitTorrent metainfo file that can be used to share the file
+        via BitTorrent. The generated torrent is stored alongside the original file.
+
+        Args:
+            path: Full path to the file on OpenList (e.g. "/downloads/myfile.iso").
+
+        Returns:
+            JSON string with generation result and path to the .torrent file.
+        """
+        enforce_path_allowed(path)
+        client = await get_client()
+        data = await client.request(
+            "POST",
+            "fs/torrent/generate",
+            json={"path": path},
+        )
+        return json.dumps(data, indent=2, ensure_ascii=False)
+
+    @mcp.tool()
+    async def torrent_rapid_upload(
+        torrent_data: str,
+        path: str = "/",
+    ) -> str:
+        """Rapid upload (server-side import) from a torrent file.
+
+        If the storage backend supports CAS (Content Addressable Storage)
+        and already has the files referenced in the torrent, this can complete
+        instantly without downloading. This feature depends on the storage
+        driver — local storage typically does not support CAS.
+
+        Falls back to a normal message if CAS is not available on the backend.
+
+        Args:
+            torrent_data: Base64-encoded content of the .torrent file.
+            path: Destination directory path on OpenList (e.g. "/downloads").
+
+        Returns:
+            JSON string with the upload/task result, or a message explaining
+            that CAS/rapid upload is not supported on this storage backend.
+        """
+        enforce_writable("torrent_rapid_upload")
+        enforce_path_allowed(path)
+        client = await get_client()
+        data = await client.request(
+            "POST",
+            "fs/torrent/rapid_upload",
+            json={"torrent_data": torrent_data, "path": path},
+        )
+        return json.dumps(data, indent=2, ensure_ascii=False)

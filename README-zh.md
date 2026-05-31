@@ -23,16 +23,21 @@
 ## 功能特性
 
 - **文件浏览** — 列出目录、查看文件详情、搜索文件
-- **文件管理** — 创建目录、重命名、复制、移动、删除
+- **文件管理** — 创建目录、重命名、批量重命名、正则重命名、复制、移动、删除、递归移动、清理空目录
 - **文件传输** — Base64 上传文件、上传 MCP Server 可访问的本地文件、获取下载链接
-- **分享管理** — 创建、列出、取消、删除分享链接
+- **分享管理** — 创建、列出、更新、启用、禁用、取消、删除分享链接
 - **任务管理** — 查看、重试、取消、删除异步任务
+- **Torrent 操作** — 解析、生成、秒传种子文件
 - **自动认证** — JWT 自动登录与 token 过期重试
 - **NEW v0.2.5** 双因素认证 (2FA/TOTP)：支持带 OTP 验证码登录
 - **NEW v0.2.5** 本地文件上传：新增 `upload_local_file` 工具（默认禁用，需配置 `OPENLIST_LOCAL_UPLOAD_ROOTS`）
 - **NEW v0.2.6** 高级功能：离线下载、在线解压、递归移动
 - **NEW v0.2.7** 自动 TOTP：`OPENLIST_TOTP_SECRET` — 登录时自动生成 2FA 验证码
 - **NEW v0.2.7** 下载工具管理：`list_download_tools` — 查询服务端可用下载工具
+- **NEW v0.2.8** 正则重命名：`regex_rename` — Go 正则批量重命名
+- **NEW v0.2.8** 分享全生命周期：`update_share`、`enable_share`、`disable_share`
+- **NEW v0.2.8** Torrent 工具：`parse_torrent`、`generate_torrent`、`torrent_rapid_upload`
+- **NEW v0.2.8** SSRF 防护：`offline_download` 自动拦截内网 IP 地址
 
 ## 环境要求
 
@@ -43,7 +48,7 @@
 
 ### 给 AI 助手使用
 
-将 [`AI_GUIDE.md`](AI_GUIDE.md) 的内容复制粘贴给你的 AI 助手（Claude 等），AI 就能知道如何安装、配置和使用全部 32 个工具。
+将 [`AI_GUIDE.md`](AI_GUIDE.md) 的内容复制粘贴给你的 AI 助手（Claude 等），AI 就能知道如何安装、配置和使用全部 40 个工具。
 
 ### 快速上手 Prompt 示例
 
@@ -61,7 +66,13 @@
 | **查下载工具** | "看看我这个服务器上有哪些下载工具" |
 | **解压文件** | "把 downloads 目录下的 data.zip 解压到 data 文件夹" |
 | **下载+解压** | "把这个压缩包下载下来然后解压到项目目录" |
-| **批量清理** | "把 downloads 目录里所有 .tmp 文件删掉" |
+| **批量重命名** | "把 downloads 目录里所有 .html 改成 .htm" |
+| **正则重命名** | "用正则把 /projects 下文件名中的数字都去掉" |
+| **批量清理** | "把 downloads 目录里所有 .tmp 文件删掉，然后清理空文件夹" |
+| **修改分享** | "把我的分享链接密码改一下" |
+| **停用分享** | "暂时停用 report.pdf 的分享链接" |
+| **解析种子** | "这个种子文件里都有什么文件？" |
+| **生成种子** | "为 /downloads/myfile.iso 生成一个种子文件" |
 | **查身份** | "我现在是以什么身份登录的？" |
 
 ### 给人类用户使用
@@ -341,6 +352,22 @@ PYTHONPATH=src python3 scripts/live_integration.py
 ---
 
 ## 更新日志
+
+### v0.2.8
+
+- **`regex_rename`**：新增工具 — 用 Go 风格正则批量重命名文件（`$1`、`$2` 引用捕获组）。
+- **`remove_empty_dirs`**：新增工具 — 递归删除空目录。
+- **`update_share`**：新增工具 — 修改已有分享链接（密码、过期时间、文件列表等）。
+- **`enable_share` / `disable_share`**：新增工具 — 临时开关分享链接，无需删除。
+- **`parse_torrent`**：新增工具 — 解析 `.torrent` 文件内容，返回文件列表。
+- **`generate_torrent`**：新增工具 — 为服务端已有文件生成种子文件。
+- **`torrent_rapid_upload`**：新增工具 — 从种子数据快速导入（需存储后端支持 CAS）。
+- **`create_share` 修复**：改为 `files: list[str]` 参数格式，适配 OpenList v4.2.2 API。
+- **`cancel_share` / `delete_share` 修复**：适配 OpenList v4.2.2 的接口变更。
+- **SSRF 防护**：`offline_download` 自动解析域名并拦截内网 IP 地址。
+- **上传大小限制**：`upload_file` 限制 base64 最大 100MB。
+- **安全加固**：`copy`/`move` 先检查只读模式再验证路径，防止信息泄露。
+- **启动指南**：更新为 40 个工具。
 
 ### v0.2.7
 

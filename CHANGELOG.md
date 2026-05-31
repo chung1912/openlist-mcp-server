@@ -1,0 +1,179 @@
+# Changelog
+
+All notable changes to the OpenList MCP Server are documented in this file.
+
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
+and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+## [Unreleased]
+
+### Added
+- `regex_rename` tool — batch rename files using Go-style regex substitution (`$1`, `$2`).
+- `remove_empty_dirs` tool — recursively remove empty directories after cleanup operations.
+- `update_share` tool — modify existing share links (password, expiration, files, etc.).
+- `enable_share` / `disable_share` tools — temporarily toggle share links without deleting them.
+- `parse_torrent` tool — parse `.torrent` file content (base64) and return file list/metadata.
+- `generate_torrent` tool — generate a `.torrent` file for an existing file on the server.
+- `torrent_rapid_upload` tool — attempt server-side rapid import from torrent data (requires CAS).
+
+### Changed
+- `create_share` now uses `files: list[str]` instead of `path: str` — OpenList v4.2.2 API requires a file list.
+- `cancel_share` now calls `/share/disable` internally (the old `/share/cancel` endpoint no longer exists).
+- `delete_share` now uses query parameter `?id=` instead of JSON body — matches OpenList v4.2.2 API.
+- Startup guide updated from 32 to 40 tools.
+
+### Fixed
+- `create_share` no longer returns "must add at least 1 object" error (was sending wrong payload format).
+- `cancel_share` / `delete_share` no longer return 500 errors on OpenList v4.2.2.
+
+### Security
+- SSRF prevention: `offline_download` now resolves hostnames via DNS and blocks requests to
+  private/internal IP ranges (127.0.0.0/8, 10.0.0.0/8, 172.16.0.0/12, 192.168.0.0/16,
+  169.254.0.0/16, ::1/128, fc00::/7, fe80::/10).
+- `upload_file` now enforces a 100 MB limit on base64 content to prevent memory exhaustion.
+- `copy`/`move` tools now check `enforce_writable` before `enforce_path_allowed` to prevent
+  information leakage in readonly mode.
+- `server.py` version string is now dynamically read from `__version__` instead of hardcoded.
+
+## [0.2.7] — 2025-05-30
+
+### Added
+- `list_download_tools` tool — query available offline download tools (aria2, Transmission,
+  qBittorrent, etc.) configured on the OpenList server.
+- `OPENLIST_TOTP_SECRET` environment variable — auto-generate TOTP codes during login.
+  When configured, 2FA is handled automatically without manual code input. (PR #2 by @chung1912)
+
+### Changed
+- `offline_download` docstring updated to document all supported download tools.
+- Startup guide updated to reflect 32 tools across all categories.
+
+### Fixed
+- `validate_path`: component-level `..` detection — no longer rejects legitimate filenames
+  like `backup..2024.tar.gz`.
+
+## [0.2.6] — 2025-05-30
+
+### Added
+- `tools/advanced.py` module with:
+  - `offline_download` — download files from a remote URL directly to the OpenList server
+    (requires aria2, Transmission, or qBittorrent configured on the server).
+  - `decompress_archive` — decompress archives (zip, rar, 7z, tar.gz, etc.) on the server.
+  - `get_me` — get current authenticated user's profile.
+  - `logout` — logout and invalidate the current authentication token.
+  - `recursive_move` — recursively move an entire directory tree without listing individual file names.
+
+### Changed
+- Startup guide updated to list all 26 tools with categories.
+
+## [0.2.5] — 2025-05-29
+
+### Added
+- **2FA/TOTP support**: `login()` tool accepts optional `otp_code` parameter for
+  two-factor authentication.
+- `upload_local_file` tool — upload a local file path directly without base64 encoding.
+  Gated behind `OPENLIST_LOCAL_UPLOAD_ROOTS` environment variable.
+
+### Changed
+- Improved large file uploads: async chunked streaming (1MB chunks) instead of single `read_bytes()`.
+- Write timeout increased to 120s.
+- Version unification: `__version__` reads from package metadata at runtime.
+  All version references consistent at v0.2.5.
+
+### Fixed
+- `validate_name()` now correctly allows filenames containing `..` patterns
+  (e.g. `backup..tar.gz`, `..hidden_file`), only rejecting `.` and `..` as directory names.
+- Installation guide corrected for source archive method.
+
+### Security
+- Base64 decode exception narrowed from `except Exception` to `(ValueError, binascii.Error)`.
+- `OPENLIST_LOCAL_UPLOAD_ROOTS` restriction for local file uploads — disabled by default.
+
+### Removed
+- Automatic PyPI publishing from release workflow. Tag push creates a GitHub Release
+  with build artifacts only.
+
+## [0.2.4] — 2025-05-28
+
+### Added
+- **2FA / TOTP login support**: `login()` tool now accepts an optional `otp_code` parameter.
+  When the OpenList account has 2FA enabled, the agent prompts the user for a TOTP code.
+
+### Security
+- HTTP warning for plain text credential transmission when using `http://` URLs.
+
+## [0.2.3] — 2025-05-27
+
+### Added
+- `upload_local_file` tool (gated behind `OPENLIST_LOCAL_UPLOAD_ROOTS`).
+- `OPENLIST_READONLY` environment variable — blocks all write/high-impact operations.
+- `OPENLIST_ALLOWED_PATHS` environment variable — restricts MCP path operations to approved directories.
+- Support for pagination parameters (`page`, `per_page`) in list operations.
+
+### Security
+- `upload_local_file` now requires explicit `OPENLIST_LOCAL_UPLOAD_ROOTS` configuration.
+- HTTP transport warning when using plain `http://` URLs.
+
+## [0.2.2] — 2025-05-26
+
+### Fixed
+- Version synchronization: all version strings (`pyproject.toml`, source, READMEs) now match.
+- Various documentation inconsistencies resolved.
+
+## [0.2.1] — 2025-05-26
+
+### Added
+- `.env` file support (via optional `python-dotenv` dependency).
+- Verification command in documentation (`openlist-mcp`).
+- Troubleshooting section in README.
+
+### Changed
+- Installation instructions overhauled: venv, source archive, verification steps.
+- Documentation expanded with security notes, config file paths, and MCP client setup.
+
+### Fixed
+- Upload file path handling fix.
+--Friendly startup message when `OPENLIST_URL` is not set.
+
+## [0.2.0] — 2025-05-25
+
+### Added
+- MCP safety controls: `OPENLIST_READONLY`, `OPENLIST_ALLOWED_PATHS`.
+- File management tools: `copy`, `move`, `remove`, `search_files`, `batch_rename`.
+- Task management tools: `list_tasks`, `get_task_info`, `retry_task`, `cancel_task`, `delete_task`.
+- Share management tools: `create_share`, `list_shares`, `cancel_share`, `delete_share`.
+- Chinese documentation (`README-zh.md`).
+- MIT License.
+
+### Changed
+- Split README into English (`README.md`) and Chinese (`README-zh.md`).
+
+### Security
+- JWT token auto-refresh on 401 responses.
+- Path traversal prevention in `validate_path`.
+
+## [0.1.0] — 2025-05-24
+
+### Added
+- Initial release.
+- Core MCP server with basic file operations: `list_files`, `list_dirs`, `get_file_info`,
+  `create_folder`, `rename`, `upload_file`, `get_download_url`.
+- JWT authentication with automatic login.
+- OpenList REST API client with `httpx`.
+- MCP stdio server via `mcp[cli]` SDK.
+- README with installation and configuration guide.
+
+---
+
+## Version history
+
+| Version | Date | Highlights |
+|---------|------|------------|
+| 0.2.7 | 2025-05-30 | Auto TOTP, list_download_tools, validate_path fix |
+| 0.2.6 | 2025-05-30 | offline_download, decompress_archive, get_me, logout, recursive_move |
+| 0.2.5 | 2025-05-29 | 2FA/TOTP, upload_local_file, streaming uploads, release workflow |
+| 0.2.4 | 2025-05-28 | 2FA login support, HTTP warning |
+| 0.2.3 | 2025-05-27 | upload_local_file, READONLY, ALLOWED_PATHS |
+| 0.2.2 | 2025-05-26 | Version sync and doc fixes |
+| 0.2.1 | 2025-05-26 | .env support, doc overhaul |
+| 0.2.0 | 2025-05-25 | Safety controls, file/task/share management tools |
+| 0.1.0 | 2025-05-24 | Initial release |
