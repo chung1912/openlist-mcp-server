@@ -7,7 +7,7 @@ import pytest
 async def test_create_share_sends_files_array(share_tools) -> None:
     tools, client = share_tools
 
-    result = await tools["create_share"](
+    await tools["create_share"](
         files=["/docs/report.pdf", "/docs/summary.csv"],
         pwd="secret",
     )
@@ -40,7 +40,7 @@ async def test_create_share_rejects_empty_files(share_tools) -> None:
 async def test_update_share_sends_id_and_files(share_tools) -> None:
     tools, client = share_tools
 
-    result = await tools["update_share"](
+    await tools["update_share"](
         share_id="abc123",
         files=["/docs/report.pdf"],
         pwd="newpass",
@@ -65,7 +65,7 @@ async def test_update_share_sends_id_and_files(share_tools) -> None:
 async def test_disable_share_sends_id(share_tools) -> None:
     tools, client = share_tools
 
-    result = await tools["disable_share"](share_id="abc123")
+    await tools["disable_share"](share_id="abc123")
 
     assert client.requests == [("POST", "share/disable", {"json": {"id": "abc123"}})]
 
@@ -74,7 +74,7 @@ async def test_disable_share_sends_id(share_tools) -> None:
 async def test_enable_share_sends_id(share_tools) -> None:
     tools, client = share_tools
 
-    result = await tools["enable_share"](share_id="abc123")
+    await tools["enable_share"](share_id="abc123")
 
     assert client.requests == [("POST", "share/enable", {"json": {"id": "abc123"}})]
 
@@ -93,7 +93,7 @@ async def test_delete_share_requires_confirm(share_tools) -> None:
 async def test_delete_share_with_confirm_uses_query_param(share_tools) -> None:
     tools, client = share_tools
 
-    result = await tools["delete_share"](share_id="abc123", confirm=True)
+    await tools["delete_share"](share_id="abc123", confirm=True)
 
     assert client.requests == [("POST", "share/delete", {"params": {"id": "abc123"}})]
 
