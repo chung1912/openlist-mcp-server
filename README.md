@@ -32,7 +32,7 @@ MCP Server for [OpenList](https://github.com/OpenListTeam/OpenList) — an open-
 | **Torrent** | Parse `.torrent` files, generate torrents for existing files, rapid upload |
 | **Auth** | Auto JWT login with TOTP/2FA support, automatic re-authentication on expiry |
 
-**40 tools in total** — see the [Tools Reference](#tools-reference) below.
+**51 tools in total** — see the [Tools Reference](#tools-reference) below.
 
 ---
 
