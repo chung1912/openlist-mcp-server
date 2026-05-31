@@ -18,14 +18,18 @@ TASK_TYPES = {
     "decompress_upload",
 }
 
+# Sentinel value to query all task types and merge results.
+_ALL_TASK_TYPES = "all"
+
 TASK_LIST_STATUSES = {"done", "undone"}
 
 
 def _validate_task_type(task_type: str) -> str:
     task_type = task_type.strip()
-    if task_type not in TASK_TYPES:
+    if task_type != _ALL_TASK_TYPES and task_type not in TASK_TYPES:
         raise ValueError(
-            f"Unsupported task_type: {task_type}. Supported values: {', '.join(sorted(TASK_TYPES))}"
+            f"Unsupported task_type: {task_type}. "
+            f"Supported values: {', '.join(sorted(TASK_TYPES))} or '{_ALL_TASK_TYPES}' (all)"
         )
     return task_type
 
@@ -51,17 +55,20 @@ def register_task_tools(mcp: FastMCP) -> None:
 
         OpenList v4 exposes task APIs as `/api/task/{task_type}/{status}`.
         Common task types include offline_download, upload, copy, and decompress.
+        Use task_type="all" to query all task categories simultaneously.
 
         Args:
-            task_type: Task category, e.g. offline_download, upload, copy.
+            task_type: Task category: offline_download, upload, copy, decompress,
+                       offline_download_transfer, decompress_upload, or "all" (all types).
             status: Task list status: "undone" for running/pending or "done" for completed.
             page: Page number for deployments that support pagination.
             per_page: Page size for deployments that support pagination.
 
         Returns:
-            JSON string with task list data, or a structured compatibility error
-            if this OpenList deployment does not expose the selected list endpoint.
+            JSON string with task list data. When task_type="all", results from
+            all categories are merged with a "task_type" label on each entry.
         """
+        import asyncio
 
         task_type = _validate_task_type(task_type)
         status = status.strip()
@@ -72,6 +79,36 @@ def register_task_tools(mcp: FastMCP) -> None:
             )
         validate_pagination(page, per_page)
         client = await get_client()
+
+        if task_type == _ALL_TASK_TYPES:
+            # Query all categories concurrently
+            async def _fetch_one(t: str) -> dict:
+                try:
+                    data = await client.request(
+                        "POST",
+                        f"task/{t}/{status}",
+                        params={"page": page, "per_page": per_page},
+                    )
+                except Exception as exc:
+                    return {"task_type": t, "error": str(exc), "tasks": []}
+                tasks = data.get("value", data.get("tasks", data))
+                if isinstance(tasks, dict):
+                    tasks = [tasks]
+                if not isinstance(tasks, list):
+                    tasks = []
+                for task_entry in tasks:
+                    if isinstance(task_entry, dict):
+                        task_entry["_task_type"] = t
+                return {"task_type": t, "tasks": tasks}
+
+            results = await asyncio.gather(*[_fetch_one(t) for t in sorted(TASK_TYPES)])
+            return json.dumps(
+                {"task_type": "all", "results": results, "total": sum(len(r["tasks"]) for r in results)},
+                indent=2,
+                ensure_ascii=False,
+            )
+
+        # Single task type
         data = await client.request(
             "POST",
             f"task/{task_type}/{status}",

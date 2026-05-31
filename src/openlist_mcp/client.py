@@ -275,6 +275,52 @@ class OpenListClient:
         result = data.get("data", {})
         return result if isinstance(result, dict) else {"value": result}
 
+    async def multipart_form(
+        self,
+        path: str,
+        field_name: str,
+        file_bytes: bytes,
+        file_name: str,
+        content_type: str = "application/octet-stream",
+    ) -> dict[str, Any]:
+        """Send a multipart form-data POST request to OpenList.
+
+        Used for endpoints like torrent upload that accept file uploads
+        via multipart form rather than JSON body.
+
+        Args:
+            path: API path (e.g. "fs/torrent/upload_parse").
+            field_name: The form field name for the file.
+            file_bytes: Raw file content bytes.
+            file_name: Display filename for the form.
+            content_type: MIME type of the file content.
+
+        Returns:
+            Parsed JSON data dict from the response.
+        """
+        await self.ensure_authenticated()
+        client = await self._get_client()
+
+        files = {field_name: (file_name, file_bytes, content_type)}
+        try:
+            resp = await client.post(
+                f"/{path.lstrip('/')}",
+                files=files,
+                headers={"Authorization": self._token or ""},
+            )
+        except httpx.HTTPError as exc:
+            raise OpenListError(f"Multipart upload request failed: {exc}", code=503) from exc
+
+        data = self._parse_response(resp, f"POST {path}")
+        if data.get("code") != 200:
+            raise OpenListError(
+                data.get("message", "Multipart upload failed"),
+                code=data.get("code", 500),
+            )
+
+        result = data.get("data", {})
+        return result if isinstance(result, dict) else {"value": result}
+
     def clear_token(self) -> None:
         """Clear the cached authentication token."""
         self._token = None

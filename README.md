@@ -32,7 +32,7 @@ MCP Server for [OpenList](https://github.com/OpenListTeam/OpenList) — an open-
 | **Torrent** | Parse `.torrent` files, generate torrents for existing files, rapid upload |
 | **Auth** | Auto JWT login with TOTP/2FA support, automatic re-authentication on expiry |
 
-**51 tools in total** — see the [Tools Reference](#tools-reference) below.
+**67 tools in total** — see the [Tools Reference](#tools-reference) below.
 
 ---
 
@@ -225,7 +225,9 @@ Restart Claude Desktop, then try: *"List the files on my OpenList server."*
 |------|-------------|
 | `offline_download` | Download a file from a remote URL directly to the OpenList server. Supports aria2, Transmission, qBittorrent. Blocks private/internal IPs (SSRF protection). |
 | `decompress_archive` | Decompress archives (zip, rar, 7z, tar.gz, etc.) on the server. |
+| `get_archive_meta` | Get archive metadata (format, encryption, comment, file tree) without extracting. |
 | `list_archive_files` | List files inside an archive without extracting. |
+| `torrent_upload_parse` | Upload and parse a `.torrent` file via multipart form, returns info + reusable base64 data. |
 | `list_download_tools` | List available download tools configured on the OpenList server. |
 | `get_archive_extensions` | List archive file extensions supported by the server. |
 | `parse_torrent` | Parse a `.torrent` file (base64) and return file list and metadata. |

@@ -25,6 +25,25 @@ async def test_list_tasks_uses_typed_task_endpoint(task_tools) -> None:
 
 
 @pytest.mark.asyncio
+async def test_list_tasks_all_queries_all_categories(task_tools) -> None:
+    tools, client = task_tools
+
+    result = await tools["list_tasks"](task_type="all", status="undone")
+
+    assert client.requests == [
+        ("POST", "task/copy/undone", {"params": {"page": 1, "per_page": 50}}),
+        ("POST", "task/decompress/undone", {"params": {"page": 1, "per_page": 50}}),
+        ("POST", "task/decompress_upload/undone", {"params": {"page": 1, "per_page": 50}}),
+        ("POST", "task/offline_download/undone", {"params": {"page": 1, "per_page": 50}}),
+        ("POST", "task/offline_download_transfer/undone", {"params": {"page": 1, "per_page": 50}}),
+        ("POST", "task/upload/undone", {"params": {"page": 1, "per_page": 50}}),
+    ]
+    assert '"task_type": "all"' in result
+    assert '"results"' in result
+    assert '"total"' in result
+
+
+@pytest.mark.asyncio
 async def test_get_task_info_uses_tid_query_param(task_tools) -> None:
     tools, client = task_tools
 

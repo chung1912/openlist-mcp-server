@@ -478,6 +478,40 @@ def register_advanced_tools(mcp: FastMCP) -> None:
         return json.dumps(data, indent=2, ensure_ascii=False)
 
     @mcp.tool()
+    async def get_archive_meta(
+        path: str,
+        archive_pass: str = "",
+        refresh: bool = False,
+    ) -> str:
+        """Get metadata of an archive file without extracting it.
+
+        Returns format, encryption status, comment, file structure,
+        and download URL information for the archive.
+
+        Args:
+            path: Full path to the archive file (e.g. "/downloads/data.zip").
+            archive_pass: Optional password for encrypted archives.
+            refresh: Whether to refresh archive cache.
+
+        Returns:
+            JSON string with archive metadata including format, encryption status,
+            file tree, and direct download info.
+        """
+        validate_path(path)
+        enforce_path_allowed(path)
+
+        client = await get_client()
+        body: dict[str, Any] = {
+            "path": path,
+            "refresh": refresh,
+        }
+        if archive_pass:
+            body["archive_pass"] = archive_pass
+
+        data = await client.request("POST", "fs/archive/meta", json=body)
+        return json.dumps(data, indent=2, ensure_ascii=False)
+
+    @mcp.tool()
     async def decompress_archive(
         src_dir: str,
         names: list[str] | str,
@@ -623,6 +657,38 @@ def register_advanced_tools(mcp: FastMCP) -> None:
             "POST",
             "fs/torrent/parse",
             json={"torrent_data": torrent_data},
+        )
+        return json.dumps(data, indent=2, ensure_ascii=False)
+
+    @mcp.tool()
+    async def torrent_upload_parse(
+        torrent_data: str,
+    ) -> str:
+        """Upload and parse a torrent file via multipart form.
+
+        Unlike parse_torrent (which sends base64 in JSON body), this sends the
+        torrent file as a multipart form upload — matching how the OpenList
+        web UI handles torrent files. The server returns parsed metadata plus
+        a base64-encoded copy of the torrent data that can be fed directly
+        into torrent_rapid_upload.
+
+        Args:
+            torrent_data: Base64-encoded content of the .torrent file.
+
+        Returns:
+            JSON string with parsed torrent info (name, files, info_hash, etc.)
+            plus a 'torrent_data' field for reuse in rapid upload.
+        """
+        import base64
+
+        client = await get_client()
+        raw_bytes = base64.b64decode(torrent_data)
+        data = await client.multipart_form(
+            "fs/torrent/upload_parse",
+            field_name="torrent",
+            file_bytes=raw_bytes,
+            file_name="file.torrent",
+            content_type="application/x-bittorrent",
         )
         return json.dumps(data, indent=2, ensure_ascii=False)
 

@@ -5,7 +5,17 @@ All notable changes to the OpenList MCP Server are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [0.2.9] — 2026-06-01
+
+### Added
+- `get_archive_meta` — get archive metadata (format, encryption, comment, file tree) without extracting.
+- `torrent_upload_parse` — parse a `.torrent` file via multipart form upload, returns info + reusable base64 data.
+- `list_tasks(task_type="all")` — query all 6 task categories concurrently and merge results.
+
+### Infrastructure
+- `client.py`: add `multipart_form()` method for multipart/form-data POST requests.
+
+## [0.2.8] — 2026-05-31
 
 ### Added
 - `batch_cancel_tasks`, `batch_delete_tasks`, `batch_retry_tasks` — batch task operations.
@@ -194,6 +204,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 | Version | Date | Highlights |
 |---------|------|------------|
+| 0.2.9 | 2026-05-31 | 67 tools: get_archive_meta, torrent_upload_parse, list_tasks(all) |
+| 0.2.8 | 2026-05-31 | 65 tools: batch ops, tree/disk_usage, mirror, admin read-only tools, torrent tools |
 | 0.2.7 | 2025-05-30 | Auto TOTP, list_download_tools, validate_path fix |
 | 0.2.6 | 2025-05-30 | offline_download, decompress_archive, get_me, logout, recursive_move |
 | 0.2.5 | 2025-05-29 | 2FA/TOTP, upload_local_file, streaming uploads, release workflow |

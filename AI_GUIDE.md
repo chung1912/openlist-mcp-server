@@ -8,7 +8,7 @@
 
 OpenList MCP Server is a tool that lets AI agents manage files on an [OpenList](https://github.com/OpenListTeam/OpenList) instance. OpenList is a self-hosted file management platform that supports local storage, cloud drives (OneDrive, Google Drive, etc.), and more.
 
-**64 tools available** across 9 categories:
+**67 tools available** across 9 categories:
 - Browse: `list_files`, `list_dirs`, `get_file_info`, `search_files`
 - Manage: `create_folder`, `rename`, `batch_rename`, `regex_rename`, `copy`, `move`, `remove`, `remove_empty_dirs`, `recursive_move`
 - Transfer: `upload_file`, `upload_local_file`, `get_download_url`
@@ -17,7 +17,7 @@ OpenList MCP Server is a tool that lets AI agents manage files on an [OpenList](
 - Shares: `create_share`, `list_shares`, `get_share_info`, `update_share`, `enable_share`, `disable_share`, `cancel_share`, `delete_share`
 - Smart: `tree`, `disk_usage`, `find_duplicates`, `content_preview`, `batch_download`, `mirror`
 - System: `list_storages`, `get_storage_info`, `list_drivers`, `get_driver_info`, `get_settings`, `get_setting`, `get_index_progress`, `list_my_ssh_keys`, `add_ssh_key`, `delete_ssh_key`, `update_current_user`
-- Advanced: `offline_download`, `decompress_archive`, `list_archive_files`, `list_download_tools`, `get_archive_extensions`, `parse_torrent`, `generate_torrent`, `torrent_rapid_upload`
+- Advanced: `offline_download`, `decompress_archive`, `get_archive_meta`, `list_archive_files`, `list_download_tools`, `get_archive_extensions`, `parse_torrent`, `torrent_upload_parse`, `generate_torrent`, `torrent_rapid_upload`
 
 ---
 

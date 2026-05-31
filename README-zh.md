@@ -32,7 +32,7 @@
 | **Torrent** | 解析 .torrent 文件、为已有文件生成种子、秒传 |
 | **认证** | 自动 JWT 登录（支持 TOTP/2FA）、过期自动重登 |
 
-**共 51 个工具** — 详见下方[工具参考](#工具参考)。
+**共 67 个工具** — 详见下方[工具参考](#工具参考)。
 
 ---
 
@@ -225,8 +225,11 @@ openlist-mcp
 |------|------|
 | `offline_download` | 从远程 URL 直接下载文件到 OpenList 服务端。支持 aria2、Transmission、qBittorrent。自动拦截内网 IP（SSRF 防护）。 |
 | `decompress_archive` | 服务端在线解压压缩文件（zip、rar、7z、tar.gz 等）。 |
+| `get_archive_meta` | 获取压缩包元数据（格式、加密状态、注释、文件树），无需解压。 |
 | `list_archive_files` | 不解压查看压缩包内文件列表。 |
+| `torrent_upload_parse` | 通过表单上传并解析 `.torrent` 文件，返回解析信息 + 可复用的 base64 数据。 |
 | `list_download_tools` | 查询服务端配置的可用下载工具。 |
+| `get_archive_extensions` | 查询服务端支持的解压格式扩展名列表。 |
 | `parse_torrent` | 解析 `.torrent` 文件（base64），返回文件列表和元数据。 |
 | `generate_torrent` | 为服务端已有文件生成 `.torrent` 种子文件。 |
 | `torrent_rapid_upload` | 从种子数据尝试秒传（需存储后端支持 CAS）。 |

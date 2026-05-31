@@ -57,3 +57,61 @@ async def test_list_archive_files_sends_expected_payload(advanced_tools) -> None
             },
         )
     ]
+
+
+@pytest.mark.asyncio
+async def test_get_archive_meta_sends_path(advanced_tools) -> None:
+    tools, client = advanced_tools
+
+    await tools["get_archive_meta"]("/data/backup.zip")
+
+    assert client.requests == [
+        ("POST", "fs/archive/meta", {"json": {"path": "/data/backup.zip", "refresh": False}})
+    ]
+
+
+@pytest.mark.asyncio
+async def test_get_archive_meta_with_pass_and_refresh(advanced_tools) -> None:
+    tools, client = advanced_tools
+
+    await tools["get_archive_meta"](
+        "/data/encrypted.7z",
+        archive_pass="hunter2",
+        refresh=True,
+    )
+
+    assert client.requests == [
+        (
+            "POST",
+            "fs/archive/meta",
+            {
+                "json": {
+                    "path": "/data/encrypted.7z",
+                    "refresh": True,
+                    "archive_pass": "hunter2",
+                }
+            },
+        )
+    ]
+
+
+@pytest.mark.asyncio
+async def test_torrent_upload_parse_sends_multipart(advanced_tools) -> None:
+    tools, client = advanced_tools
+
+    result = await tools["torrent_upload_parse"]("ZGVhZGJlZWY=")
+
+    assert client.requests == [
+        (
+            "MULTIPART",
+            "fs/torrent/upload_parse",
+            {
+                "field_name": "torrent",
+                "file_name": "file.torrent",
+                "content_type": "application/x-bittorrent",
+                "size": 8,
+            },
+        )
+    ]
+    assert '"info_hash"' in result
+    assert '"torrent_data"' in result
