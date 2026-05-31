@@ -121,9 +121,10 @@ def main() -> None:
             "║                                                              ║\n"
             "║  For more: https://github.com/hbestm/openlist-mcp-server     ║\n"
             "║                                                              ║\n"
-            "╚══════════════════════════════════════════════════════════════╝\n"
+            "╚══════════════════════════════════════════════════════════════╝\n",
+            file=sys.stderr,
         )
-        sys.exit(0)
+        sys.exit(1)
 
     logger.info("OpenList MCP Server starting")
     logger.info("Target: %s", config.base_url)
