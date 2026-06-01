@@ -20,6 +20,7 @@ import sys
 
 from mcp.server.fastmcp import FastMCP
 
+from . import __version__  # noqa: F401 — used in except ValueError branch
 from .config import get_config
 from .tools.admin import register_admin_tools
 from .tools.advanced import register_advanced_tools

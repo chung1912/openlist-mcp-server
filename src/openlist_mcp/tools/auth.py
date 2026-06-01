@@ -8,6 +8,7 @@ from mcp.server.fastmcp import FastMCP
 
 from ..client import OpenList2FAError, OpenListError, _generate_totp, get_client
 from ..config import get_config
+from . import enforce_writable
 
 
 def register_auth_tools(mcp: FastMCP) -> None:
@@ -97,6 +98,7 @@ def register_public_tools(mcp: FastMCP) -> None:
         """
         if not title or not public_key:
             return "Both title and public_key are required."
+        enforce_writable("add_ssh_key")
         client = await get_client()
         await client.request(
             "POST",
@@ -106,15 +108,19 @@ def register_public_tools(mcp: FastMCP) -> None:
         return f"SSH public key '{title}' added successfully."
 
     @mcp.tool()
-    async def delete_ssh_key(key_id: int) -> str:
+    async def delete_ssh_key(key_id: int, confirm: bool = False) -> str:
         """Delete an SSH public key by its ID.
 
         Args:
             key_id: The numeric ID of the SSH key to delete.
+            confirm: Must be true to actually delete. Defaults to false.
 
         Returns:
             Success or error message.
         """
+        if not confirm:
+            return "SSH key deletion not performed. Re-run with confirm=true to delete it."
+        enforce_writable("delete_ssh_key")
         client = await get_client()
         await client.request(
             "POST",

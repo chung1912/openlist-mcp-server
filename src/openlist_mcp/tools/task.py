@@ -2,12 +2,16 @@
 
 from __future__ import annotations
 
+import asyncio
 import json
+import logging
 
 from mcp.server.fastmcp import FastMCP
 
 from ..client import get_client
 from . import enforce_writable, validate_pagination
+
+logger = logging.getLogger(__name__)
 
 TASK_TYPES = {
     "upload",
@@ -68,7 +72,6 @@ def register_task_tools(mcp: FastMCP) -> None:
             JSON string with task list data. When task_type="all", results from
             all categories are merged with a "task_type" label on each entry.
         """
-        import asyncio
 
         task_type = _validate_task_type(task_type)
         status = status.strip()
@@ -90,6 +93,7 @@ def register_task_tools(mcp: FastMCP) -> None:
                         params={"page": page, "per_page": per_page},
                     )
                 except Exception as exc:
+                    logger.warning("list_tasks(all): %s returned error: %s", t, exc)
                     return {"task_type": t, "error": str(exc), "tasks": []}
                 tasks = data.get("value", data.get("tasks", data))
                 if isinstance(tasks, dict):

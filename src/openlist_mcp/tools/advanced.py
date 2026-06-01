@@ -5,6 +5,7 @@ Includes offline download, archive decompression, and related utilities.
 
 from __future__ import annotations
 
+import base64
 import contextlib
 import ipaddress
 import json
@@ -497,7 +498,6 @@ def register_advanced_tools(mcp: FastMCP) -> None:
             JSON string with archive metadata including format, encryption status,
             file tree, and direct download info.
         """
-        validate_path(path)
         enforce_path_allowed(path)
 
         client = await get_client()
@@ -679,7 +679,6 @@ def register_advanced_tools(mcp: FastMCP) -> None:
             JSON string with parsed torrent info (name, files, info_hash, etc.)
             plus a 'torrent_data' field for reuse in rapid upload.
         """
-        import base64
 
         client = await get_client()
         raw_bytes = base64.b64decode(torrent_data)

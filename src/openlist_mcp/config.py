@@ -37,6 +37,12 @@ class OpenListConfig:
                 f"OPENLIST_URL must start with http:// or https://, got: {self.base_url}"
             )
         if self.base_url.startswith("http://"):
+            if not _env_flag("OPENLIST_ALLOW_HTTP"):
+                raise ValueError(
+                    "OPENLIST_URL uses unencrypted HTTP, which is rejected by default. "
+                    "If you understand the risks (credentials sent in plain text), "
+                    "set OPENLIST_ALLOW_HTTP=true to allow HTTP connections."
+                )
             logger.warning(
                 "Using unencrypted HTTP transport. Credentials and token may be transmitted "
                 "in plain text. Use HTTPS in production."

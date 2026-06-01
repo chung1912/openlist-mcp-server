@@ -129,18 +129,12 @@ def register_share_tools(mcp: FastMCP) -> None:
                 enforce_path_allowed(f)
             body["files"] = files
         elif pwd or expires or max_accessed > 0 or remark:
-            # Must fetch current files if we're changing other settings
+            # Fetch current files from the specific share
             client = await get_client()
-            list_data = await client.request(
-                "GET", "share/list", params={"page": 1, "per_page": 200}
+            share_data = await client.request(
+                "GET", "share/get", params={"id": share_id}
             )
-            shares = list_data.get("content", list_data.get("value", []))
-            current_files = None
-            if isinstance(shares, list):
-                for s in shares:
-                    if isinstance(s, dict) and s.get("id") == share_id:
-                        current_files = s.get("files", [])
-                        break
+            current_files = share_data.get("files", [])
             if current_files:
                 body["files"] = current_files
             else:

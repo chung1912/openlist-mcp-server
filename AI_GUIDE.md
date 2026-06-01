@@ -70,6 +70,7 @@ Add to `claude_desktop_config.json`:
         "OPENLIST_PASSWORD": "your_password",
         "OPENLIST_READONLY": "false",
         "OPENLIST_ALLOWED_PATHS": "",
+        "OPENLIST_ALLOW_HTTP": "false",
         "OPENLIST_TOTP_SECRET": "your_totp_secret"
       }
     }
@@ -362,6 +363,7 @@ batch_download(urls=["https://example.com/a.zip", "https://example.com/b.zip"],
 
 # Sync a directory — dry run first
 mirror(src_dir="/source", dst_dir="/backup", mode="push", dry_run=True)
+mirror(src_dir="/source", dst_dir="/backup", mode="pull", dry_run=True)
 # Then execute
 mirror(src_dir="/source", dst_dir="/backup", mode="mirror", dry_run=False)
 ```
@@ -393,7 +395,7 @@ get_index_progress()
 # Manage SSH keys
 list_my_ssh_keys()
 add_ssh_key(title="my-laptop", public_key="ssh-rsa AAA...")
-delete_ssh_key(key_id=1)
+delete_ssh_key(key_id=1, confirm=True)
 
 # Update current user (password or base path)
 update_current_user(old_password="current", password="newpassword")

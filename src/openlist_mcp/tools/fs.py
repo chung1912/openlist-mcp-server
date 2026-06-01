@@ -772,6 +772,13 @@ def register_fs_tools(mcp: FastMCP) -> None:
         src_files = await _list_tree(src_dir)
         dst_files = await _list_tree(dst_dir)
 
+        # In pull mode, swap roles: treat dst as source and src as destination
+        if mode == "pull":
+            src_files, dst_files = dst_files, src_files
+            copy_src_dir, copy_dst_dir = dst_dir, src_dir
+        else:
+            copy_src_dir, copy_dst_dir = src_dir, dst_dir
+
         to_copy = []
         to_delete = []
 
@@ -810,15 +817,15 @@ def register_fs_tools(mcp: FastMCP) -> None:
 
         for rel in to_copy:
             try:
-                src_path = f"{src_dir.rstrip('/')}/{rel}"
+                src_path = f"{copy_src_dir.rstrip('/')}/{rel}"
                 if rel.endswith("/"):
                     # Create directory
-                    dst_path = f"{dst_dir.rstrip('/')}/{rel.rstrip('/')}"
+                    dst_path = f"{copy_dst_dir.rstrip('/')}/{rel.rstrip('/')}"
                     await client.request("POST", "fs/mkdir", json={"path": dst_path})
                 else:
                     # Copy file
                     parent = posixpath.dirname(rel.rstrip("/"))
-                    dst_parent = f"{dst_dir.rstrip('/')}/{parent}" if parent else dst_dir
+                    dst_parent = f"{copy_dst_dir.rstrip('/')}/{parent}" if parent else copy_dst_dir
                     file_name = posixpath.basename(rel)
                     await client.request(
                         "POST",
@@ -835,7 +842,7 @@ def register_fs_tools(mcp: FastMCP) -> None:
 
         for rel in to_delete:
             try:
-                dir_path = posixpath.dirname(f"{dst_dir.rstrip('/')}/{rel.rstrip('/')}")
+                dir_path = posixpath.dirname(f"{copy_dst_dir.rstrip('/')}/{rel.rstrip('/')}")
                 name = posixpath.basename(rel.rstrip("/"))
                 await client.request(
                     "POST",

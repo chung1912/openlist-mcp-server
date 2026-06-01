@@ -66,6 +66,7 @@ export OPENLIST_READONLY="false"                          # Block all write oper
 export OPENLIST_ALLOWED_PATHS="/mcp-dev-test,/public"     # Restrict to specific paths
 export OPENLIST_LOCAL_UPLOAD_ROOTS="/tmp:/path/to/uploads" # Enable local file uploads
 export OPENLIST_TOTP_SECRET="your_totp_secret"            # Auto-generate 2FA codes
+export OPENLIST_ALLOW_HTTP="false"                        # Allow HTTP (insecure, use only on LAN)
 ```
 
 ### 3. Verify
@@ -204,8 +205,8 @@ Restart Claude Desktop, then try: *"List the files on my OpenList server."*
 | `get_setting` | Get a single setting by key (e.g. `site_title`). |
 | `get_index_progress` | Get search index building progress. |
 | `list_my_ssh_keys` | List SSH public keys for the current user. |
-| `add_ssh_key` | Add a new SSH public key. |
-| `delete_ssh_key` | Delete an SSH public key by ID. |
+| `add_ssh_key` | Add a new SSH public key. Respects `OPENLIST_READONLY`. |
+| `delete_ssh_key` | Delete an SSH public key by ID. Requires `confirm=true`. |
 | `update_current_user` | Update current user's password or base path. |
 
 ### Smart Tools
@@ -217,7 +218,7 @@ Restart Claude Desktop, then try: *"List the files on my OpenList server."*
 | `find_duplicates` | Find potential duplicate files grouped by name+size or size only. |
 | `content_preview` | Preview text file content via range request (no full download). |
 | `batch_download` | Download multiple URLs at once via offline download. |
-| `mirror` | Recursive directory sync — compare src/dst, copy missing files, optionally delete extras. |
+| `mirror` | Recursive directory sync — compare src/dst, copy missing files, optionally delete extras. Modes: `push` (src→dst), `pull` (dst→src), `mirror` (push + delete extras in dst). |
 
 ### Advanced & Torrent
 
@@ -239,6 +240,7 @@ Restart Claude Desktop, then try: *"List the files on my OpenList server."*
 ## Security
 
 - **Use HTTPS in production** — credentials are transmitted in plain text over HTTP.
+  HTTP is **rejected by default** — set `OPENLIST_ALLOW_HTTP=true` to enable (only for trusted LANs).
 - **Use a dedicated low-privilege OpenList account** for MCP access. Avoid using the `admin` account for daily AI-agent operations.
 - **Restrict storage scope** — do not expose system paths (home, Docker config, SSH keys, etc.) through OpenList.
 - **Set `OPENLIST_READONLY=true`** to block all write/high-impact tools.

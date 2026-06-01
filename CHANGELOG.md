@@ -11,6 +11,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `list_tasks` now uses `GET` instead of `POST` for OpenList v4.2.2 compatibility
 - Unit tests for `list_tasks` aligned with the new `GET` endpoint (all 72 tests passing)
 - Startup banner tool count corrected from 65 to 67
+- `__version__` NameError crash — added missing `from . import __version__` to `server.py`
+- `mirror` pull mode now correctly copies files from dst to src (was wrongly copying src to dst, same as push)
+- `_fetch_one` in `list_tasks(all)` now logs errors via `logger.warning` instead of silently swallowing them
+- `delete_ssh_key` now requires `confirm=true` to prevent accidental deletion
+- `add_ssh_key` now respects `OPENLIST_READONLY` via `enforce_writable`
+- `update_share` uses `get_share_info` instead of pulling all 200 shares to find current files
+
+### Changed
+- HTTP connections now require explicit `OPENLIST_ALLOW_HTTP=true` — server rejects HTTP by default with a clear error message
+
+### Infrastructure
+- `import asyncio` in `task.py` and `import base64` in `advanced.py` moved from function body to module top
+- Redundant `validate_path()` call removed from `get_archive_meta` (already inside `enforce_path_allowed`)
 
 ## [0.2.9] — 2026-06-01
 
