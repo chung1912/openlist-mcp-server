@@ -5,6 +5,13 @@ All notable changes to the OpenList MCP Server are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.2.10] — 2026-06-01
+
+### Fixed
+- `list_tasks` now uses `GET` instead of `POST` for OpenList v4.2.2 compatibility
+- Unit tests for `list_tasks` aligned with the new `GET` endpoint (all 72 tests passing)
+- Startup banner tool count corrected from 65 to 67
+
 ## [0.2.9] — 2026-06-01
 
 ### Added
