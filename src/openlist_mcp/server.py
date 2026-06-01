@@ -82,7 +82,7 @@ def main() -> None:
             "║  An MCP server that lets AI agents (Claude, SOLO, etc.)      ║\n"
             "║  manage files on your OpenList instance.                     ║\n"
             "║                                                              ║\n"
-            "║  65 tools available:                                         ║\n"
+            "║  67 tools available:                                         ║\n"
             "║  • Browse:   list_files, list_dirs, get_file_info,           ║\n"
             "║              search_files                                    ║\n"
             "║  • Manage:   create_folder, rename, batch_rename,              ║\n"

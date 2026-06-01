@@ -17,7 +17,7 @@ async def test_list_tasks_uses_typed_task_endpoint(task_tools) -> None:
     assert result == "{}"
     assert client.requests == [
         (
-            "POST",
+            "GET",
             "task/offline_download/done",
             {"params": {"page": 2, "per_page": 25}},
         )
@@ -31,12 +31,12 @@ async def test_list_tasks_all_queries_all_categories(task_tools) -> None:
     result = await tools["list_tasks"](task_type="all", status="undone")
 
     assert client.requests == [
-        ("POST", "task/copy/undone", {"params": {"page": 1, "per_page": 50}}),
-        ("POST", "task/decompress/undone", {"params": {"page": 1, "per_page": 50}}),
-        ("POST", "task/decompress_upload/undone", {"params": {"page": 1, "per_page": 50}}),
-        ("POST", "task/offline_download/undone", {"params": {"page": 1, "per_page": 50}}),
-        ("POST", "task/offline_download_transfer/undone", {"params": {"page": 1, "per_page": 50}}),
-        ("POST", "task/upload/undone", {"params": {"page": 1, "per_page": 50}}),
+        ("GET", "task/copy/undone", {"params": {"page": 1, "per_page": 50}}),
+        ("GET", "task/decompress/undone", {"params": {"page": 1, "per_page": 50}}),
+        ("GET", "task/decompress_upload/undone", {"params": {"page": 1, "per_page": 50}}),
+        ("GET", "task/offline_download/undone", {"params": {"page": 1, "per_page": 50}}),
+        ("GET", "task/offline_download_transfer/undone", {"params": {"page": 1, "per_page": 50}}),
+        ("GET", "task/upload/undone", {"params": {"page": 1, "per_page": 50}}),
     ]
     assert '"task_type": "all"' in result
     assert '"results"' in result
