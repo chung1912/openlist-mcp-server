@@ -53,6 +53,9 @@ _PRIVATE_NETWORKS = [
     ipaddress.ip_network("fe80::/10"),  # IPv6 link-local
 ]
 
+# URL schemes allowed for offline download. Add new protocols here.
+_SAFE_SCHEMES = {"http", "https", "magnet", "ftp"}
+
 
 def _is_private_ip(ip_str: str) -> bool:
     """Check if an IP address string belongs to a private/internal network."""
@@ -211,7 +214,7 @@ def register_advanced_tools(mcp: FastMCP) -> None:
 
         # SSRF prevention: only allow http/https/magnet URLs
         parsed = urlparse(url)
-        if parsed.scheme not in ("http", "https", "magnet", "ftp"):
+        if parsed.scheme not in _SAFE_SCHEMES:
             raise ValueError(
                 f"Unsupported URL scheme '{parsed.scheme}'. "
                 "Only http, https, magnet, and ftp URLs are allowed for offline download."
@@ -262,7 +265,7 @@ def register_advanced_tools(mcp: FastMCP) -> None:
         # SSRF check for each URL
         for url in urls:
             parsed = urlparse(url)
-            if parsed.scheme not in ("http", "https", "magnet", "ftp"):
+            if parsed.scheme not in _SAFE_SCHEMES:
                 raise ValueError(
                     f"Unsupported URL scheme '{parsed.scheme}' in '{url}'. "
                     "Only http, https, magnet, and ftp URLs are allowed."
