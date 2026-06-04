@@ -209,16 +209,18 @@ def register_advanced_tools(mcp: FastMCP) -> None:
         enforce_path_allowed(path)
         enforce_writable("offline_download")
 
-        # SSRF prevention: only allow http/https URLs
+        # SSRF prevention: only allow http/https/magnet URLs
         parsed = urlparse(url)
-        if parsed.scheme not in ("http", "https"):
+        if parsed.scheme not in ("http", "https", "magnet", "ftp"):
             raise ValueError(
                 f"Unsupported URL scheme '{parsed.scheme}'. "
-                "Only http and https URLs are allowed for offline download."
+                "Only http, https, magnet, and ftp URLs are allowed for offline download."
             )
 
         # SSRF prevention: reject URLs pointing to internal/private networks
-        _reject_internal_url(url)
+        # Magnet links have no hostname and can't be used for SSRF, skip check
+        if parsed.scheme != "magnet":
+            _reject_internal_url(url)
 
         client = await get_client()
         body: dict[str, Any] = {"urls": [url], "path": path}
@@ -260,12 +262,13 @@ def register_advanced_tools(mcp: FastMCP) -> None:
         # SSRF check for each URL
         for url in urls:
             parsed = urlparse(url)
-            if parsed.scheme not in ("http", "https"):
+            if parsed.scheme not in ("http", "https", "magnet", "ftp"):
                 raise ValueError(
                     f"Unsupported URL scheme '{parsed.scheme}' in '{url}'. "
-                    "Only http and https URLs are allowed."
+                    "Only http, https, magnet, and ftp URLs are allowed."
                 )
-            _reject_internal_url(url)
+            if parsed.scheme != "magnet":
+                _reject_internal_url(url)
 
         client = await get_client()
         results = []
