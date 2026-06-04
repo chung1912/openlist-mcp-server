@@ -5,6 +5,28 @@ All notable changes to the OpenList MCP Server are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+- **SQLITE_BUSY auto-retry**: `OpenListClient.request()` now retries up to 3
+  times with exponential backoff (2s, 4s) on SQLite database lock errors.
+  All 79 tools benefit — no per-tool retry code needed.
+- **E2E test suite**: `tests/test_e2e.py` simulates a full user workflow
+  (auth, file ops, shares, tasks) against a real OpenList instance.
+  Run with `pytest -m e2e`. Skips automatically when `OPENLIST_URL` is unset.
+
+### Fixed
+- **Magnet links rejected** by SSRF protection: `magnet:` URLs are now allowed
+  in `offline_download` and `batch_download`. SSRF check is skipped for magnet
+  links (they have no hostname to resolve).
+- **FTP/SFTP downloads blocked**: `ftp://` and `sftp://` URLs are now
+  allowed alongside `http`/`https`/`magnet` in download tools. All
+  hostname-based schemes still go through SSRF IP validation.
+
+### Changed
+- `_SAFE_SCHEMES` constant extracted at module top for single-source-of-truth
+  on allowed download URL protocols: `http`, `https`, `magnet`, `ftp`, `sftp`.
+
 ## [0.2.11] — 2026-06-04
 
 ### Added

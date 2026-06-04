@@ -236,7 +236,7 @@ Restart Claude Desktop, then try: *"List the files on my OpenList server."*
 
 | Tool | Description |
 |------|-------------|
-| `offline_download` | Download a file from a remote URL directly to the OpenList server. Supports aria2, Transmission, qBittorrent. Blocks private/internal IPs (SSRF protection). |
+| `offline_download` | Download a file from a remote URL directly to the OpenList server. Supports `http://`, `https://`, `magnet:`, `ftp://`, and `sftp://` URLs. Uses aria2, Transmission, or qBittorrent. Blocks private/internal IPs (SSRF protection). Magnet links are exempt from SSRF check (no hostname to resolve). |
 | `decompress_archive` | Decompress archives (zip, rar, 7z, tar.gz, etc.) on the server. |
 | `get_archive_meta` | Get archive metadata (format, encryption, comment, file tree) without extracting. |
 | `list_archive_files` | List files inside an archive without extracting. |
@@ -260,6 +260,7 @@ Restart Claude Desktop, then try: *"List the files on my OpenList server."*
 - **Protect your MCP config file**: `chmod 600 claude_desktop_config.json` (Linux/macOS).
 - **Local file uploads are disabled by default** — explicitly set `OPENLIST_LOCAL_UPLOAD_ROOTS` to enable.
 - **SSRF protection** — the `offline_download` tool resolves hostnames via DNS and blocks requests to private/internal IP ranges.
+  Allowed URL schemes: `http://`, `https://`, `ftp://`, `sftp://` (SSRF checked), `magnet:` (exempt — no hostname).
 - **Destructive operations** (`remove`, `delete_share`, `delete_task`, etc.) require `confirm=true` to prevent accidental data loss.
 
 ---

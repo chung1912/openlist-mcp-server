@@ -236,7 +236,7 @@ openlist-mcp
 
 | 工具 | 说明 |
 |------|------|
-| `offline_download` | 从远程 URL 直接下载文件到 OpenList 服务端。支持 aria2、Transmission、qBittorrent。自动拦截内网 IP（SSRF 防护）。 |
+| `offline_download` | 从远程 URL 直接下载文件到 OpenList 服务端。支持 `http://`、`https://`、`magnet:`、`ftp://`、`sftp://` 协议。使用 aria2、Transmission 或 qBittorrent。自动拦截内网 IP（SSRF 防护）。磁力链接无 hostname，豁免 SSRF 检查。 |
 | `decompress_archive` | 服务端在线解压压缩文件（zip、rar、7z、tar.gz 等）。 |
 | `get_archive_meta` | 获取压缩包元数据（格式、加密状态、注释、文件树），无需解压。 |
 | `list_archive_files` | 不解压查看压缩包内文件列表。 |
@@ -260,6 +260,7 @@ openlist-mcp
 - **保护 MCP 配置文件**：`chmod 600 claude_desktop_config.json`（Linux/macOS）。
 - **本地文件上传默认禁用** — 需显式设置 `OPENLIST_LOCAL_UPLOAD_ROOTS`。
 - **SSRF 防护** — `offline_download` 会自动解析域名并通过 DNS 拦截内网 IP。
+  支持的协议：`http://`、`https://`、`ftp://`、`sftp://`（受 SSRF 检查）、`magnet:`（豁免 — 无 hostname）。
 - **破坏性操作**（`remove`、`delete_share`、`delete_task` 等）需要 `confirm=true` 防止误操作。
 
 ---
