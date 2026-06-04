@@ -11,9 +11,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **SQLITE_BUSY auto-retry**: `OpenListClient.request()` now retries up to 3
   times with exponential backoff (2s, 4s) on SQLite database lock errors.
   All 79 tools benefit — no per-tool retry code needed.
-- **E2E test suite**: `tests/test_e2e.py` simulates a full user workflow
-  (auth, file ops, shares, tasks) against a real OpenList instance.
-  Run with `pytest -m e2e`. Skips automatically when `OPENLIST_URL` is unset.
 
 ### Fixed
 - **Magnet links rejected** by SSRF protection: `magnet:` URLs are now allowed
