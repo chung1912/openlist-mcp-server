@@ -88,3 +88,6 @@ python_classes = ["Test*"]
 python_functions = ["test_*"]
 addopts = "-v --tb=short"
 asyncio_mode = "auto"
+markers = [
+    "e2e: End-to-end tests requiring a real OpenList instance.",
+]

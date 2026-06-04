@@ -192,52 +192,83 @@ class OpenListClient:
         json: Any = None,
         params: dict[str, Any] | None = None,
         require_auth: bool = True,
+        retry_on_busy: bool = True,
     ) -> dict[str, Any]:
-        """Make an API request to OpenList."""
-        if require_auth:
-            await self.ensure_authenticated()
+        """Make an API request to OpenList.
 
-        client = await self._get_client()
-        try:
-            resp = await client.request(
-                method,
-                f"/{path.lstrip('/')}",
-                json=json,
-                params=params,
-                headers=self._headers,
-            )
-        except httpx.HTTPError as exc:
-            raise OpenListError(f"Request failed: {exc}", code=503) from exc
+        Args:
+            retry_on_busy: If True (default), automatically retry up to 3 times
+                          on SQLITE_BUSY errors with exponential backoff.
+        """
+        max_retries = 3 if retry_on_busy else 1
 
-        data = self._parse_response(resp, f"{method.upper()} {path}")
-        if data.get("code") != 200:
-            if data.get("code") == 401 and self._token and require_auth:
-                self._token = None
+        for attempt in range(1, max_retries + 1):
+            if attempt > 1 and require_auth:
+                # Ensure we have a valid session for retry
                 await self.ensure_authenticated()
-                try:
-                    resp = await client.request(
-                        method,
-                        f"/{path.lstrip('/')}",
-                        json=json,
-                        params=params,
-                        headers=self._headers,
-                    )
-                except httpx.HTTPError as exc:
-                    raise OpenListError(f"Request retry failed: {exc}", code=503) from exc
-                data = self._parse_response(resp, f"{method.upper()} {path} retry")
-                if data.get("code") != 200:
-                    self._token = None
-                    raise OpenListError(
-                        data.get("message", "Request failed"),
-                        code=data.get("code", 500),
-                    )
-            else:
-                raise OpenListError(
-                    data.get("message", "Request failed"), code=data.get("code", 500)
-                )
 
-        result = data.get("data", {})
-        return result if isinstance(result, dict) else {"value": result}
+            client = await self._get_client()
+            try:
+                resp = await client.request(
+                    method,
+                    f"/{path.lstrip('/')}",
+                    json=json,
+                    params=params,
+                    headers=self._headers,
+                )
+            except httpx.HTTPError as exc:
+                if attempt < max_retries:
+                    await asyncio.sleep(attempt * 2)
+                    continue
+                raise OpenListError(f"Request failed: {exc}", code=503) from exc
+
+            data = self._parse_response(resp, f"{method.upper()} {path}")
+
+            # Retry on SQLITE_BUSY with exponential backoff
+            if (
+                data.get("code") == 500
+                and isinstance(data.get("message"), str)
+                and "SQLITE_BUSY" in data["message"]
+                and attempt < max_retries
+            ):
+                wait = attempt * 2
+                logger.warning(
+                    "SQLITE_BUSY on %s %s, retry %d/%d in %ds",
+                    method.upper(), path, attempt, max_retries, wait,
+                )
+                await asyncio.sleep(wait)
+                continue
+
+            if data.get("code") != 200:
+                if data.get("code") == 401 and self._token and require_auth:
+                    self._token = None
+                    await self.ensure_authenticated()
+                    try:
+                        resp = await client.request(
+                            method,
+                            f"/{path.lstrip('/')}",
+                            json=json,
+                            params=params,
+                            headers=self._headers,
+                        )
+                    except httpx.HTTPError as exc:
+                        raise OpenListError(f"Request retry failed: {exc}", code=503) from exc
+                    data = self._parse_response(resp, f"{method.upper()} {path} retry")
+                    if data.get("code") != 200:
+                        self._token = None
+                        raise OpenListError(
+                            data.get("message", "Request failed"),
+                            code=data.get("code", 500),
+                        )
+                else:
+                    raise OpenListError(
+                        data.get("message", "Request failed"), code=data.get("code", 500)
+                    )
+
+            result = data.get("data", {})
+            return result if isinstance(result, dict) else {"value": result}
+
+        raise OpenListError("Max retries exceeded for SQLITE_BUSY", code=500)
 
     async def upload(
         self,
