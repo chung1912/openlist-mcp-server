@@ -32,7 +32,7 @@ MCP Server for [OpenList](https://github.com/OpenListTeam/OpenList) — an open-
 | **Torrent** | Parse `.torrent` files, generate torrents for existing files, rapid upload |
 | **Auth** | Auto JWT login with TOTP/2FA support, automatic re-authentication on expiry |
 
-**67 tools in total** — see the [Tools Reference](#tools-reference) below.
+**79 tools in total** — see the [Tools Reference](#tools-reference) below.
 
 ---
 
@@ -193,7 +193,7 @@ Restart Claude Desktop, then try: *"List the files on my OpenList server."*
 | `cancel_share` | Alias for `disable_share`. |
 | `delete_share` | Permanently delete a share link. Requires `confirm=true`. |
 
-### System (Read-Only Admin)
+### System (Admin)
 
 | Tool | Description |
 |------|-------------|
@@ -201,9 +201,21 @@ Restart Claude Desktop, then try: *"List the files on my OpenList server."*
 | `get_storage_info` | Get detailed info about a specific storage by ID. |
 | `list_drivers` | List all registered storage driver names. |
 | `get_driver_info` | Get details about a specific storage driver. |
+| `list_drivers_detail` | List all drivers with full configuration templates. |
 | `get_settings` | List all global server settings. |
 | `get_setting` | Get a single setting by key (e.g. `site_title`). |
+| `save_settings` | Update one or more global settings atomically. Requires `confirm=true`. |
+| `delete_setting` | Remove a custom setting. Requires `confirm=true`. |
 | `get_index_progress` | Get search index building progress. |
+| `build_search_index` | Trigger full search index rebuild. Requires `confirm=true`. |
+| `update_search_index` | Trigger incremental search index update. Requires `confirm=true`. |
+| `stop_indexing` | Stop the current indexing process. Requires `confirm=true`. |
+| `clear_search_index` | Clear the entire search index. Requires `confirm=true`. |
+| `list_users` | List all user accounts with pagination. |
+| `get_user` | Get detailed info for a specific user by ID. |
+| `list_metas` | List all metadata configurations. |
+| `get_meta` | Get metadata details by ID. |
+| `reset_api_token` | Generate a new API token. Requires `confirm=true`. |
 | `list_my_ssh_keys` | List SSH public keys for the current user. |
 | `add_ssh_key` | Add a new SSH public key. Respects `OPENLIST_READONLY`. |
 | `delete_ssh_key` | Delete an SSH public key by ID. Requires `confirm=true`. |

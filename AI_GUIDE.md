@@ -8,7 +8,7 @@
 
 OpenList MCP Server is a tool that lets AI agents manage files on an [OpenList](https://github.com/OpenListTeam/OpenList) instance. OpenList is a self-hosted file management platform that supports local storage, cloud drives (OneDrive, Google Drive, etc.), and more.
 
-**67 tools available** across 9 categories:
+**79 tools available** across 9 categories:
 - Browse: `list_files`, `list_dirs`, `get_file_info`, `search_files`
 - Manage: `create_folder`, `rename`, `batch_rename`, `regex_rename`, `copy`, `move`, `remove`, `remove_empty_dirs`, `recursive_move`
 - Transfer: `upload_file`, `upload_local_file`, `get_download_url`
@@ -16,7 +16,7 @@ OpenList MCP Server is a tool that lets AI agents manage files on an [OpenList](
 - Tasks: `list_tasks`, `get_task_info`, `retry_task`, `cancel_task`, `delete_task`, `batch_cancel_tasks`, `batch_delete_tasks`, `batch_retry_tasks`, `clear_done_tasks`, `clear_succeeded_tasks`, `retry_failed_tasks`
 - Shares: `create_share`, `list_shares`, `get_share_info`, `update_share`, `enable_share`, `disable_share`, `cancel_share`, `delete_share`
 - Smart: `tree`, `disk_usage`, `find_duplicates`, `content_preview`, `batch_download`, `mirror`
-- System: `list_storages`, `get_storage_info`, `list_drivers`, `get_driver_info`, `get_settings`, `get_setting`, `get_index_progress`, `list_my_ssh_keys`, `add_ssh_key`, `delete_ssh_key`, `update_current_user`
+- System: `list_storages`, `get_storage_info`, `list_drivers`, `get_driver_info`, `list_drivers_detail`, `get_settings`, `get_setting`, `save_settings`, `delete_setting`, `get_index_progress`, `build_search_index`, `update_search_index`, `stop_indexing`, `clear_search_index`, `list_users`, `get_user`, `list_metas`, `get_meta`, `reset_api_token`, `list_my_ssh_keys`, `add_ssh_key`, `delete_ssh_key`, `update_current_user`
 - Advanced: `offline_download`, `decompress_archive`, `get_archive_meta`, `list_archive_files`, `list_download_tools`, `get_archive_extensions`, `parse_torrent`, `torrent_upload_parse`, `generate_torrent`, `torrent_rapid_upload`
 
 ---

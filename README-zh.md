@@ -32,7 +32,7 @@
 | **Torrent** | 解析 .torrent 文件、为已有文件生成种子、秒传 |
 | **认证** | 自动 JWT 登录（支持 TOTP/2FA）、过期自动重登 |
 
-**共 67 个工具** — 详见下方[工具参考](#工具参考)。
+**共 79 个工具** — 详见下方[工具参考](#工具参考)。
 
 ---
 
@@ -193,7 +193,7 @@ openlist-mcp
 | `cancel_share` | `disable_share` 的别名。 |
 | `delete_share` | 永久删除分享链接。需 `confirm=true`。 |
 
-### 系统管理（只读）
+### 系统管理
 
 | 工具 | 说明 |
 |------|------|
@@ -201,9 +201,21 @@ openlist-mcp
 | `get_storage_info` | 按 ID 查看单个存储详情。 |
 | `list_drivers` | 列出所有已注册的存储驱动名称。 |
 | `get_driver_info` | 查看特定存储驱动的详细信息。 |
+| `list_drivers_detail` | 列出所有驱动及其完整配置模板。 |
 | `get_settings` | 列出所有全局设置。 |
 | `get_setting` | 按 key 查询单个设置（如 `site_title`）。 |
+| `save_settings` | 原子性更新一个或多个全局设置。需要 `confirm=true`。 |
+| `delete_setting` | 删除自定义设置。需要 `confirm=true`。 |
 | `get_index_progress` | 查看搜索索引构建进度。 |
+| `build_search_index` | 触发全量重建搜索索引。需要 `confirm=true`。 |
+| `update_search_index` | 触发增量更新搜索索引。需要 `confirm=true`。 |
+| `stop_indexing` | 停止当前索引构建进程。需要 `confirm=true`。 |
+| `clear_search_index` | 清空整个搜索索引。需要 `confirm=true`。 |
+| `list_users` | 分页列出所有用户账号。 |
+| `get_user` | 按 ID 查看单个用户详情。 |
+| `list_metas` | 列出所有元数据配置。 |
+| `get_meta` | 按 ID 查看元数据详情。 |
+| `reset_api_token` | 生成新的 API Token。需要 `confirm=true`。 |
 | `list_my_ssh_keys` | 列出当前用户的 SSH 公钥。 |
 | `add_ssh_key` | 添加新的 SSH 公钥。受 `OPENLIST_READONLY` 保护。 |
 | `delete_ssh_key` | 按 ID 删除 SSH 公钥。需要 `confirm=true`。 |
