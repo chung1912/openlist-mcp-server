@@ -131,9 +131,7 @@ def register_share_tools(mcp: FastMCP) -> None:
         elif pwd or expires or max_accessed > 0 or remark:
             # Fetch current files from the specific share
             client = await get_client()
-            share_data = await client.request(
-                "GET", "share/get", params={"id": share_id}
-            )
+            share_data = await client.request("GET", "share/get", params={"id": share_id})
             current_files = share_data.get("files", [])
             if current_files:
                 body["files"] = current_files

@@ -5,6 +5,30 @@ All notable changes to the OpenList MCP Server are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.2.11] — 2026-06-04
+
+### Added
+- **Admin search index management**: `build_search_index`, `update_search_index`,
+  `stop_indexing`, `clear_search_index` — full lifecycle management of the search
+  index (all require `confirm=true` for safety).
+- **Admin settings write**: `save_settings` — update one or more global settings
+  atomically; `delete_setting` — remove a custom setting (both require `confirm=true`).
+- **Admin user management (read-only)**: `list_users` — list all user accounts with
+  pagination; `get_user` — get detailed info for a specific user by ID.
+- **Admin meta management (read-only)**: `list_metas` — list all metadata
+  configurations; `get_meta` — get metadata details by ID.
+- **Admin driver detail**: `list_drivers_detail` — list all storage drivers with
+  full configuration templates (more detailed than `list_drivers`).
+- **Admin token management**: `reset_api_token` — generate a new API token
+  (requires `confirm=true`).
+- 32 new tests covering all new tools (confirm gating, valid payloads, empty inputs).
+
+### Changed
+- Tool count increased from 67 to **79** across all categories.
+- Startup banner updated with new admin tool listings.
+- `admin.py` module evolved from read-only to hybrid read/write,
+  importing `enforce_writable` and `validate_pagination`.
+
 ## [0.2.10] — 2026-06-01
 
 ### Fixed
@@ -224,8 +248,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 | Version | Date | Highlights |
 |---------|------|------------|
-| 0.2.9 | 2026-05-31 | 67 tools: get_archive_meta, torrent_upload_parse, list_tasks(all) |
-| 0.2.8 | 2026-05-31 | 65 tools: batch ops, tree/disk_usage, mirror, admin read-only tools, torrent tools |
+| 0.2.11 | 2026-06-04 | 79 tools: admin index/setting/user/meta/token tools |
+| 0.2.10 | 2026-06-01 | 67 tools: batch ops, tree/disk_usage, mirror, admin read-only tools, torrent tools |
 | 0.2.7 | 2025-05-30 | Auto TOTP, list_download_tools, validate_path fix |
 | 0.2.6 | 2025-05-30 | offline_download, decompress_archive, get_me, logout, recursive_move |
 | 0.2.5 | 2025-05-29 | 2FA/TOTP, upload_local_file, streaming uploads, release workflow |
