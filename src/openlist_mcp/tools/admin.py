@@ -150,7 +150,7 @@ def register_admin_tools(mcp: FastMCP) -> None:
             Success message or confirmation-required message.
         """
         if not confirm:
-            return "Settings save not performed. Re-run with confirm=true to save these settings."
+            return "⚠️ Settings save not performed. Re-run with confirm=true to save these settings."
         if not settings:
             return "No settings provided to save."
         enforce_writable("save_settings")
@@ -177,7 +177,7 @@ def register_admin_tools(mcp: FastMCP) -> None:
         """
         if not confirm:
             return (
-                "Setting deletion not performed. Re-run with confirm=true to delete this setting."
+                "⚠️ Setting deletion not performed. Re-run with confirm=true to delete this setting."
             )
         if not key:
             return "No setting key provided."
@@ -218,7 +218,7 @@ def register_admin_tools(mcp: FastMCP) -> None:
         if not confirm:
             return (
                 "Search index build not performed. "
-                "Re-run with confirm=true to build the search index."
+                "⚠️ Re-run with confirm=true to build the search index."
             )
         enforce_writable("build_search_index")
         client = await get_client()
@@ -247,7 +247,7 @@ def register_admin_tools(mcp: FastMCP) -> None:
         if not confirm:
             return (
                 "Search index update not performed. "
-                "Re-run with confirm=true to update the search index."
+                "⚠️ Re-run with confirm=true to update the search index."
             )
         enforce_writable("update_search_index")
         client = await get_client()
@@ -269,7 +269,7 @@ def register_admin_tools(mcp: FastMCP) -> None:
             Success message or confirmation-required message.
         """
         if not confirm:
-            return "Indexing stop not performed. Re-run with confirm=true to stop indexing."
+            return "⚠️ Indexing stop not performed. Re-run with confirm=true to stop indexing."
         enforce_writable("stop_indexing")
         client = await get_client()
         await client.request("POST", "admin/index/stop")
@@ -291,7 +291,7 @@ def register_admin_tools(mcp: FastMCP) -> None:
         if not confirm:
             return (
                 "Search index clear not performed. "
-                "Re-run with confirm=true to clear the search index."
+                "⚠️ Re-run with confirm=true to clear the search index."
             )
         enforce_writable("clear_search_index")
         client = await get_client()
@@ -392,7 +392,9 @@ def register_admin_tools(mcp: FastMCP) -> None:
             Success message or confirmation-required message.
         """
         if not confirm:
-            return "API token reset not performed. Re-run with confirm=true to reset the API token."
+            return (
+                "⚠️ API token reset not performed. Re-run with confirm=true to reset the API token."
+            )
         enforce_writable("reset_api_token")
         client = await get_client()
         data = await client.request("POST", "admin/setting/reset_token")

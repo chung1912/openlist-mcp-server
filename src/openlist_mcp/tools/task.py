@@ -161,7 +161,7 @@ def register_task_tools(mcp: FastMCP) -> None:
             confirm: Must be true to actually delete the task. Defaults to false.
         """
         if not confirm:
-            return "Task deletion not performed. Re-run with confirm=true to delete it."
+            return "⚠️ Task deletion not performed. Re-run with confirm=true to delete it."
         task_type = _validate_task_type(task_type)
         enforce_writable("delete_task")
         client = await get_client()
@@ -202,7 +202,7 @@ def register_task_tools(mcp: FastMCP) -> None:
             confirm: Must be true to actually cancel the task. Defaults to false.
         """
         if not confirm:
-            return "Task cancellation not performed. Re-run with confirm=true to cancel it."
+            return "⚠️ Task cancellation not performed. Re-run with confirm=true to cancel it."
         task_type = _validate_task_type(task_type)
         enforce_writable("cancel_task")
         client = await get_client()
@@ -230,7 +230,7 @@ def register_task_tools(mcp: FastMCP) -> None:
             Success or confirmation-required message.
         """
         if not confirm:
-            return "Batch cancellation not performed. Re-run with confirm=true to cancel."
+            return "⚠️ Batch cancellation not performed. Re-run with confirm=true to cancel."
         if not task_ids:
             return "No task IDs provided."
         task_type = _validate_task_type(task_type)
@@ -260,7 +260,7 @@ def register_task_tools(mcp: FastMCP) -> None:
             Success or confirmation-required message.
         """
         if not confirm:
-            return "Batch deletion not performed. Re-run with confirm=true to delete."
+            return "⚠️ Batch deletion not performed. Re-run with confirm=true to delete."
         if not task_ids:
             return "No task IDs provided."
         task_type = _validate_task_type(task_type)

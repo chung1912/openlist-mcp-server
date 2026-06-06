@@ -174,7 +174,7 @@ def register_share_tools(mcp: FastMCP) -> None:
             Success message or confirmation-required message.
         """
         if not confirm:
-            return "Share cancellation not performed. Re-run with confirm=true to cancel it."
+            return "⚠️ Share cancellation not performed. Re-run with confirm=true to cancel it."
         enforce_writable("cancel_share")
         client = await get_client()
         await client.request("POST", "share/disable", json={"id": share_id})
@@ -194,7 +194,7 @@ def register_share_tools(mcp: FastMCP) -> None:
             Success message or confirmation-required message.
         """
         if not confirm:
-            return "Share deletion not performed. Re-run with confirm=true to delete it."
+            return "⚠️ Share deletion not performed. Re-run with confirm=true to delete it."
         enforce_writable("delete_share")
         client = await get_client()
         await client.request("POST", "share/delete", params={"id": share_id})

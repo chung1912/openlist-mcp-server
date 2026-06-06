@@ -119,7 +119,7 @@ def register_public_tools(mcp: FastMCP) -> None:
             Success or error message.
         """
         if not confirm:
-            return "SSH key deletion not performed. Re-run with confirm=true to delete it."
+            return "⚠️ SSH key deletion not performed. Re-run with confirm=true to delete it."
         enforce_writable("delete_ssh_key")
         client = await get_client()
         await client.request(

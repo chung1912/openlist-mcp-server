@@ -5,6 +5,10 @@
 
 from __future__ import annotations
 
+import logging
+
+logger = logging.getLogger("openlist-mcp.skills")
+
 # ─── 每组包含的工具清单（用于展示和统计） ──────────────────────────────────────
 
 SKILL_GROUP_TOOLS: dict[str, list[str]] = {
@@ -138,7 +142,17 @@ def resolve_skills(raw: str) -> set[str]:
     raw = raw.strip().lower()
     if raw in SKILL_PRESETS:
         return set(SKILL_PRESETS[raw])
-    return {g.strip() for g in raw.split(",") if g.strip() and g.strip() in SKILL_GROUP_META}
+
+    requested = {g.strip() for g in raw.split(",") if g.strip()}
+    valid = {g for g in requested if g in SKILL_GROUP_META}
+    invalid = requested - valid
+    if invalid:
+        logger.warning(
+            "Ignored invalid skill group names: %s. Valid: %s",
+            ", ".join(sorted(invalid)),
+            ", ".join(sorted(SKILL_GROUP_META.keys())),
+        )
+    return valid
 
 
 def count_tools(groups: set[str]) -> int:

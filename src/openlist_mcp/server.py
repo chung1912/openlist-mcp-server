@@ -94,11 +94,14 @@ def register_all_tools() -> None:
     logger.info("Skills loaded: %s", ", ".join(loaded))
 
 
-def _banner_skills(raw_skills: str) -> tuple[int, list[str], str]:
-    """Build skill summary for the missing-config banner."""
+def _banner_skills(raw_skills: str) -> tuple[int, list[str], str, str]:
+    """Build skill summary for the missing-config banner.
+    Returns (total, group_details, skills_line, upgrade_notice).
+    """
     selected = resolve_skills(raw_skills)
     total = AUTH_COUNT + sum(group_count(g) for g in selected if g in SKILL_GROUP_META)
     group_details = []
+    upgrade_notice = ""
     for name in sorted(SKILL_GROUP_META.keys()):
         if name == "auth":
             continue
@@ -106,8 +109,12 @@ def _banner_skills(raw_skills: str) -> tuple[int, list[str], str]:
         meta = SKILL_GROUP_META[name]
         mark = "✓" if name in selected else " "
         group_details.append(f"  [{mark}] {name:<12} {meta['desc']:<32} ({cnt}个)")
+    if raw_skills in ("core",) or all(
+        g not in selected for g in ("admin", "advanced", "task", "share")
+    ):
+        upgrade_notice = "║  Tip: Set OPENLIST_SKILLS=all to load all 79 tools.              ║\n"
     preset_label = raw_skills if raw_skills in SKILL_PRESETS else "custom"
-    return total, group_details, f"{preset_label:<17} {total:>3} tools loaded"
+    return total, group_details, f"{preset_label:<17} {total:>3} tools loaded", upgrade_notice
 
 
 def main() -> None:
@@ -120,7 +127,7 @@ def main() -> None:
         config = get_config()
     except ValueError:
         raw_skills = os.environ.get("OPENLIST_SKILLS", "core").strip().lower()
-        total, group_details, skills_line = _banner_skills(raw_skills)
+        total, group_details, skills_line, upgrade_notice = _banner_skills(raw_skills)
         print(
             "\n"
             "╔══════════════════════════════════════════════════════════════╗\n"
@@ -151,7 +158,8 @@ def main() -> None:
             "║    export OPENLIST_SKILLS=all       # 全部79个工具           ║\n"
             "║    # 或自定义组合: export OPENLIST_SKILLS=fs,transfer,task  ║\n"
             "║                                                              ║\n"
-            '║  Then try: "List files on my OpenList server."               ║\n'
+            + upgrade_notice
+            + '║  Then try: "List files on my OpenList server."               ║\n'
             "║                                                              ║\n"
             "║  For more: https://github.com/hbestm/openlist-mcp-server     ║\n"
             "║                                                              ║\n"

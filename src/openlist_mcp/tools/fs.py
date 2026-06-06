@@ -390,7 +390,7 @@ def register_fs_tools(mcp: FastMCP) -> None:
         """
         enforce_path_allowed(directory)
         if not confirm:
-            return "Deletion not performed. Re-run with confirm=true to delete these items."
+            return "⚠️ Deletion not performed. Re-run with confirm=true to delete these items."
         enforce_writable("remove")
         client = await get_client()
         name_list = normalize_names(names)
@@ -424,7 +424,7 @@ def register_fs_tools(mcp: FastMCP) -> None:
         if not confirm:
             return (
                 "Empty directory removal not performed. "
-                "Re-run with confirm=true to remove empty directories."
+                "⚠️ Re-run with confirm=true to remove empty directories."
             )
         enforce_writable("remove_empty_dirs")
         enforce_path_allowed(src_dir)

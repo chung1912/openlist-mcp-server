@@ -15,17 +15,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Custom: `OPENLIST_SKILLS=fs,transfer,task`
 - **Shared `skills.py` module**: Single source of truth for group metadata
   (`SKILL_GROUP_META`, `SKILL_PRESETS`, `resolve_skills()`, `count_tools()`).
+- **Tests for skills module**: 21 test cases covering presets, resolution, counting, sync.
+- **CI automation**: `.github/workflows/ci.yml` — ruff/mypy/pytest/coverage on push/PR.
+- **Upgrade migration notice**: Banner and startup log prompt when only core tools are loaded.
+- **Invalid group name warning**: `resolve_skills()` logs a warning for unrecognized group names.
+- **`OPENLIST_SKILLS` in docs**: `.env.example`, README, README-zh updated.
 - Startup banner now dynamically shows loaded groups and tool counts.
 
 ### Changed
 - **Default loaded tools reduced from 79 to 25** (`OPENLIST_SKILLS=core`).
   Users who need all tools set `OPENLIST_SKILLS=all`.
 - Auth/public tools are always loaded (login, SSH keys, profile update).
+- `SKILL_GROUP_META`: removed hardcoded `count` field, uses `len()` dynamically.
+- `__init__.py`: version now read dynamically from `pyproject.toml` (no static fallback).
 
 ### Fixed
 - **401 auth bypass**: `request()` in `client.py` skipped authentication on the
   first attempt due to `attempt > 1` guard added with SQLITE_BUSY retry.
   `ensure_authenticated()` is now called once before the retry loop.
+
+### Security
+- **All confirm prompts** now prefixed with `⚠️` for better AI agent visibility:
+  file delete, SSH key delete, settings save/delete, index operations,
+  API token reset, share cancel/delete, task cancel/delete/batch ops.
 
 ## [0.2.12] — 2026-06-04
 
@@ -289,7 +301,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 | Version | Date | Highlights |
 |---------|------|------------|
-| 0.3.1 | 2026-06-06 | OPENLIST_SKILLS, pre-push checklist (CI/template/tests), 401 fix |
+| 0.3.1 | 2026-06-06 | OPENLIST_SKILLS, skills module, CI, tests, upgrade notice, confirm ⚠️, 401 fix |
 | 0.2.12 | 2026-06-04 | SQLITE_BUSY retry, SSRF fix for magnet/ftp/sftp |
 | 0.2.11 | 2026-06-04 | 79 tools: admin index/setting/user/meta/token tools |
 | 0.2.10 | 2026-06-01 | 67 tools: batch ops, tree/disk_usage, mirror, admin read-only tools, torrent tools |
