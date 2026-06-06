@@ -5,6 +5,28 @@ All notable changes to the OpenList MCP Server are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.3.1] — 2026-06-06
+
+### Added
+- **`OPENLIST_SKILLS` environment variable**: Select which tool groups to load.
+  - `core` (default) — 25 tools: auth + file browsing + upload/download
+  - `default` — 44 tools: core + task management + shares
+  - `all` — all 79 tools
+  - Custom: `OPENLIST_SKILLS=fs,transfer,task`
+- **Shared `skills.py` module**: Single source of truth for group metadata
+  (`SKILL_GROUP_META`, `SKILL_PRESETS`, `resolve_skills()`, `count_tools()`).
+- Startup banner now dynamically shows loaded groups and tool counts.
+
+### Changed
+- **Default loaded tools reduced from 79 to 25** (`OPENLIST_SKILLS=core`).
+  Users who need all tools set `OPENLIST_SKILLS=all`.
+- Auth/public tools are always loaded (login, SSH keys, profile update).
+
+### Fixed
+- **401 auth bypass**: `request()` in `client.py` skipped authentication on the
+  first attempt due to `attempt > 1` guard added with SQLITE_BUSY retry.
+  `ensure_authenticated()` is now called once before the retry loop.
+
 ## [0.2.12] — 2026-06-04
 
 ### Added
@@ -267,6 +289,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 | Version | Date | Highlights |
 |---------|------|------------|
+| 0.3.1 | 2026-06-06 | OPENLIST_SKILLS, pre-push checklist (CI/template/tests), 401 fix |
+| 0.2.12 | 2026-06-04 | SQLITE_BUSY retry, SSRF fix for magnet/ftp/sftp |
 | 0.2.11 | 2026-06-04 | 79 tools: admin index/setting/user/meta/token tools |
 | 0.2.10 | 2026-06-01 | 67 tools: batch ops, tree/disk_usage, mirror, admin read-only tools, torrent tools |
 | 0.2.7 | 2025-05-30 | Auto TOTP, list_download_tools, validate_path fix |

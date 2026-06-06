@@ -67,6 +67,7 @@ export OPENLIST_ALLOWED_PATHS="/mcp-dev-test,/public"     # Restrict to specific
 export OPENLIST_LOCAL_UPLOAD_ROOTS="/tmp:/path/to/uploads" # Enable local file uploads
 export OPENLIST_TOTP_SECRET="your_totp_secret"            # Auto-generate 2FA codes
 export OPENLIST_ALLOW_HTTP="false"                        # Allow HTTP (insecure, use only on LAN)
+export OPENLIST_SKILLS="core"                             # Tool groups: core(~25), default(~44), all(~79)
 ```
 
 ### 3. Verify

@@ -11,17 +11,26 @@ Environment Variables:
     OPENLIST_URL      - Base URL of your OpenList instance (required)
     OPENLIST_USERNAME - Username for authentication (required)
     OPENLIST_PASSWORD - Password for authentication (required)
+    OPENLIST_TOTP_SECRET - TOTP secret for automatic 2FA (optional)
+    OPENLIST_READONLY - When true, blocks all write/modify tools (optional)
+    OPENLIST_ALLOWED_PATHS - Comma-separated path allowlist (optional)
+    OPENLIST_SKILLS   - Tool groups to load: core|default|all|custom (optional)
+                        core=~25tools, default=~44tools, all=79tools(default)
+                        custom example: "fs,transfer,task"
 """
 
 from __future__ import annotations
 
 import logging
+import os
 import sys
+from collections.abc import Callable
 
 from mcp.server.fastmcp import FastMCP
 
 from . import __version__  # noqa: F401 — used in except ValueError branch
 from .config import get_config
+from .skills import ALWAYS_LOADED, SKILL_GROUP_META, SKILL_PRESETS, group_count, resolve_skills
 from .tools.admin import register_admin_tools
 from .tools.advanced import register_advanced_tools
 from .tools.auth import register_auth_tools, register_public_tools
@@ -50,18 +59,55 @@ mcp = FastMCP(
     ),
 )
 
+# Group → registration function mapping (server-only, kept here)
+_REGISTER_FUNC: dict[str, Callable[[FastMCP], None]] = {
+    "fs": register_fs_tools,
+    "transfer": register_transfer_tools,
+    "task": register_task_tools,
+    "share": register_share_tools,
+    "admin": register_admin_tools,
+    "advanced": register_advanced_tools,
+}
+
+# Groups that always load (auth) + their count
+AUTH_COUNT = group_count("auth")
+
 
 def register_all_tools() -> None:
-    """Register all tool groups with the MCP server."""
+    """Register tool groups with the MCP server, filtered by OPENLIST_SKILLS."""
+    config = get_config()
+    selected = resolve_skills(config.skills)
+
+    # Auth/public tools are always loaded (needed for any interaction)
     register_public_tools(mcp)
     register_auth_tools(mcp)
-    register_admin_tools(mcp)
-    register_fs_tools(mcp)
-    register_transfer_tools(mcp)
-    register_task_tools(mcp)
-    register_share_tools(mcp)
-    register_advanced_tools(mcp)
-    logger.info("All tools registered successfully")
+
+    loaded = list(ALWAYS_LOADED)
+    for group_name in sorted(selected):
+        if group_name in _REGISTER_FUNC:
+            _REGISTER_FUNC[group_name](mcp)
+            cnt = group_count(group_name)
+            meta = SKILL_GROUP_META[group_name]
+            loaded.append(f"{group_name}({cnt})")
+            logger.info("  Loaded skill group: %s (%s, %d tools)", group_name, meta["desc"], cnt)
+
+    logger.info("Skills loaded: %s", ", ".join(loaded))
+
+
+def _banner_skills(raw_skills: str) -> tuple[int, list[str], str]:
+    """Build skill summary for the missing-config banner."""
+    selected = resolve_skills(raw_skills)
+    total = AUTH_COUNT + sum(group_count(g) for g in selected if g in SKILL_GROUP_META)
+    group_details = []
+    for name in sorted(SKILL_GROUP_META.keys()):
+        if name == "auth":
+            continue
+        cnt = group_count(name)
+        meta = SKILL_GROUP_META[name]
+        mark = "✓" if name in selected else " "
+        group_details.append(f"  [{mark}] {name:<12} {meta['desc']:<32} ({cnt}个)")
+    preset_label = raw_skills if raw_skills in SKILL_PRESETS else "custom"
+    return total, group_details, f"{preset_label:<17} {total:>3} tools loaded"
 
 
 def main() -> None:
@@ -73,6 +119,8 @@ def main() -> None:
     try:
         config = get_config()
     except ValueError:
+        raw_skills = os.environ.get("OPENLIST_SKILLS", "core").strip().lower()
+        total, group_details, skills_line = _banner_skills(raw_skills)
         print(
             "\n"
             "╔══════════════════════════════════════════════════════════════╗\n"
@@ -83,40 +131,12 @@ def main() -> None:
             "║  An MCP server that lets AI agents (Claude, SOLO, etc.)      ║\n"
             "║  manage files on your OpenList instance.                     ║\n"
             "║                                                              ║\n"
-            "║  79 tools available:                                         ║\n"
-            "║  • Browse:   list_files, list_dirs, get_file_info,           ║\n"
-            "║              search_files                                    ║\n"
-            "║  • Manage:   create_folder, rename, batch_rename,              ║\n"
-            "║              regex_rename, copy, move, remove,                  ║\n"
-            "║              remove_empty_dirs, recursive_move               ║\n"
-            "║  • Transfer: upload_file, upload_local_file, get_download_url║\n"
-            "║  • Auth:     login (supports 2FA/TOTP), get_public_settings, ║\n"
-            "║              get_me, logout                                   ║\n"
-            "║  • Tasks:    list_tasks, get_task_info, retry_task,         ║\n"
-            "║              cancel_task, delete_task, batch_cancel_tasks,   ║\n"
-            "║              batch_delete_tasks, batch_retry_tasks,          ║\n"
-            "║              clear_done_tasks, clear_succeeded_tasks,        ║\n"
-            "║              retry_failed_tasks                              ║\n"
-            "║  • Shares:   create_share, list_shares, update_share,         ║\n"
-            "║              enable_share, disable_share, cancel_share,      ║\n"
-            "║              delete_share                                    ║\n"
-            "║  • Smart:    tree, disk_usage, find_duplicates,              ║\n"
-            "║              content_preview, batch_download                 ║\n"
-            "║  • System:   list_storages, get_storage_info, list_drivers,           ║\n"
-            "║              get_driver_info, list_drivers_detail,            ║\n"
-            "║              get_settings, get_setting, save_settings,        ║\n"
-            "║              delete_setting,                                  ║\n"
-            "║              get_index_progress, build_search_index,          ║\n"
-            "║              update_search_index, stop_indexing,              ║\n"
-            "║              clear_search_index,                              ║\n"
-            "║              list_users, get_user, list_metas, get_meta,      ║\n"
-            "║              reset_api_token,                                 ║\n"
-            "║              list_my_ssh_keys, add_ssh_key, delete_ssh_key,   ║\n"
-            "║              update_current_user                              ║\n"
-            "║  • Advanced: offline_download, decompress_archive,            ║\n"
-            "║              list_archive_files, list_download_tools,         ║\n"
-            "║              parse_torrent, generate_torrent,                 ║\n"
-            "║              torrent_rapid_upload                             ║\n"
+            f"║  Skills preset: {skills_line:<38}║\n"
+            "║                                                              ║\n"
+            "║  Loaded groups:                                              ║\n"
+            f"║  [✓] auth       认证/SSH密钥/个人设置              (6个)                 ║\n"
+            + "\n".join(f"║{g:<77}║" for g in group_details)
+            + "\n"
             "║                                                              ║\n"
             "║  Quick start:                                                ║\n"
             "║  Set these environment variables and restart:                ║\n"
@@ -124,6 +144,12 @@ def main() -> None:
             "║    export OPENLIST_URL=https://your-openlist.com             ║\n"
             "║    export OPENLIST_USERNAME=your_username                     ║\n"
             "║    export OPENLIST_PASSWORD=your_password                    ║\n"
+            "║                                                              ║\n"
+            "║  Skill config (optional):                                    ║\n"
+            "║    export OPENLIST_SKILLS=core      # ~25个基础工具          ║\n"
+            "║    export OPENLIST_SKILLS=default   # ~44个日常工具          ║\n"
+            "║    export OPENLIST_SKILLS=all       # 全部79个工具           ║\n"
+            "║    # 或自定义组合: export OPENLIST_SKILLS=fs,transfer,task  ║\n"
             "║                                                              ║\n"
             '║  Then try: "List files on my OpenList server."               ║\n'
             "║                                                              ║\n"
@@ -143,6 +169,15 @@ def main() -> None:
             "Authentication: not configured. "
             "Set OPENLIST_USERNAME and OPENLIST_PASSWORD for full access."
         )
+
+    selected = resolve_skills(config.skills)
+    total = AUTH_COUNT + sum(group_count(g) for g in selected if g in SKILL_GROUP_META)
+    logger.info(
+        "Skills: preset=%s, groups=%s, total=%d tools",
+        config.skills if config.skills in SKILL_PRESETS else "custom",
+        ", ".join(sorted(selected)),
+        total,
+    )
 
     register_all_tools()
     mcp.run()

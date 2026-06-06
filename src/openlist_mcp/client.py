@@ -202,11 +202,10 @@ class OpenListClient:
         """
         max_retries = 3 if retry_on_busy else 1
 
-        for attempt in range(1, max_retries + 1):
-            if attempt > 1 and require_auth:
-                # Ensure we have a valid session for retry
-                await self.ensure_authenticated()
+        if require_auth:
+            await self.ensure_authenticated()
 
+        for attempt in range(1, max_retries + 1):
             client = await self._get_client()
             try:
                 resp = await client.request(
@@ -234,7 +233,11 @@ class OpenListClient:
                 wait = attempt * 2
                 logger.warning(
                     "SQLITE_BUSY on %s %s, retry %d/%d in %ds",
-                    method.upper(), path, attempt, max_retries, wait,
+                    method.upper(),
+                    path,
+                    attempt,
+                    max_retries,
+                    wait,
                 )
                 await asyncio.sleep(wait)
                 continue

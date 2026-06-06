@@ -23,6 +23,7 @@ class OpenListConfig:
         self.totp_secret = os.environ.get("OPENLIST_TOTP_SECRET", "")
         self.read_only = _env_flag("OPENLIST_READONLY")
         self.allowed_paths = _parse_allowed_paths(os.environ.get("OPENLIST_ALLOWED_PATHS", ""))
+        self.skills = os.environ.get("OPENLIST_SKILLS", "core").strip().lower()
         self._validate()
 
     def _validate(self) -> None:
